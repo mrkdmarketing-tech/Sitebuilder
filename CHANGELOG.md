@@ -2,6 +2,9 @@
 
 What changed, newest first. Every change to the platform adds a line here.
 
+## 2026-11-09: Claude connector planned
+- Added Phase 1c: an MRKD connector so employees can ask Claude about their accounts with their own login ([docs/claude-connector.md](docs/claude-connector.md)).
+
 ## 2026-11-09: Simpler style
 - Removed every emoji from the app (KPI tiles, messages) and the docs. Plain labels throughout; style rule added to the development guide.
 

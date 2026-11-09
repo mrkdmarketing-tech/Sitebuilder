@@ -27,6 +27,7 @@ Everything about the MRKD platform is documented here. **Start with the row that
 | Background jobs (Meta sync, Retool bridge…) and schedules | [background-jobs.md](background-jobs.md) |
 | Copying data from Retool while it's still in use | [retool-bridge.md](retool-bridge.md) |
 | Logins, roles and who can see what | [auth.md](auth.md) |
+| Asking Claude about the data with your own login (planned) | [claude-connector.md](claude-connector.md) |
 
 ## Screens
 
