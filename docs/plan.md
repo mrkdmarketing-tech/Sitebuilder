@@ -12,7 +12,7 @@ What exists today is documented in [current-system.md](current-system.md).
 1. **Plan the whole thing, build in phases.** The data model below covers every module up front, so later phases add screens, not rewrites.
 2. **Sync in the background, read from our database.** Pages never call Meta, GHL or Stripe directly. They are instant and keep working when an external API is down.
 3. **Live by default.** The dashboard updates itself when new data lands, with no refresh button.
-4. **One app, responsive.** Phone and desktop are the same app with different layouts. It can be installed to a phone's home screen.
+4. **One app, responsive, inside GHL.** It replaces the Retool dashboard and lives in MRKD's GoHighLevel sidebar, where the team already works. Phone and desktop are the same app with different layouts, and it can be saved to a phone's home screen.
 5. **Humans approve actions.** Suggestions never change an ad on their own. Someone clicks, and it's logged.
 6. **Documented as we go.** Every phase updates `docs/`.
 
@@ -46,9 +46,11 @@ flowchart LR
   Stripe -- webhooks --> Hooks
   Sheets --> Jobs
   Jobs --> Slack
-  subgraph Vercel
-    App[Next.js app: mobile + desktop]
+  subgraph Cloudflare Pages
+    App[React app: mobile + desktop]
   end
+  App -- shown inside --> GHLMenu[GHL sidebar: custom menu link / marketplace app page]
+  GHLMenu -- signed-in GHL user --> Auth
   DB --> App
   RT --> App
   App -- actions: pause ad, create sub-account, ... --> Jobs
@@ -60,11 +62,12 @@ flowchart LR
 | Piece | Choice | Why |
 |---|---|---|
 | Database | **Supabase Postgres** | Same engine as Retool Database, so the migration is a straight copy |
-| Logins | **Supabase Auth**, Google sign-in plus email magic link, allowed only for emails in `employees` | Staff sign in once and stay signed in |
+| Logins | **GHL single sign-on** inside GHL: the page runs inside MRKD's existing GHL marketplace app, GHL says which user is viewing, and they're matched to `employees.id` (already GHL user IDs). **Google sign-in** is the fallback for the direct link. Both go through Supabase Auth, allowed only for active employees. | No separate login inside GHL. Works on phones through the direct link. |
 | Live updates | **Supabase Realtime** | The dashboard updates when a sync finishes |
 | Background jobs | **Supabase Edge Functions + pg_cron** | Run every 15–30 min with no extra server. Each sync is independent, so one failure doesn't stall the rest. |
 | Secrets | **Supabase Vault** / environment variables | GHL, Meta and Stripe tokens never sit in normal tables again |
-| Web app | **Next.js + TypeScript on Vercel** | Responsive and installable as a phone app |
+| Web app | **React + TypeScript (Vite), hosted on Cloudflare Pages** | Free for business use. All data and live updates come from Supabase, and anything that needs a server runs in Supabase Edge Functions, so the host only serves the pages. |
+| Where people open it | **Inside GHL**: a sidebar item, through a custom menu link or a page of MRKD's GHL marketplace app, shown only in MRKD's agency view and own sub-account (never in client sub-accounts). Plus a **direct link** (`app.mrkdmarketing.com`) for phones, since the GHL mobile app doesn't reliably show custom menu items. | Replaces the Retool dashboard where the team already works |
 | Meta access | **System User token** from MRKD's Business Manager with `ads_read` + `ads_management` | Doesn't expire like personal tokens. Needed for the "turn it off" buttons. |
 | GHL access | Keep MRKD's existing GHL **OAuth app** (agency token plus per-location tokens), refreshed automatically | Already set up and working |
 | Stripe | **Webhooks** from both accounts, plus a nightly safety sync | Billing data is instant instead of polled |
@@ -74,11 +77,12 @@ flowchart LR
 | Item | Monthly |
 |---|---|
 | Supabase Pro (needed: current data has 124k+ insight rows, and Pro adds daily backups) | $25 |
-| Vercel Pro (Vercel's free tier isn't licensed for business use) | $20 |
+| Cloudflare Pages (hosting) | $0 |
+| GHL (already paid; the app is shown inside it) | $0 |
 | Claude API for AI review and suggestions | ~$5–20, usage-based |
-| **Total** | **~$50–65** |
+| **Total** | **~$25–45** |
 
-This replaces Retool (about $30/month). The increase pays for reliability, live data, backups and the suggestions engine. *An earlier chat estimate said free tiers would cover it. That holds for a prototype, not for running the business on.*
+This replaces Retool (about $30/month) at roughly the same cost.
 
 ---
 
@@ -212,8 +216,8 @@ Retool keeps running until each phase is verified against it. Cutover is per mod
 
 | Phase | What ships | Done when |
 |---|---|---|
-| **0. Foundations** | Repo scaffold, Supabase project, schema, staff login, docs, deploy pipeline | Staff can log in to an empty app at the real URL |
-| **1. Live dashboard** | Meta syncs (independent jobs, every 30 min), clients + ad manager sync from GHL, M1 dashboard on phone and desktop, Realtime, sync health page | Numbers match Retool and Meta Ads Manager for a week. **Team uses it daily instead of Clients View / Meta Ads Insights.** |
+| **0. Foundations** | Repo scaffold, Supabase project, schema, staff login (GHL sign-on plus Google fallback), Cloudflare Pages deploy, **GHL sidebar item**, docs | Staff open an empty app from the GHL sidebar, already signed in, and from the direct link on a phone |
+| **1. Live dashboard** | Meta syncs (independent jobs, every 30 min), clients + ad manager sync from GHL, M1 dashboard on phone and desktop inside GHL, Realtime, sync health page | Numbers match Retool and Meta Ads Manager for a week. **Team uses it daily instead of Clients View / Meta Ads Insights.** |
 | **2. Suggestions** | Rules engine, client targets, suggestions inbox, Pause / budget actions with audit log, Slack morning digest | Managers act on suggestions from their phone |
 | **3. Billing + leads** | Stripe webhooks (both accounts), lead sheet sync, full Clients View parity (LTV, MRR, booked/shown/closed, unread messages) | Clients View can be retired |
 | **4. Operations** | Onboarding, ad preview/approval pipeline, templates, ClickUp API, AI review | Ad Preview and Onboarding retired |
@@ -229,9 +233,10 @@ Retool keeps running until each phase is verified against it. Cutover is per mod
 ## 6. What we need from you
 
 **To start Phase 0 and 1:**
-1. Create a **Supabase** account and project (Pro plan) and a **Vercel** account. Invite the dev email.
+1. Create a **Supabase** account and project (Pro plan) and a free **Cloudflare** account.
 2. **Meta System User** in MRKD's Business Manager with `ads_read` + `ads_management`, assigned to all client ad accounts. We'll walk through it.
 3. Confirm the app's address, e.g. `app.mrkdmarketing.com`.
+4. GHL agency admin access to add the sidebar item and update MRKD's marketplace app (for sign-on). We'll walk through it.
 
 **Questions:**
 1. Is GHL's **"Assigned to"** on the client contact still the right source for which manager owns which client?
