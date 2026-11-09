@@ -46,8 +46,14 @@ Don't tick anything else. If a scope isn't listed when generating the token, the
 ### 2. Add the Marketing API
 In the app dashboard, if Marketing API isn't already added: **Add product** (or **Use cases → Customize**) → **Marketing API** → **Set up**.
 
-### 3. Let the system user use the app
-1. **business.facebook.com/settings** → **Accounts → Apps** → the new **MRKD Platform** app should be listed (it is, if step 1 used the right portfolio).
+### 3. Connect the app to MRKD's business
+1. **business.facebook.com/settings** → **Accounts → Apps**. If **MRKD Platform** is listed, it's connected (it is, if step 1 picked the MRKD portfolio).
+2. If it isn't listed: **Add** → **Connect an app ID** → paste the **App ID** (top of the app dashboard) → **Connect app**.
+3. Or from the app side: **App settings → Basic** → **Business portfolio** (or **Verification**) → **MRKD Digital Marketing Inc.** → **Save changes**.
+4. Whoever does this must be an admin of both the app and the MRKD business portfolio.
+
+### 3b. Let the system user use the app
+1. **Accounts → Apps → MRKD Platform**.
 2. **Assign people / Add people** → choose **MRKDPlatformTools** → permission **Manage app** (full control of the app only, not of ad accounts) → **Assign**.
 
 ### 4. Generate the token
@@ -69,7 +75,7 @@ Paste the token into **developers.facebook.com/tools/debug/accesstoken** (Meta's
 
 | Message | Fix |
 |---|---|
-| "An app must be part of this business portfolio" when generating | Step 1 used a different portfolio, or step 3 wasn't done. |
+| "An app must be part of this business portfolio" when generating | The app isn't connected to MRKD's business (step 3), or the system user isn't assigned to it (step 3b). |
 | A scope isn't in the list | Add the Marketing API product (step 2). |
 | "You can't make this change at the moment… device you don't usually use" | Facebook security on new developer sign-ups. Use your usual device, have someone already registered as a developer do steps 1–3, or wait a few days. |
 | Leads come back empty | Add `pages_manage_ads`, and check the page has **Leads** access for the system user. |
