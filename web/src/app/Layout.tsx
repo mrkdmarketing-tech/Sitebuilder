@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabase'
 import { useData } from '../data/source'
 import { useAsync } from '../lib/useAsync'
 import { DESIGNS, useSession, type Design } from './session'
+import { APP_NAME } from './AuthGate'
 
 const NAV = [
   { to: '/insights', label: 'Insights', icon: BarChart3 },
@@ -27,7 +28,7 @@ export function Layout() {
       <div className={sidebar ? 'flex flex-1' : 'flex flex-1 flex-col'}>
         {sidebar ? <SideNav /> : <TopNav />}
         <main className="mx-auto w-full min-w-0 max-w-[1600px] flex-1 px-4 pb-24 pt-4 md:pb-8">
-          {sidebar && <div className="mb-2 text-lg font-black tracking-tight md:hidden">MRKD</div>}
+          {sidebar && <div className="mb-2 text-lg font-black tracking-tight md:hidden">MRKD <span className="text-sm font-semibold text-muted">{APP_NAME}</span></div>}
           <Outlet />
         </main>
       </div>
@@ -66,7 +67,10 @@ function TopNav() {
   return (
     <header className="sticky top-0 z-30 bg-header text-header-ink">
       <div className="mx-auto flex h-14 max-w-[1600px] items-center gap-6 px-4">
-        <span className="text-lg font-black tracking-tight">MRKD</span>
+        <span className="flex items-baseline gap-2">
+          <span className="text-lg font-black tracking-tight">MRKD</span>
+          <span className="text-sm font-semibold text-header-ink/70">{APP_NAME}</span>
+        </span>
         <nav className="hidden flex-1 gap-1 md:flex">
           {NAV.map(({ to, label }) => (
             <NavLink key={to} to={to} className={({ isActive }) => `rounded-md px-3 py-1.5 text-sm font-medium transition ${isActive ? 'bg-header-ink/15 text-header-ink' : 'text-header-ink/70 hover:text-header-ink'}`}>
@@ -84,6 +88,7 @@ function SideNav() {
   return (
     <aside className="sticky top-0 hidden h-screen w-56 shrink-0 flex-col bg-header px-3 py-5 text-header-ink md:flex">
       <span className="px-2 text-2xl font-black tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>MRKD</span>
+      <span className="px-2 text-sm font-semibold text-header-ink/70">{APP_NAME}</span>
       <nav className="mt-6 flex flex-col gap-1">
         {NAV.map(({ to, label, icon: Icon }) => (
           <NavLink key={to} to={to} className={({ isActive }) => `flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold transition ${isActive ? 'bg-primary text-on-primary' : 'text-header-ink/70 hover:bg-header-ink/10 hover:text-header-ink'}`}>

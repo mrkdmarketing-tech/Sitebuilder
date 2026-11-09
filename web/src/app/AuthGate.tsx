@@ -16,6 +16,8 @@ import { useData } from '../data/source'
 import { useAsync } from '../lib/useAsync'
 
 const STAFF_DOMAIN = 'mrkd.ca'
+/** The app's name, shown on the sign-in screen and in the top bar. */
+export const APP_NAME = 'The Lab'
 
 export function AuthGate({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null | undefined>(supabase ? undefined : null)
@@ -82,9 +84,9 @@ function SignIn() {
 
   return (
     <Centered>
-      <div className="text-2xl font-black tracking-tight">MRKD</div>
-      <h1 className="mt-4 text-xl font-bold">Sign in</h1>
-      <p className="mt-1 text-sm text-muted">Use your @{STAFF_DOMAIN} account.</p>
+      <div className="text-xs font-black tracking-[0.2em] text-muted">MRKD</div>
+      <h1 className="mt-1 text-3xl font-bold tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>{APP_NAME}</h1>
+      <p className="mt-2 text-sm text-muted">Sign in with your @{STAFF_DOMAIN} account.</p>
 
       <button
         onClick={google}

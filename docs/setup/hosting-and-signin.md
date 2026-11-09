@@ -22,10 +22,10 @@ Cloudflare builds the app from the GitHub repo on every push and serves it. It o
 
 Done once by someone with admin access to MRKD's Google Workspace.
 
-1. **console.cloud.google.com** (signed in with an @mrkd.ca admin account) → create a project **MRKD Platform**.
-2. **Google Auth Platform → Branding** (older menus: APIs & Services → OAuth consent screen): app name **MRKD Platform**, support email, then **Audience → Internal**. *Internal* means only @mrkd.ca Google accounts can sign in.
+1. **console.cloud.google.com** (signed in with an @mrkd.ca admin account) → create a project **The Lab**.
+2. **Google Auth Platform → Branding** (older menus: APIs & Services → OAuth consent screen): app name **The Lab** (what staff see on Google's sign-in screen), support email, then **Audience → Internal**. *Internal* means only @mrkd.ca Google accounts can sign in.
 3. **Clients → Create client** (older: Credentials → Create credentials → OAuth client ID):
-   - Application type: **Web application**, name **MRKD Platform**
+   - Application type: **Web application**, name **The Lab**
    - **Authorized redirect URI:** `https://mhayvuxqrlwyvalceerw.supabase.co/auth/v1/callback`
    - **Create**, then copy the **Client ID** and **Client secret**.
 4. **Supabase → Authentication → Sign In / Providers → Google**: turn on, paste the Client ID and Client secret, **Save**. The secret goes only there, never in chat.

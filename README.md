@@ -1,6 +1,6 @@
-# MRKD Platform
+# The Lab (MRKD Platform)
 
-MRKD Marketing's internal platform, replacing Retool. It lives inside MRKD's GoHighLevel sidebar, with a direct link for phones.
+**The Lab** is MRKD Marketing's internal platform, replacing Retool. It lives inside MRKD's GoHighLevel sidebar, with a direct link for phones.
 
 **Being built now:** Meta insights (every Retool KPI, on phone and desktop), per-account suggestions ("an ad has 1 lead at $120: turn it off?"), and ad approval with an AI check of copy, images and video subtitles. Clients View, Onboarding and the LeadLabz tools stay in Retool for now.
 
