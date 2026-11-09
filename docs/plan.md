@@ -1,6 +1,6 @@
 # Plan: replacing Retool with MRKD's own platform
 
-**Status:** draft for review by Jordan and Trent. Nothing is built yet.
+**Status:** agreed Nov 2026. Skeleton built and tested with sample data (see [CHANGELOG.md](../CHANGELOG.md)); waiting on account setup ([setup/accounts.md](setup/accounts.md)).
 **Goal:** one reliable internal platform where ads managers see their clients' performance live on phone or desktop, get suggestions ("ad X has 1 lead at $120, turn it off?") and act on them. It also does everything Retool does today: onboarding, ad approvals, templates, GHL/LeadLabz admin and billing views.
 
 What exists today is documented in [current-system.md](current-system.md).

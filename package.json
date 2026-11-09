@@ -1,0 +1,13 @@
+{
+  "name": "mrkd-platform",
+  "private": true,
+  "description": "MRKD Marketing internal platform (replacing Retool). See README.md.",
+  "workspaces": ["web"],
+  "scripts": {
+    "dev": "npm run dev -w web",
+    "build": "npm run build -w web",
+    "test": "npm run test -w web",
+    "typecheck": "npm run typecheck -w web",
+    "db:test": "bash supabase/tests/run-local.sh"
+  }
+}
