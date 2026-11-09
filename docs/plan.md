@@ -107,20 +107,20 @@ A rules engine runs after every sync and creates **suggestions**, grouped **per 
 
 Suggestions appear **in the app only** (on the account overview and the ads manager's home view). **No Slack.**
 
-Starting rules:
+Starting rules (agreed with Jordan, Nov 2026). Metrics use the **last 7 days** by default. An ad needs some spend or impressions before it's judged, so new ads aren't flagged too early.
 
-| Rule (starting set, thresholds editable per client) | Suggested action |
-|---|---|
-| Ad spent ≥ 3× target CPL with ≤ 1 lead | Pause ad |
-| Ad CPL ≥ 2× client target over last 3 days | Pause ad / review creative |
-| Active client, 0 leads in last 3 days *(existing alert)* | Check campaign / ad account |
-| Ad account disabled, unsettled or has a payment issue | Fix billing / contact client |
-| Campaign spending off pace vs monthly budget (over or under) | Adjust budget |
-| Frequency > 4 on an ad set | Refresh creative |
-| CTR dropped > 40% vs prior 7 days | Refresh creative |
-| Unread client messages *(existing alert)* | Reply in GHL |
-| Not billed in 14+ days *(existing alert)* | Check Stripe |
-| LeadLabz location active, no active subscription *(existing alert)* | Check subscription |
+| # | Rule | Default threshold | Suggested action |
+|---|---|---|---|
+| 1 | **Expensive leads**: ad cost per lead too high | CPL **> $50** (with ≥ 1 lead) | Turn off ad |
+| 2 | **Spending with no leads** | Spent **> $50** with 0 leads | Turn off ad |
+| 3 | **Budget hog**: one ad takes most of its ad set/campaign's spend while its leads are expensive. Meta often pours most of the weekly budget into 1 of 3 ads, leaving an ad with 1–2 leads at $80–100. | Ad has **≥ 60%** of its ad set's spend **and** CPL **> $80** (or ≤ 2 leads) | Turn off that ad so budget moves to the other ads. The card shows the other ads' spend and CPL so the manager can see what they'd be shifting to. |
+| 4 | **Low CTR** | CTR **< 0.8%** after ≥ 1,000 impressions | Refresh creative / new hook |
+| 5 | **Low link CTR** | Link CTR **< 0.5%** after ≥ 1,000 impressions | Refresh creative / check CTA and offer |
+| 6 | Ad account disabled, unsettled or has a payment issue | Any | Fix billing / contact client |
+| 7 | Active client with no leads at all in 3 days *(existing Retool alert)* | 0 leads, 3 days | Check campaigns |
+
+- All thresholds are editable in one settings screen, with optional overrides per client or per ad type (a kids program may tolerate a higher CPL than an adult beginners program). The CTR thresholds are starting points to tune after a few weeks of real data.
+- Each card links to the ad's creative and metrics so the manager can sanity-check before acting.
 
 - Each suggestion has **Do it / Not now / Dismiss**. "Do it" (e.g. turn off the ad) asks for one confirmation, then calls Meta through the System User token, re-checks the ad's current state first, and logs who did it.
 - Suggestions resolve themselves if the condition clears.
@@ -142,20 +142,20 @@ Starting rules:
 
 ### M6. Ad preview and approval *(replaces Ad Preview 🤖 + template apps)*
 - Pipeline: Draft → In review → Changes requested → Approved → Launched.
-- Employees submit **copy + images and/or videos** for approval. Built from **ad creative and lead form templates** plus client onboarding data.
+- Employees submit **copy + images and/or videos** for approval by **uploading them manually**. "Publish" in this app means *submitting for approval*; the app does not create ads in Meta. Built from **ad creative and lead form templates** plus client onboarding data.
 - Comments thread. Slack notification at each step to the right person (as today). **ClickUp task created through the ClickUp API**, not Zapier.
 
-**AI quality check (Claude).** Runs automatically when an ad is submitted, and again before it's published:
+**AI quality check (Claude).** Runs automatically as soon as copy or files are uploaded, so results are ready by the time they submit:
 
 | Asset | What's checked |
 |---|---|
 | **Copy** (primary text, headline, description, lead form text) | Spelling and grammar. Things that don't make logical sense (e.g. "free trial" in one line, "$49 trial" in another; a date or day that doesn't exist; a broken sentence). Mismatches with the client's details: city, gym name, phone, offer, pricing, program names, booking type. |
 | **Images** | Reads all text in the image and checks the same things. Image CTA matches the headline and primary copy. Logo present. Address and phone readable and correct. |
-| **Videos** | Reads on-screen text and **burned-in subtitles** from frames across the video and checks spelling and grammar. Optionally transcribes the audio and flags subtitles that don't match what's said. Frames are extracted in the browser at upload, so no video server is needed. Audio transcription needs a speech-to-text service (decided in Phase 2). |
+| **Videos** | Reads on-screen text and **burned-in subtitles** from frames across the video and checks spelling and grammar. Frames are extracted in the browser at upload, so no video server is needed. (No audio check; subtitles are checked as text only.) |
 
 Each finding shows where it is (which field, which image, which second of the video), what's wrong and a suggested fix.
 
-**"Hey, just double checking" — a soft warning, not a block.** When someone clicks submit/publish and there are open findings, a prompt lists them: *"Hey, just double checking — we spotted 3 possible issues: …"* with **Fix** (jumps to the spot) or **Publish anyway**. Publishing anyway is allowed and recorded (who, which warnings), so reviewers can see what was knowingly skipped.
+**"Hey, just double checking" — a soft warning, not a block.** When someone clicks **Submit for approval** and there are open findings, a prompt lists them: *"Hey, just double checking — we spotted 3 possible issues: …"* with **Fix** (jumps to the spot) or **Submit anyway**. Submitting anyway is allowed and recorded (who, which warnings), so reviewers can see what was knowingly skipped.
 
 - The existing 11-point review checklist (logo, address, spelling, CTA match, city, tracking, naming, lead forms…) stays as tick-boxes for the reviewer. The AI pre-fills what it can check.
 - Template editor *(replaces Meta Ad Components Templates)*.
