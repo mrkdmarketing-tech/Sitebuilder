@@ -28,6 +28,8 @@ export interface SyncRun {
 
 export interface DataSource {
   readonly kind: 'sample' | 'supabase'
+  /** The signed-in employee (null if signed in but not an employee). */
+  me(): Promise<Employee | null>
   employees(): Promise<Employee[]>
   /** Raw totals per entity for a level and date range (Active/New clients only). */
   report(level: Level, range: DateRange): Promise<ReportRow[]>

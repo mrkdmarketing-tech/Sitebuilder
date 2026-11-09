@@ -25,10 +25,10 @@ export function EntityCards({
         const m = metricsOf(r)
         const open = expanded === r.id
         return (
-          <li key={r.id} className={`px-3 py-3 ${selected.has(r.id) ? 'bg-blue-50/60' : ''}`}>
+          <li key={r.id} className={`px-3 py-3 ${selected.has(r.id) ? 'bg-selected' : ''}`}>
             <div className="flex gap-3">
               {level === 'ad' && (
-                <button onClick={() => onOpenCreative(r)} className="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-gray-100" aria-label="View creative">
+                <button onClick={() => onOpenCreative(r)} className="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-subtle" aria-label="View creative">
                   {r.thumbnailUrl && <img src={r.thumbnailUrl} alt="" className="h-full w-full object-cover" />}
                 </button>
               )}
@@ -67,7 +67,7 @@ export function EntityCards({
                   </div>
                 </div>
                 {open && (
-                  <div className="mt-2 rounded-lg bg-gray-50 p-2">
+                  <div className="mt-2 rounded-lg bg-subtle p-2">
                     <dl className="tabular grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
                       {columns.map((c) => (
                         <div key={c.key} className="flex justify-between gap-2">
@@ -92,7 +92,7 @@ export function EntityCards({
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-md bg-gray-50 py-1">
+    <div className="rounded-md bg-subtle py-1">
       <div className="text-[10px] font-medium uppercase text-muted">{label}</div>
       <div className="text-sm font-semibold">{value}</div>
     </div>

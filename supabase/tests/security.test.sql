@@ -15,6 +15,12 @@ insert into auth.users (id, email) values
 update public.employees set auth_user_id = '00000000-0000-0000-0000-00000000000a' where id = 'emp_alex';
 update public.employees set auth_user_id = '00000000-0000-0000-0000-00000000000c' where id = 'emp_owner';
 
+-- Two suggestions: one for Alex's client, one for Sam's (seed: client 1 → Alex, client 2 → Sam).
+insert into public.suggestions (key, rule, severity, account_id, client_id, manager_id, level, entity_id, message, question, action)
+values
+  ('expensive_cpl:a1', 'expensive_cpl', 'high', '1001', 1, 'emp_alex', 'ad', 'a1', 'Ad hog has 1 lead at $120 each.', 'Turn it off?', '{"type":"pause_ad","adId":"a1"}'),
+  ('low_ctr:a4',       'low_ctr',       'medium', '1002', 2, 'emp_sam', 'ad', 'a4', 'Ad low ctr has a low CTR.', 'Refresh the creative?', '{"type":"review_creative","adId":"a4"}');
+
 -- Not signed in: sees nothing.
 set role anon;
 do $$ begin
@@ -35,6 +41,15 @@ do $$ begin perform set_config('request.jwt.claim.sub', '00000000-0000-0000-0000
 do $$ begin
   assert (select count(*) from public.clients) = 3, 'staff sees clients';
   assert jsonb_array_length(public.report('account', '2026-11-01', '2026-11-07')) = 2, 'staff report';
+  -- Suggestions: Alex only sees and can act on his own (assigned to him in GHL).
+  assert (select count(*) from public.suggestions) = 1, 'staff sees only own suggestions';
+  assert (select manager_id from public.suggestions) = 'emp_alex', 'the one he sees is his';
+  update public.suggestions set status = 'dismissed' where key = 'low_ctr:a4';
+  assert (select count(*) from public.suggestions where status = 'dismissed') = 0, 'cannot touch someone else''s';
+  update public.suggestions set status = 'snoozed' where key = 'expensive_cpl:a1';
+  assert (select status from public.suggestions where key = 'expensive_cpl:a1') = 'snoozed', 'can act on own';
+  assert (public.me()->>'id') = 'emp_alex' and (public.me() ? 'auth_user_id') = false, 'me() returns the employee';
+
   insert into public.ad_reviews (name, client_id, created_by) values ('Test ad', 1, 'emp_alex');
   assert (select count(*) from public.ad_reviews) = 1, 'staff created a review';
 
@@ -58,9 +73,17 @@ end $$;
 -- Owner: can change thresholds.
 do $$ begin perform set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-00000000000c', false); end $$;
 do $$ begin
+  assert (select count(*) from public.suggestions) = 2, 'owner sees everyone''s suggestions';
+  assert (select status from public.suggestions where key = 'low_ctr:a4') = 'open', 'Alex''s attempt to dismiss Sam''s suggestion had no effect';
   update public.rule_settings set params = params || '{"expensiveCpl": 60}'::jsonb where scope = 'global';
   assert (select params->>'expensiveCpl' from public.rule_settings where scope = 'global') = '60',
     'owner can update thresholds';
 end $$;
 reset role;
+
+-- Reassigning a client in GHL moves its open suggestions to the new manager.
+update public.clients set ad_manager_id = 'emp_sam' where id = 1;
+do $$ begin
+  assert (select manager_id from public.suggestions where key = 'expensive_cpl:a1') = 'emp_sam', 'suggestion follows reassignment';
+end $$;
 select 'security tests ok' as result;

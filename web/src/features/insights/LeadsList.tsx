@@ -9,7 +9,7 @@ export function LeadsList({ leads }: { leads: MetaLead[] }) {
     <>
       <div className="hidden overflow-x-auto md:block">
         <table className="w-full text-sm">
-          <thead className="bg-gray-50 text-xs text-muted">
+          <thead className="bg-subtle text-xs text-muted">
             <tr className="border-b border-line text-left">
               {['Name', 'Email', 'Phone', 'Created', 'Form', 'Ad'].map((h) => (
                 <th key={h} className="px-3 py-2 font-semibold">{h}</th>
@@ -18,7 +18,7 @@ export function LeadsList({ leads }: { leads: MetaLead[] }) {
           </thead>
           <tbody>
             {leads.slice(0, 500).map((l) => (
-              <tr key={l.id} className="border-b border-line/70 hover:bg-gray-50">
+              <tr key={l.id} className="border-b border-line/70 hover:bg-hover">
                 <td className="px-3 py-2 font-medium">{l.name}</td>
                 <td className="px-3 py-2">{l.email && <a className="text-brand hover:underline" href={`mailto:${l.email}`}>{l.email}</a>}</td>
                 <td className="px-3 py-2 whitespace-nowrap">{l.phone}</td>

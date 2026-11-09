@@ -2,6 +2,13 @@
 
 What changed, newest first. Every change to the platform adds a line here.
 
+## 2026-11-09: Suggestions per employee + design options
+- **Suggestions are per ads manager:** staff see and act on only the accounts assigned to them in GHL; owners/admins see everyone's with a filter. Enforced in the database (migration 0900) and tested; reassigning a client in GHL moves its open suggestions to the new manager.
+- Insights opens on the ads manager's own accounts the first time.
+- App knows who's signed in (`me()`), with initials in the top bar. Sample mode has a **"Viewing as"** switch to try it as different people.
+- **Four design options** (A Classic, B Midnight, C MRKD Bold with sidebar, D Compact), switchable from the yellow bar or `?design=`; screenshots in [docs/design-options.md](docs/design-options.md). All colours are now design tokens.
+- Fonts bundled with the app instead of Google Fonts.
+
 ## 2026-11-09: Skeleton build (Phase 0 groundwork, before accounts exist)
 
 **App (`web/`)**

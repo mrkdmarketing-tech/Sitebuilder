@@ -1,10 +1,23 @@
 # Suggestions
 
-Per-ad-account suggestions shown **in the app only** (no Slack), e.g.:
+Per-ad-account suggestions shown **in the app only** (no Slack), **to the employee each account is assigned to in GHL**, e.g.:
 
 > **Renzo Gracie Boca:** an ad has 1 lead at $120. Turn it off? **[Turn off] [Not now] [Dismiss]**
 
 Code: [`shared/domain/rules.ts`](../shared/domain/rules.ts) (tests: `rules.test.ts`). Screen: `web/src/features/suggestions/`. Phase: **1b** (a preview with sample data is already in the app).
+
+## Who sees which suggestions
+
+Each client's ads manager is the **"Assigned to" user on the client's contact in MRKD's GHL**. The Retool bridge copies it into `clients.ad_manager_id` (an employee's id *is* their GHL user id), and every suggestion is stamped with that `manager_id`.
+
+| Person | Sees | Can act on |
+|---|---|---|
+| Ads manager (`staff`) | **Only suggestions for accounts assigned to them in GHL.** The page says "Alex, you look after 4 ad accounts (assigned in GHL)" | Only their own |
+| Owner / admin | Everyone's, with an ads-manager filter | Everyone's |
+
+This is **enforced in the database** (migration 0900, row-level security), not just hidden in the app; tested in `supabase/tests/security.test.sql`. If a client is **reassigned in GHL**, its open suggestions move to the new ads manager on the next bridge run (database trigger).
+
+The Insights screen also starts on the ads manager's own accounts the first time they open it; they can switch to other managers or "All" there.
 
 ## Rules (agreed with Jordan, Nov 2026)
 

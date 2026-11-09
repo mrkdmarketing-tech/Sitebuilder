@@ -11,6 +11,8 @@ import { useData } from '../../data/source'
 import { useAsync } from '../../lib/useAsync'
 import { downloadCsv, toCsv } from '../../lib/csv'
 import { Card, PageTitle } from '../../components/ui'
+import { useSession } from '../../app/session'
+import { SAMPLE_MODE } from '../../lib/config'
 import { KpiTiles } from './KpiTiles'
 import { DateRangeFilter, ManagerFilter } from './Filters'
 import { EntityTable } from './EntityTable'
@@ -65,6 +67,15 @@ export function InsightsPage() {
   const [creativeRow, setCreativeRow] = useState<ReportRow | null>(null)
 
   useEffect(() => savePrefs({ preset, managers }), [preset, managers])
+
+  // First visit: an ads manager starts on their own accounts (assigned in GHL);
+  // owners/admins start on everyone. After that, their own choice is remembered.
+  const { me, isAdmin } = useSession()
+  useEffect(() => {
+    // (In sample mode this also re-runs when you switch "Viewing as".)
+    if (!me || (prefs.managers !== undefined && !SAMPLE_MODE)) return
+    setManagers(!isAdmin && me.isAdManager ? [me.id] : [])
+  }, [me, isAdmin, prefs.managers])
 
   const { data: employees } = useAsync(() => ds.employees(), [ds])
   const adManagers = useMemo(() => (employees ?? []).filter((e) => e.isAdManager && e.active), [employees])

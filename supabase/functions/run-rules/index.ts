@@ -8,7 +8,9 @@
  *   2. Load last-7-days report rows (rpc 'report', level ad + account) and
  *      recent leads (rpc 'recent_leads_by_account').
  *   3. evaluateRules(...)
- *   4. Upsert open suggestions by `key`; bump last_seen_at on existing ones.
+ *   4. Upsert open suggestions by `key` with manager_id = the client's GHL
+ *      assignee (clients.ad_manager_id, already on each report row as managerId),
+ *      so each ads manager only sees their own (migration 0900). Bump last_seen_at.
  *   5. Mark open suggestions that no longer fire as 'resolved'.
  *   6. Re-open snoozed suggestions whose snoozed_until has passed.
  */

@@ -21,7 +21,7 @@ Why not just Google inside GHL too: Safari blocks logins inside embedded pages o
 
 | Role | Can |
 |---|---|
-| `staff` | See everything. Create/edit ad approvals, templates and comments. Snooze/dismiss suggestions and use "Turn off". Add new ad types. |
+| `staff` | See all insights, but **only their own suggestions** (accounts assigned to them in GHL). Create/edit ad approvals, templates and comments. Snooze/dismiss suggestions and use "Turn off". Add new ad types. |
 | `admin` | Everything staff can, plus change thresholds, settings, the review checklist, staff list and lookup lists. Delete approvals/templates. |
 | `owner` | Same as admin (kept separate so owners can't be demoted by admins later). |
 
@@ -32,7 +32,7 @@ Roles are set on the `employees` row by an admin. New employees default to `staf
 Row-level security (RLS) policies in [`…0700_security.sql`](../supabase/migrations/20261109000700_security.sql):
 
 - **Every** table has RLS on. A database test fails if one doesn't.
-- **Read:** any active employee.
+- **Read:** any active employee, except **suggestions**: staff see only rows where `manager_id` is them; admins/owners see all (migration 0900).
 - **Write:** only where listed above. Synced tables (Meta, Retool bridge, sync logs) can't be written from the browser at all, only by background jobs using the service role.
 - **Audit log:** staff can only add entries as themselves; nobody can edit or delete entries.
 - **Files** (ad images/videos): private bucket, staff only, short-lived signed links.

@@ -28,10 +28,16 @@ const toCreative = (c: CreativeRow): Creative => ({
 export function createSupabaseSource(db: SupabaseClient): DataSource {
   return {
     kind: 'supabase',
+    async me() {
+      const row = check(await db.rpc('me')) as { id: string; first_name: string; last_name: string; email: string | null; is_ad_manager: boolean; active: boolean; role: Employee['role'] } | null
+      return row
+        ? { id: row.id, firstName: row.first_name, lastName: row.last_name, email: row.email, isAdManager: row.is_ad_manager, active: row.active, role: row.role }
+        : null
+    },
     async employees() {
-      const rows = check(await db.from('employees').select('id, first_name, last_name, email, is_ad_manager, active').eq('active', true))
-      return (rows as { id: string; first_name: string; last_name: string; email: string | null; is_ad_manager: boolean; active: boolean }[]).map(
-        (e): Employee => ({ id: e.id, firstName: e.first_name, lastName: e.last_name, email: e.email, isAdManager: e.is_ad_manager, active: e.active }),
+      const rows = check(await db.from('employees').select('id, first_name, last_name, email, is_ad_manager, active, role').eq('active', true))
+      return (rows as { id: string; first_name: string; last_name: string; email: string | null; is_ad_manager: boolean; active: boolean; role: Employee['role'] }[]).map(
+        (e): Employee => ({ id: e.id, firstName: e.first_name, lastName: e.last_name, email: e.email, isAdManager: e.is_ad_manager, active: e.active, role: e.role }),
       )
     },
     async report(level, range) {

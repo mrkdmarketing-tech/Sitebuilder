@@ -22,12 +22,12 @@ export function KpiTiles({ current, previous, loading }: { current?: KpiSummary;
         const change = percentChange(value, prev)
         const good = change === null ? null : (change >= 0) === HIGHER_IS_BETTER[t.key]
         return (
-          <div key={t.key} className="rounded-xl border border-line bg-white px-3 py-2.5">
+          <div key={t.key} className="rounded-xl border border-line bg-surface px-3 py-2.5">
             <div className="flex items-center gap-1 text-xs font-semibold text-muted">
               <span aria-hidden>{t.emoji}</span>
               {t.label}
             </div>
-            <div className={`tabular mt-1 text-xl font-bold ${loading ? 'animate-pulse text-gray-300' : ''}`}>{t.fmt(value)}</div>
+            <div className={`kpi-value tabular mt-1 text-xl font-bold ${loading ? 'animate-pulse text-gray-300' : ''}`}>{t.fmt(value)}</div>
             <div className="tabular mt-0.5 h-4 text-[11px]">
               {change !== null && Math.abs(change) >= 0.5 && (
                 <span className={good ? 'text-good' : 'text-bad'}>

@@ -16,11 +16,11 @@ export function ApprovalsPage() {
       <div className="grid gap-3 md:grid-cols-2">
         {STEPS.map(({ icon: Icon, title, text }, i) => (
           <Card key={title} className="flex gap-3 p-4">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gray-100"><Icon size={18} /></div>
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-subtle"><Icon size={18} /></div>
             <div>
               <div className="text-xs font-semibold text-muted">Step {i + 1}</div>
               <div className="font-semibold">{title}</div>
-              <p className="mt-0.5 text-sm text-gray-700">{text}</p>
+              <p className="mt-0.5 text-sm text-soft">{text}</p>
             </div>
           </Card>
         ))}

@@ -26,7 +26,7 @@ export function DateRangeFilter({
     <div className="relative" ref={ref}>
       <button
         onClick={() => setOpen((o) => !o)}
-        className="flex h-9 items-center gap-2 rounded-lg border border-line bg-white px-3 text-sm font-medium"
+        className="flex h-9 items-center gap-2 rounded-lg border border-line bg-surface px-3 text-sm font-medium"
       >
         <Calendar size={16} className="text-muted" />
         <span>{label}</span>
@@ -34,7 +34,7 @@ export function DateRangeFilter({
         <ChevronDown size={14} className="text-muted" />
       </button>
       {open && (
-        <div className="absolute left-0 z-40 mt-1 w-72 rounded-xl border border-line bg-white p-2 shadow-lg sm:left-auto sm:right-0">
+        <div className="absolute left-0 z-40 mt-1 w-72 rounded-xl border border-line bg-surface p-2 shadow-lg sm:left-auto sm:right-0">
           <div className="grid grid-cols-2 gap-1">
             {PRESETS.map((p) => (
               <button
@@ -43,7 +43,7 @@ export function DateRangeFilter({
                   onChange(presetRange(p.key), p.key)
                   setOpen(false)
                 }}
-                className={`rounded-md px-2 py-1.5 text-left text-sm ${preset === p.key ? 'bg-brand text-white' : 'hover:bg-gray-100'}`}
+                className={`rounded-md px-2 py-1.5 text-left text-sm ${preset === p.key ? 'bg-brand text-on-primary' : 'hover:bg-subtle'}`}
               >
                 {p.label}
               </button>
@@ -82,19 +82,19 @@ export function ManagerFilter({
     <div className="relative" ref={ref}>
       <button
         onClick={() => setOpen((o) => !o)}
-        className="flex h-9 items-center gap-2 rounded-lg border border-line bg-white px-3 text-sm font-medium"
+        className="flex h-9 items-center gap-2 rounded-lg border border-line bg-surface px-3 text-sm font-medium"
       >
         <Users size={16} className="text-muted" />
         {label}
         <ChevronDown size={14} className="text-muted" />
       </button>
       {open && (
-        <div className="absolute left-0 z-40 mt-1 w-60 rounded-xl border border-line bg-white p-1 shadow-lg">
-          <button onClick={() => onChange([])} className="w-full rounded-md px-2 py-1.5 text-left text-sm hover:bg-gray-100">
+        <div className="absolute left-0 z-40 mt-1 w-60 rounded-xl border border-line bg-surface p-1 shadow-lg">
+          <button onClick={() => onChange([])} className="w-full rounded-md px-2 py-1.5 text-left text-sm hover:bg-subtle">
             All ads managers
           </button>
           {managers.map((m) => (
-            <label key={m.id} className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-gray-100">
+            <label key={m.id} className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-subtle">
               <input type="checkbox" checked={selected.includes(m.id)} onChange={() => toggle(m.id)} />
               {m.firstName} {m.lastName}
             </label>

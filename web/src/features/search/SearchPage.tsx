@@ -17,11 +17,11 @@ export function SearchPage() {
       <PageTitle title="Search" subtitle="Find any lead form or ad copy across every client" />
       <div className="mb-3 flex flex-wrap gap-2">
         {(['forms', 'copy'] as const).map((m) => (
-          <button key={m} onClick={() => setMode(m)} className={`rounded-lg px-3 py-1.5 text-sm font-medium ${mode === m ? 'bg-ink text-white' : 'border border-line bg-white'}`}>
+          <button key={m} onClick={() => setMode(m)} className={`rounded-lg px-3 py-1.5 text-sm font-medium ${mode === m ? 'bg-primary text-on-primary' : 'border border-line bg-surface'}`}>
             {m === 'forms' ? 'Lead forms' : 'Ad copy'}
           </button>
         ))}
-        <label className="flex h-9 flex-1 items-center gap-2 rounded-lg border border-line bg-white px-3 sm:max-w-md">
+        <label className="flex h-9 flex-1 items-center gap-2 rounded-lg border border-line bg-surface px-3 sm:max-w-md">
           <Search size={16} className="text-muted" />
           <input autoFocus value={query} onChange={(e) => setQuery(e.target.value)} placeholder={mode === 'forms' ? 'Form name, page or question…' : 'Headline, body or ad name…'} className="w-full bg-transparent text-sm outline-none" />
         </label>
@@ -48,7 +48,7 @@ export function SearchPage() {
                   {c.imageUrl && <img src={c.imageUrl} alt="" className="h-14 w-14 shrink-0 rounded-md object-cover" />}
                   <div className="min-w-0">
                     <div className="font-semibold">{c.title ?? c.name}</div>
-                    <div className="line-clamp-2 text-xs text-gray-700">{c.body}</div>
+                    <div className="line-clamp-2 text-xs text-soft">{c.body}</div>
                     <div className="text-[11px] text-muted">{c.name}{c.callToAction ? ` · ${c.callToAction.replace(/_/g, ' ')}` : ''}</div>
                   </div>
                 </li>

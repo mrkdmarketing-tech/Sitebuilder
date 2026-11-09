@@ -4,7 +4,7 @@ Route `/insights`. Code: `web/src/features/insights/`. Replaces Retool's **Meta 
 
 ## Layout
 
-**Top bar:** ads manager filter (multi-select, empty = everyone) and date range (presets: Today, Yesterday, This week, Last week, Last 7/14/30 days, This month, Last month, or a custom from/to). "Data updated X min ago" under the title. The chosen preset and managers are remembered on that browser.
+**Top bar:** ads manager filter (multi-select, empty = everyone; an ads manager's first visit starts on their own GHL-assigned accounts) and date range (presets: Today, Yesterday, This week, Last week, Last 7/14/30 days, This month, Last month, or a custom from/to). "Data updated X min ago" under the title. The chosen preset and managers are remembered on that browser.
 
 **KPI tiles (8):** Active acc. · Leads · CPL · CPM · CR · CPR · CPLC · Value generated. Each shows % change vs the previous period; green = better, red = worse (for costs, down is better).
 

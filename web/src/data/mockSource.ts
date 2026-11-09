@@ -14,6 +14,9 @@ import type { DateRange, DeliveryStatus, Level, ReportRow, Totals } from '@share
 import { generateMockData, type MockAccount, type MockClient, type MockDataset, type MockDay } from './mock/generate'
 import type { DataSource, SyncRun } from './source'
 
+/** localStorage key for the sample-mode "Viewing as" switch. */
+export const VIEW_AS_KEY = 'mrkd.viewAs'
+
 const ACTIVE_ACCOUNT = new Set(['ACTIVE', 'IN_GRACE_PERIOD', 'UNSETTLED'])
 
 function deliveryStatus(accountStatus: string, ...statuses: string[]): DeliveryStatus {
@@ -153,6 +156,16 @@ export function createMockSource(data: MockDataset = generateMockData()): DataSo
 
   return {
     kind: 'sample',
+    async me() {
+      // Sample mode has no login: "Viewing as" in the banner picks who you are.
+      let id = 'emp_alex'
+      try {
+        id = localStorage.getItem(VIEW_AS_KEY) ?? id
+      } catch {
+        /* ignore */
+      }
+      return data.employees.find((e) => e.id === id) ?? data.employees[0]
+    },
     async employees() {
       return data.employees
     },

@@ -88,6 +88,8 @@ export interface Employee {
   email: string | null
   isAdManager: boolean
   active: boolean
+  /** staff = sees own suggestions; admin/owner = sees everyone's (docs/auth.md). */
+  role?: 'staff' | 'admin' | 'owner'
 }
 
 export interface Creative {

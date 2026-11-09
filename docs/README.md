@@ -12,6 +12,7 @@ Everything about the MRKD platform is documented here. **Start with the row that
 | Set up Supabase, Cloudflare and Meta (account owners) | [setup/accounts.md](setup/accounts.md) |
 | Run the app on my computer / run the tests | [development.md](development.md) |
 | Know why something was decided | [decisions.md](decisions.md) |
+| **Pick a design (4 options with screenshots)** | [design-options.md](design-options.md) |
 | See what changed and when | [../CHANGELOG.md](../CHANGELOG.md) |
 
 ## How it works
@@ -51,7 +52,7 @@ shared/                 Code used by BOTH the app and the background jobs
   meta/mapping.ts         Meta API → database row mapping
   **/*.test.ts            Unit tests
 web/                    The app (React + TypeScript + Tailwind, built with Vite)
-  src/app/                Routes and the app shell (top bar / phone tab bar)
+  src/app/                Routes, app shell (top bar / sidebar / phone tab bar), session (who's signed in, design)
   src/features/insights/  Meta insights screen
   src/features/suggestions/ Suggestions screen
   src/features/approvals/ Ad approval (Phase 2 placeholder)

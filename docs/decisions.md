@@ -4,6 +4,9 @@ Why things are the way they are. Newest first. Add an entry whenever a real choi
 
 | Date | Decision | Why | Alternatives considered |
 |---|---|---|---|
+| 2026-11-09 | **Suggestions per employee**: staff see only accounts assigned to them in GHL; owners/admins see all; enforced by RLS | Requested by Jordan | Everyone sees everything with a filter |
+| 2026-11-09 | **Four design options** (Classic, Midnight, MRKD Bold, Compact) switchable via design tokens; pick one later | Requested by Jordan | Committing to one look now |
+| 2026-11-09 | **Fonts bundled** with the app (Inter, Space Grotesk) | No third-party requests; works in GHL iframe and offline | Google Fonts |
 | 2026-11-09 | **Shared rules/formula code** in `shared/`, used by app and jobs | One formula per KPI; suggestions and dashboard can't disagree | Duplicating logic in SQL and TypeScript |
 | 2026-11-09 | Database returns **raw totals**; KPIs computed in TypeScript | Single source of truth for formulas (see above), easy to test | Computing CPL etc. in SQL |
 | 2026-11-09 | **Sample data mode** when Supabase isn't configured | Lets Jordan/Trent review screens before accounts exist; makes local dev easy | Waiting for real data |

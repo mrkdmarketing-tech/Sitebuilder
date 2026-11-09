@@ -107,9 +107,10 @@ export interface MockDataset {
 }
 
 const EMPLOYEES: Employee[] = [
-  { id: 'emp_alex', firstName: 'Alex', lastName: 'Rivera', email: 'alex@example.com', isAdManager: true, active: true },
-  { id: 'emp_sam', firstName: 'Sam', lastName: 'Patel', email: 'sam@example.com', isAdManager: true, active: true },
-  { id: 'emp_jo', firstName: 'Jo', lastName: 'Morgan', email: 'jo@example.com', isAdManager: true, active: true },
+  { id: 'emp_alex', firstName: 'Alex', lastName: 'Rivera', email: 'alex@example.com', isAdManager: true, active: true, role: 'staff' },
+  { id: 'emp_sam', firstName: 'Sam', lastName: 'Patel', email: 'sam@example.com', isAdManager: true, active: true, role: 'staff' },
+  { id: 'emp_jo', firstName: 'Jo', lastName: 'Morgan', email: 'jo@example.com', isAdManager: true, active: true, role: 'staff' },
+  { id: 'emp_olive', firstName: 'Olive', lastName: 'Owner', email: 'owner@example.com', isAdManager: false, active: true, role: 'owner' },
 ]
 
 // [name, city, ad type, status, manager]

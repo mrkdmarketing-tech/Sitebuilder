@@ -16,6 +16,7 @@ MRKD Marketing's internal platform, replacing Retool. It lives inside MRKD's GoH
 | [Feature checklist](docs/feature-checklist.md) | Every Retool feature, line by line, and what happens to it |
 | [Current Retool system](docs/current-system.md) | How Retool is built today |
 | [Account setup](docs/setup/accounts.md) | Supabase, Cloudflare, Retool DB, Meta, GHL: step by step |
+| [**Design options**](docs/design-options.md) | 4 looks to pick from, with screenshots |
 | [Architecture](docs/architecture.md) · [Data model](docs/data-model.md) · [KPI formulas](docs/metrics.md) | How it works |
 | [Suggestions](docs/suggestions.md) · [Ad approval](docs/ad-approval.md) | Feature designs |
 | [Background jobs](docs/background-jobs.md) · [Retool bridge](docs/retool-bridge.md) · [Auth](docs/auth.md) | Behind the scenes |

@@ -5,7 +5,7 @@ import type { DeliveryStatus } from '@shared/domain/types.ts'
 
 const STATUS_STYLE: Record<DeliveryStatus, string> = {
   ACTIVE: 'bg-emerald-100 text-emerald-800',
-  PAUSED: 'bg-gray-100 text-gray-700',
+  PAUSED: 'bg-subtle text-soft',
   REMOVED: 'bg-indigo-100 text-indigo-800',
   DISABLED: 'bg-red-100 text-red-800',
   OTHER: 'bg-amber-100 text-amber-800',
@@ -24,7 +24,7 @@ const CLIENT_STYLE: Record<string, string> = {
   Active: 'bg-emerald-600 text-white',
   New: 'bg-sky-600 text-white',
   Paused: 'bg-gray-400 text-white',
-  Inactive: 'bg-gray-300 text-gray-700',
+  Inactive: 'bg-gray-300 text-soft',
 }
 
 export function ClientBadge({ status }: { status: string | null }) {
@@ -38,7 +38,7 @@ export function ManagerChip({ name }: { name: string | null }) {
 }
 
 export function Card({ children, className = '' }: { children: ReactNode; className?: string }) {
-  return <div className={`rounded-xl border border-line bg-white ${className}`}>{children}</div>
+  return <div className={`rounded-xl border border-line bg-surface ${className}`}>{children}</div>
 }
 
 export function Modal({ open, onClose, title, children }: { open: boolean; onClose: () => void; title: string; children: ReactNode }) {
@@ -54,12 +54,12 @@ export function Modal({ open, onClose, title, children }: { open: boolean; onClo
       <div
         role="dialog"
         aria-label={title}
-        className="max-h-[90vh] w-full overflow-auto rounded-t-2xl bg-white p-5 shadow-xl sm:max-w-lg sm:rounded-2xl"
+        className="max-h-[90vh] w-full overflow-auto rounded-t-2xl bg-surface p-5 shadow-xl sm:max-w-lg sm:rounded-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-3 flex items-start justify-between gap-4">
           <h2 className="text-base font-semibold">{title}</h2>
-          <button onClick={onClose} className="rounded p-1 text-muted hover:bg-gray-100" aria-label="Close">
+          <button onClick={onClose} className="rounded p-1 text-muted hover:bg-subtle" aria-label="Close">
             <X size={18} />
           </button>
         </div>

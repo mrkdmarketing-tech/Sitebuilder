@@ -53,7 +53,7 @@ export function EntityTable({
   return (
     <div className="overflow-x-auto">
       <table className="tabular w-full text-sm">
-        <thead className="sticky top-0 bg-gray-50 text-xs text-muted">
+        <thead className="sticky top-0 bg-subtle text-xs text-muted">
           <tr className="border-b border-line">
             {selectable && (
               <th className="w-8 px-3 py-2">
@@ -72,7 +72,7 @@ export function EntityTable({
           {sorted.map((r) => {
             const m = metricsOf(r)
             return (
-              <tr key={r.id} className={`border-b border-line/70 hover:bg-gray-50 ${selected.has(r.id) ? 'bg-blue-50/60' : ''}`}>
+              <tr key={r.id} className={`border-b border-line/70 hover:bg-hover ${selected.has(r.id) ? 'bg-selected' : ''}`}>
                 {selectable && (
                   <td className="px-3 py-2">
                     <input type="checkbox" aria-label={`Select ${r.name}`} checked={selected.has(r.id)} onChange={() => onToggle!(r.id)} />
@@ -80,7 +80,7 @@ export function EntityTable({
                 )}
                 {level === 'ad' && (
                   <td className="px-3 py-1.5">
-                    <button onClick={() => onOpenCreative(r)} className="block h-10 w-10 overflow-hidden rounded-md bg-gray-100" aria-label="View creative">
+                    <button onClick={() => onOpenCreative(r)} className="block h-10 w-10 overflow-hidden rounded-md bg-subtle" aria-label="View creative">
                       {r.thumbnailUrl && <img src={r.thumbnailUrl} alt="" className="h-full w-full object-cover" />}
                     </button>
                   </td>

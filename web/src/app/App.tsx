@@ -5,6 +5,7 @@ import { createMockSource } from '../data/mockSource'
 import { createSupabaseSource } from '../data/supabaseSource'
 import { supabase } from '../lib/supabase'
 import { Layout } from './Layout'
+import { SessionProvider } from './session'
 import { InsightsPage } from '../features/insights/InsightsPage'
 import { SuggestionsPage } from '../features/suggestions/SuggestionsPage'
 import { SearchPage } from '../features/search/SearchPage'
@@ -24,6 +25,7 @@ export function App() {
   const source: DataSource = useMemo(() => (supabase ? createSupabaseSource(supabase) : createMockSource()), [])
   return (
     <DataContext.Provider value={source}>
+      <SessionProvider>
       <Routes>
         <Route element={<Layout />}>
           <Route index element={<Navigate to="/insights" replace />} />
@@ -35,6 +37,7 @@ export function App() {
           <Route path="*" element={<Navigate to="/insights" replace />} />
         </Route>
       </Routes>
+      </SessionProvider>
     </DataContext.Provider>
   )
 }

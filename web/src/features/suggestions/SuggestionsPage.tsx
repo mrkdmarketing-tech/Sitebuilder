@@ -16,11 +16,16 @@ import { Card, Empty, ManagerChip, Modal, PageTitle } from '../../components/ui'
 import { ManagerFilter } from '../insights/Filters'
 import { count, money } from '../../lib/format'
 import { SAMPLE_MODE } from '../../lib/config'
+import { useSession } from '../../app/session'
 
 type LocalState = 'done' | 'snoozed' | 'dismissed'
 
 export function SuggestionsPage() {
   const ds = useData()
+  const { me, isAdmin } = useSession()
+  // Ads managers only ever see suggestions for the accounts assigned to them in
+  // GHL ("Assigned to" on the client contact → clients.ad_manager_id). Owners and
+  // admins see everyone's and can filter. The database enforces the same rule.
   const [managers, setManagers] = useState<string[]>([])
   const [handled, setHandled] = useState<Record<string, LocalState>>({})
   const [confirm, setConfirm] = useState<Suggestion | null>(null)
@@ -31,14 +36,17 @@ export function SuggestionsPage() {
     const [ads, accounts, recent, settings] = await Promise.all([
       ds.report('ad', range), ds.report('account', range), ds.recentLeadsByAccount(3), ds.ruleSettings(),
     ])
-    return { suggestions: evaluateRules({ ads, accounts, recentLeadsByAccount: recent, settings }), settings }
+    return { suggestions: evaluateRules({ ads, accounts, recentLeadsByAccount: recent, settings }), settings, accounts }
   }, [ds])
 
   const managerName = useMemo(() => new Map((employees ?? []).map((e) => [e.id, `${e.firstName} ${e.lastName}`])), [employees])
   const groups = useMemo(() => {
-    const live = (data?.suggestions ?? []).filter((s) => !handled[s.key] && (!managers.length || (s.managerId && managers.includes(s.managerId))))
+    const mine = (managerId: string | null) =>
+      isAdmin ? !managers.length || (!!managerId && managers.includes(managerId)) : !!me && managerId === me.id
+    const live = (data?.suggestions ?? []).filter((s) => !handled[s.key] && mine(s.managerId))
     return groupByAccount(live)
-  }, [data, handled, managers])
+  }, [data, handled, managers, isAdmin, me])
+  const myAccountCount = useMemo(() => (me ? (data?.accounts ?? []).filter((a) => a.managerId === me.id).length : 0), [data, me])
   const settings: RuleSettings = { ...DEFAULT_RULE_SETTINGS, ...data?.settings }
   const total = groups.reduce((n, g) => n + g.suggestions.length, 0)
 
@@ -48,11 +56,23 @@ export function SuggestionsPage() {
     <div>
       <PageTitle
         title="Suggestions"
-        subtitle={loading ? 'Checking every ad account…' : `${total} suggestion${total === 1 ? '' : 's'} across ${groups.length} ad account${groups.length === 1 ? '' : 's'} · last 7 days`}
-        right={<ManagerFilter managers={(employees ?? []).filter((e) => e.isAdManager)} selected={managers} onChange={setManagers} />}
+        subtitle={
+          loading
+            ? 'Checking ad accounts…'
+            : isAdmin
+              ? `${total} suggestion${total === 1 ? '' : 's'} across ${groups.length} ad account${groups.length === 1 ? '' : 's'} · last 7 days`
+              : `${me?.firstName ?? 'You'}, you look after ${myAccountCount} ad account${myAccountCount === 1 ? '' : 's'} (assigned in GHL) · ${total} suggestion${total === 1 ? '' : 's'} · last 7 days`
+        }
+        right={
+          isAdmin ? (
+            <ManagerFilter managers={(employees ?? []).filter((e) => e.isAdManager)} selected={managers} onChange={setManagers} />
+          ) : (
+            <span className="rounded-lg border border-line bg-surface px-3 py-1.5 text-xs font-medium text-muted">Only your accounts</span>
+          )
+        }
       />
 
-      <div className="mb-4 flex items-start gap-2 rounded-xl border border-line bg-white p-3 text-xs text-muted">
+      <div className="mb-4 flex items-start gap-2 rounded-xl border border-line bg-surface p-3 text-xs text-muted">
         <Info size={16} className="mt-px shrink-0" />
         <span>
           Flags ads with cost per lead over <b>{money(settings.expensiveCpl)}</b>, over <b>{money(settings.noLeadSpend)}</b> spent with no leads,
@@ -62,7 +82,9 @@ export function SuggestionsPage() {
         </span>
       </div>
 
-      {!loading && groups.length === 0 && <Card><Empty>Nothing needs attention right now. 🎉</Empty></Card>}
+      {!loading && groups.length === 0 && (
+        <Card><Empty>{isAdmin ? 'Nothing needs attention right now. 🎉' : 'Nothing needs attention on your accounts right now. 🎉'}</Empty></Card>
+      )}
 
       <div className="grid gap-3 lg:grid-cols-2">
         {groups.map((g) => (
@@ -79,7 +101,7 @@ export function SuggestionsPage() {
             </div>
             <ul className="mt-3 space-y-2">
               {g.suggestions.map((s) => (
-                <li key={s.key} className={`rounded-lg border p-3 ${s.severity === 'high' ? 'border-red-200 bg-red-50/50' : 'border-amber-200 bg-amber-50/50'}`}>
+                <li key={s.key} className={`rounded-lg border p-3 ${s.severity === 'high' ? 'border-alert-high-line bg-alert-high' : 'border-alert-med-line bg-alert-med'}`}>
                   <div className="flex gap-2">
                     <AlertTriangle size={16} className={`mt-0.5 shrink-0 ${s.severity === 'high' ? 'text-bad' : 'text-warn'}`} />
                     <div className="min-w-0 flex-1">
@@ -92,17 +114,17 @@ export function SuggestionsPage() {
                       )}
                       <div className="mt-2 flex flex-wrap gap-2">
                         {s.action.type === 'pause_ad' ? (
-                          <button onClick={() => setConfirm(s)} className="rounded-md bg-ink px-3 py-1 text-xs font-semibold text-white">Turn off</button>
+                          <button onClick={() => setConfirm(s)} className="rounded-md bg-primary px-3 py-1 text-xs font-semibold text-on-primary">Turn off</button>
                         ) : (
                           <a
                             href={`https://adsmanager.facebook.com/adsmanager/manage/${s.level === 'ad' ? `ads?act=${s.accountId}&selected_ad_ids=${s.entityId}` : `campaigns?act=${s.accountId}`}`}
-                            target="_blank" rel="noreferrer" className="rounded-md bg-ink px-3 py-1 text-xs font-semibold text-white"
+                            target="_blank" rel="noreferrer" className="rounded-md bg-primary px-3 py-1 text-xs font-semibold text-on-primary"
                           >
                             Open in Ads Manager
                           </a>
                         )}
-                        <button onClick={() => act(s, 'snoozed')} className="rounded-md border border-line bg-white px-3 py-1 text-xs font-medium">Not now</button>
-                        <button onClick={() => act(s, 'dismissed')} className="rounded-md px-3 py-1 text-xs font-medium text-muted hover:bg-gray-100">Dismiss</button>
+                        <button onClick={() => act(s, 'snoozed')} className="rounded-md border border-line bg-surface px-3 py-1 text-xs font-medium">Not now</button>
+                        <button onClick={() => act(s, 'dismissed')} className="rounded-md px-3 py-1 text-xs font-medium text-muted hover:bg-subtle">Dismiss</button>
                       </div>
                     </div>
                   </div>
