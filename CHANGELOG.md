@@ -2,6 +2,9 @@
 
 What changed, newest first. Every change to the platform adds a line here.
 
+## 2026-11-09: Meta setup spec
+- Full Meta app + system user token specification (app type, product, mode, access level, token type and expiry, exact scopes now vs later, asset permissions, steps, troubleshooting) in [docs/setup/meta.md](docs/setup/meta.md). System user `MRKDPlatformTools` created with View performance on ad accounts and Leads on Pages; app creation blocked by Facebook's new-device check.
+
 ## 2026-11-09: Retool bridge live
 - Real data now copies from Retool every 15 minutes (read-only): 6 staff, 221 clients with their GHL ads manager, 188 ad accounts (132 linked to clients), 63,242 lead-sheet rows, onboarding, campaign specifics, website requests. First run: 5 seconds, no errors.
 - Bridge runs inside the database over `dblink` (migration 1100), triggered by `pg_cron` (migration 1200) through the deployed `retool-bridge` function; cron secret generated and stored in Supabase secrets and Vault.

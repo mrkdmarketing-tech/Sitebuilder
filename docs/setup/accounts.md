@@ -11,7 +11,7 @@ Step-by-step for the accounts the platform needs. Do them in order. **Never past
 | Supabase access token for Claude | **Done.** Stored encrypted in the `mrkd-sitebuilder` Claude cloud environment (never in chat or the repo). Expires after 7 days; make a new one when asked. |
 | Retool DB connection (`RETOOL_DB_URL`) | **Done.** Secret added 9 Nov 2026; bridge live every 15 min ([retool-bridge.md](../retool-bridge.md)). |
 | Cloudflare | To do |
-| Meta System User | To do (Phase 1a) |
+| Meta System User | System user `MRKDPlatformTools` created and assigned ad accounts (View performance) and Pages (Leads). **App + token still to do**, full spec in [meta.md](meta.md). Blocked 9 Nov by Facebook's new-device check on developer sign-up. |
 | GHL menu link + sign-on | To do (Phase 0) |
 
 **How Claude installs database changes:** with the access token above, through Supabase's management API. Each migration file in `supabase/migrations/` runs as one all-or-nothing step and is recorded in `supabase_migrations.schema_migrations`, the same table the Supabase CLI uses, so either method can be used later.
@@ -45,7 +45,7 @@ Step-by-step for the accounts the platform needs. Do them in order. **Never past
 
 ## 4. Meta System User (permanent access to ad accounts): about 15 min
 
-Done in Phase 1a; Claude will walk through it live. Overview:
+**Full specification (app type, scopes, token type, expiry, access level): [meta.md](meta.md).** Overview:
 1. **business.facebook.com** → MRKD's Business Manager → **Business settings → Users → System users → Add** (name: `mrkd-platform`, role: Admin).
 2. **Add assets** → Ad accounts → select every client ad account → permissions: **Manage ad accounts** (needed for "Turn off").
 3. **Generate new token** → choose the app → permissions `ads_read`, `ads_management`, `business_management` → copy the token.
