@@ -212,17 +212,34 @@ The exact SQL lives in `supabase/migrations/` once Phase 0 starts.
 
 ## 5. Build phases
 
-Retool keeps running until each phase is verified against it. Cutover is per module, not all at once.
+**Current focus (agreed Nov 2026): replace Meta Ads Insights and the ad approval process (Ad Preview) first.** Clients View, Onboarding and the LeadLabz admin apps **stay in Retool for now** and keep working as they do today. The rest of this plan still describes the full platform so these first pieces fit it, but only Phases 0–2 are scheduled.
 
-| Phase | What ships | Done when |
-|---|---|---|
-| **0. Foundations** | Repo scaffold, Supabase project, schema, staff login (GHL sign-on plus Google fallback), Cloudflare Pages deploy, **GHL sidebar item**, docs | Staff open an empty app from the GHL sidebar, already signed in, and from the direct link on a phone |
-| **1. Live dashboard** | Meta syncs (independent jobs, every 30 min), clients + ad manager sync from GHL, M1 dashboard on phone and desktop inside GHL, Realtime, sync health page | Numbers match Retool and Meta Ads Manager for a week. **Team uses it daily instead of Clients View / Meta Ads Insights.** |
-| **2. Suggestions** | Rules engine, client targets, suggestions inbox, Pause / budget actions with audit log, Slack morning digest | Managers act on suggestions from their phone |
-| **3. Billing + leads** | Stripe webhooks (both accounts), lead sheet sync, full Clients View parity (LTV, MRR, booked/shown/closed, unread messages) | Clients View can be retired |
-| **4. Operations** | Onboarding, ad preview/approval pipeline, templates, ClickUp API, AI review | Ad Preview and Onboarding retired |
-| **5. Admin** | GHL/LeadLabz admin, sub-account creation, users and permissions, custom values, calendar embed, LeadLabz website admin | LeadLabz apps retired |
-| **6. Cutover** | Final data copy, turn off Retool workflows, archive Retool export | **Cancel Retool** |
+| Phase | What ships | Replaces | Done when |
+|---|---|---|---|
+| **0. Foundations** | Repo scaffold, Supabase project, schema, staff login (GHL sign-on plus Google fallback), Cloudflare Pages deploy, **GHL sidebar item**, **Retool bridge** (see below), docs | – | Staff open an empty app from the GHL sidebar, already signed in, and from the direct link on a phone |
+| **1a. Meta insights** | Meta syncs (independent jobs, every 30 min), M1 performance screens on phone and desktop: KPI tiles, accounts / campaigns / ad sets / ads / leads tabs, ads manager filter, date presets with comparison, creatives, CSV export, lead form and ad copy search, sync health page | **Meta Ads Insights**, Search Meta Lead Forms | Numbers match Meta Ads Manager for a week. Team stops opening Meta Ads Insights. |
+| **1b. Suggestions** | Rules engine (M2), per-client targets, suggestions on each manager's view, Pause / budget actions with confirmation and audit log, Slack morning digest | Retool "alerts" | Managers act on suggestions from their phone |
+| **2. Ad approval** | M6: ad preview pipeline, ad creative and lead form templates, review checklist, comments, Slack notifications, ClickUp API, Claude AI review, LeadLabz website campaign requests, history copied from Retool | **Ad Preview 🤖**, Meta Ad Components Templates | All new ad previews go through the new app |
+| *Later* | Billing + leads (Clients View parity), Onboarding, GHL/LeadLabz admin, cutover | Clients View, Clients Onboarding, LeadLabz apps | Decided after Phase 2 |
+
+### Running alongside Retool
+While Clients View and Onboarding stay in Retool, some data the new app needs is still **created and kept up to date in Retool**: clients and their ads manager, onboarding info, campaign specifics, lead outcomes from the Google Sheets, employees, and GHL custom-field metadata. Rather than rebuild those syncs now, the new app uses a **Retool bridge**:
+
+- A scheduled job (every 15 min) **reads** those tables from the Retool Database. Retool Database is ordinary Postgres and allows external connections, and the job copies the tables into Supabase. It is read-only and never writes to Retool.
+- The connection string is entered **directly into Supabase's secrets by Jordan or Trent**, never pasted in chat.
+- **Meta data** is synced by the new app itself from the Meta API, faster and more reliably than Retool's chain. Retool's own Meta syncs keep running for Clients View until it moves.
+- **Ad approval data** (previews, templates, comments) moves into the new app fully. The existing 594 previews and all templates are copied over once at the start of Phase 2. After that, Retool's Ad Preview is retired.
+- When a later phase moves Clients View or Onboarding, that table's bridge is switched off and the new app becomes its source.
+
+| Data | Source during Phases 0–2 |
+|---|---|
+| Meta accounts, campaigns, ad sets, ads, creatives, insights, leads, lead forms | **New app** (Meta API) |
+| Clients, ads manager mapping, employees | Retool bridge |
+| Lead outcomes (booked / shown / closed / value) | Retool bridge |
+| Onboarding info, campaign specifics, area callouts | Retool bridge (edited in Retool Onboarding) |
+| GHL custom-field metadata (for business info panel and template placeholders) | Retool bridge |
+| Ad previews, templates, comments, review checklist | **New app** (history copied once) |
+| Suggestions, client targets, audit log | **New app** |
 
 ### Data migration
 - **Copy the history** from Retool Database: leads, ads_preview, onboarding data, templates, configs and Stripe/Meta history. Retool Database is Postgres, so this is a direct dump-and-restore using the connection string. That needs to be done from someone's computer (or Cowork) because the password must not be pasted into chat.
@@ -233,7 +250,7 @@ Retool keeps running until each phase is verified against it. Cutover is per mod
 ## 6. What we need from you
 
 **To start Phase 0 and 1:**
-1. Create a **Supabase** account and project (Pro plan) and a free **Cloudflare** account.
+1. Create a **Supabase** account and project (Pro plan) and a free **Cloudflare** account. Add the **Retool Database connection string** to Supabase secrets (we'll show where).
 2. **Meta System User** in MRKD's Business Manager with `ads_read` + `ads_management`, assigned to all client ad accounts. We'll walk through it.
 3. Confirm the app's address, e.g. `app.mrkdmarketing.com`.
 4. GHL agency admin access to add the sidebar item and update MRKD's marketplace app (for sign-on). We'll walk through it.
