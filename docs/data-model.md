@@ -89,6 +89,10 @@ Private bucket `ad-assets` (images/videos up to 500 MB) readable and writable on
 
 Suggestions are visible to and actionable by **only the assigned ads manager** (plus admins/owners). Adds `me()` (the signed-in employee, used by the app) and a trigger that moves open suggestions to the new manager when a client is reassigned in GHL. See [suggestions.md](suggestions.md#who-sees-which-suggestions).
 
+## 1000 Hardening
+
+Pins `search_path` on every function and stops signed-out visitors calling the helper functions (from Supabase's security advisor). See [auth.md](auth.md#supabase-security-advisor).
+
 ## Changing the schema
 
 Add a **new** migration file (never edit one that has been applied to Supabase), with policies for any new table, then update this page and run `npm run db:test`.

@@ -2,6 +2,11 @@
 
 What changed, newest first. Every change to the platform adds a line here.
 
+## 2026-11-09: Supabase live
+- Supabase project created (Canada Central) and the database installed: all 10 migrations applied and verified on the live project (36 tables, security on every table, 84 access rules, private file bucket, thresholds and checklist loaded).
+- Added migration 1000 (hardening) after running Supabase's security advisor; remaining 4 warnings are intended and documented.
+- Claude's Supabase access token is stored encrypted in a dedicated cloud environment, not in chat or the repo.
+
 ## 2026-11-09: Claude connector planned
 - Added Phase 1c: an MRKD connector so employees can ask Claude about their accounts with their own login ([docs/claude-connector.md](docs/claude-connector.md)).
 

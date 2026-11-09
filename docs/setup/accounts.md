@@ -2,6 +2,20 @@
 
 Step-by-step for the accounts the platform needs. Do them in order. **Never paste passwords, tokens or connection strings into chat, Slack or the repo**; each step says where they go instead.
 
+## Progress
+
+| Step | Status |
+|---|---|
+| Supabase project | **Done** (9 Nov 2026). Project ref `mhayvuxqrlwyvalceerw`, region Canada (Central), PostgreSQL 17. |
+| Database installed | **Done.** All migrations applied and verified: 36 tables, row-level security on every table, 84 access rules, private `ad-assets` bucket, thresholds and checklist loaded. Supabase security advisor clean apart from 4 intended items (see [auth.md](../auth.md#supabase-security-advisor)). |
+| Supabase access token for Claude | **Done.** Stored encrypted in the `mrkd-sitebuilder` Claude cloud environment (never in chat or the repo). Expires after 7 days; make a new one when asked. |
+| Retool DB connection (`RETOOL_DB_URL`) | To do |
+| Cloudflare | To do |
+| Meta System User | To do (Phase 1a) |
+| GHL menu link + sign-on | To do (Phase 0) |
+
+**How Claude installs database changes:** with the access token above, through Supabase's management API. Each migration file in `supabase/migrations/` runs as one all-or-nothing step and is recorded in `supabase_migrations.schema_migrations`, the same table the Supabase CLI uses, so either method can be used later.
+
 ## 1. Supabase (database, logins, background jobs): about 10 min
 
 1. Go to **supabase.com** → **Start your project** → sign up with Google.

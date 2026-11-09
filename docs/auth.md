@@ -39,6 +39,10 @@ Row-level security (RLS) policies in [`…0700_security.sql`](../supabase/migrat
 
 Tested in [`supabase/tests/security.test.sql`](../supabase/tests/security.test.sql): not signed in → nothing; signed in but not an employee → nothing; staff → can read and create reviews but not change thresholds or Meta data; owner → can change thresholds.
 
+## Supabase security advisor
+
+Run after every database change. As of 9 Nov 2026 the only items left are 4 intended warnings: `is_staff()`, `is_admin()`, `current_employee_id()` and `me()` can be called by signed-in users. They must be, because the access rules and the app use them, and each one only returns the caller's own employee record. Signed-out visitors can't call them (migration 1000).
+
 ## Keys and secrets
 
 | Thing | Where it lives | Safe in the browser? |
