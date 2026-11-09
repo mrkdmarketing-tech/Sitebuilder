@@ -91,6 +91,7 @@ This replaces Retool (about $30/month) at roughly the same cost.
 Each module lists the Retool pieces it replaces.
 
 ### M1. Daily dashboard *(replaces Clients View + Meta Ads Insights)*
+- **Every KPI in Retool's Meta Ads Insights today**, with the same formulas: Active accounts · Leads · CPL · CPM · CR % (leads ÷ link clicks) · CPR (cost per 1,000 reach) · CPLC (cost per link click) · Value generated. Table metrics: spend, impressions, reach, clicks, link clicks, CTR, link CTR, leads, booked / shown / closed, closed value, comments, page likes, messages. Each tile adds a comparison with the previous period.
 - Lands on **your clients** (by assigned ads manager). Owners and leads can switch to any manager or "All".
 - Per client: status, spend (today / yesterday / 7d / MTD vs budget), leads, cost per lead vs target, booked / shown / closed, new members, MRR generated, ad account health, unread GHL messages, billing status.
 - Date presets (today, yesterday, last 7/14/30, this month, last month, custom) with **period-over-period comparison**.
@@ -100,7 +101,13 @@ Each module lists the Retool pieces it replaces.
 - Lead form and ad copy search *(replaces Search Meta Lead Forms)*.
 
 ### M2. Suggestions and actions *(new)*
-A rules engine runs after every sync and creates **suggestions** for the assigned ads manager:
+A rules engine runs after every sync and creates **suggestions**, grouped **per ad account**. Each account gets an overview card listing what needs attention, written plainly, for example:
+
+> **Renzo Gracie Boca:** an ad has 1 lead at $120 — turn it off? **[Turn off] [Not now] [Dismiss]**
+
+Suggestions appear **in the app only** (on the account overview and the ads manager's home view). **No Slack.**
+
+Starting rules:
 
 | Rule (starting set, thresholds editable per client) | Suggested action |
 |---|---|
@@ -115,10 +122,10 @@ A rules engine runs after every sync and creates **suggestions** for the assigne
 | Not billed in 14+ days *(existing alert)* | Check Stripe |
 | LeadLabz location active, no active subscription *(existing alert)* | Check subscription |
 
-- Each suggestion has **Do it / Snooze / Dismiss**. "Do it" for pause or budget changes calls Meta through the System User token, re-checks the ad's current state first, and logs who did it.
+- Each suggestion has **Do it / Not now / Dismiss**. "Do it" (e.g. turn off the ad) asks for one confirmation, then calls Meta through the System User token, re-checks the ad's current state first, and logs who did it.
 - Suggestions resolve themselves if the condition clears.
-- Optional **Slack digest** per ads manager each morning plus urgent pings (account disabled).
-- Phase 2+: Claude writes a short plain-English reason and a creative idea for each suggestion.
+- Thresholds have sensible defaults (per ad type) and can be overridden per client.
+- Later: Claude adds a short plain-English reason and a creative idea for each suggestion.
 
 ### M3. Billing *(replaces Stripe parts of Clients View + Stripe Subscriptions Dash)*
 - Both Stripe accounts (MRKD Marketing and LeadLabz) via webhooks.
@@ -135,9 +142,22 @@ A rules engine runs after every sync and creates **suggestions** for the assigne
 
 ### M6. Ad preview and approval *(replaces Ad Preview 🤖 + template apps)*
 - Pipeline: Draft → In review → Changes requested → Approved → Launched.
-- Build from **ad creative and lead form templates** plus client onboarding data. Upload images.
-- Comments thread. Slack notification at each step to the right person. **ClickUp task created through the ClickUp API**, not Zapier.
-- **AI review (Claude):** checks copy and image text against the client's business info and flags mistakes.
+- Employees submit **copy + images and/or videos** for approval. Built from **ad creative and lead form templates** plus client onboarding data.
+- Comments thread. Slack notification at each step to the right person (as today). **ClickUp task created through the ClickUp API**, not Zapier.
+
+**AI quality check (Claude).** Runs automatically when an ad is submitted, and again before it's published:
+
+| Asset | What's checked |
+|---|---|
+| **Copy** (primary text, headline, description, lead form text) | Spelling and grammar. Things that don't make logical sense (e.g. "free trial" in one line, "$49 trial" in another; a date or day that doesn't exist; a broken sentence). Mismatches with the client's details: city, gym name, phone, offer, pricing, program names, booking type. |
+| **Images** | Reads all text in the image and checks the same things. Image CTA matches the headline and primary copy. Logo present. Address and phone readable and correct. |
+| **Videos** | Reads on-screen text and **burned-in subtitles** from frames across the video and checks spelling and grammar. Optionally transcribes the audio and flags subtitles that don't match what's said. Frames are extracted in the browser at upload, so no video server is needed. Audio transcription needs a speech-to-text service (decided in Phase 2). |
+
+Each finding shows where it is (which field, which image, which second of the video), what's wrong and a suggested fix.
+
+**"Hey, just double checking" — a soft warning, not a block.** When someone clicks submit/publish and there are open findings, a prompt lists them: *"Hey, just double checking — we spotted 3 possible issues: …"* with **Fix** (jumps to the spot) or **Publish anyway**. Publishing anyway is allowed and recorded (who, which warnings), so reviewers can see what was knowingly skipped.
+
+- The existing 11-point review checklist (logo, address, spelling, CTA match, city, tracking, naming, lead forms…) stays as tick-boxes for the reviewer. The AI pre-fills what it can check.
 - Template editor *(replaces Meta Ad Components Templates)*.
 - Later: AI ad copy generator *(replaces Ad Ai Analyzer / Ad Copy Generator)*, and creative analysis *(replaces creative_analysis flow)*.
 
@@ -218,8 +238,8 @@ The exact SQL lives in `supabase/migrations/` once Phase 0 starts.
 |---|---|---|---|
 | **0. Foundations** | Repo scaffold, Supabase project, schema, staff login (GHL sign-on plus Google fallback), Cloudflare Pages deploy, **GHL sidebar item**, **Retool bridge** (see below), docs | – | Staff open an empty app from the GHL sidebar, already signed in, and from the direct link on a phone |
 | **1a. Meta insights** | Meta syncs (independent jobs, every 30 min), M1 performance screens on phone and desktop: KPI tiles, accounts / campaigns / ad sets / ads / leads tabs, ads manager filter, date presets with comparison, creatives, CSV export, lead form and ad copy search, sync health page | **Meta Ads Insights**, Search Meta Lead Forms | Numbers match Meta Ads Manager for a week. Team stops opening Meta Ads Insights. |
-| **1b. Suggestions** | Rules engine (M2), per-client targets, suggestions on each manager's view, Pause / budget actions with confirmation and audit log, Slack morning digest | Retool "alerts" | Managers act on suggestions from their phone |
-| **2. Ad approval** | M6: ad preview pipeline, ad creative and lead form templates, review checklist, comments, Slack notifications, ClickUp API, Claude AI review, LeadLabz website campaign requests, history copied from Retool | **Ad Preview 🤖**, Meta Ad Components Templates | All new ad previews go through the new app |
+| **1b. Suggestions** | Rules engine (M2), per-account overview of suggestions in the app (no Slack), default thresholds + per-client overrides, Turn off / budget actions with confirmation and audit log | Retool "alerts" | Managers act on suggestions from their phone |
+| **2. Ad approval** | M6: submission of copy + images/videos, AI quality check (copy, image text, video subtitles), "just double checking" prompt before publishing, review checklist, comments, Slack notifications, ClickUp API, templates, LeadLabz website campaign requests, history copied from Retool | **Ad Preview 🤖**, Meta Ad Components Templates | All new ad previews go through the new app |
 | *Later* | Billing + leads (Clients View parity), Onboarding, GHL/LeadLabz admin, cutover | Clients View, Clients Onboarding, LeadLabz apps | Decided after Phase 2 |
 
 ### Running alongside Retool

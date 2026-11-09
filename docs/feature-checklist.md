@@ -70,7 +70,7 @@ Phase numbers refer to [plan.md](plan.md) §5.
 | Send for review | Choose ads manager → **Slack notification** to them. Separate alerts for first review, review again, changes requested, review completed. | ✅ | 2 |
 | Comments | Thread per preview with author, latest comment pinned | ✅ | 2 |
 | **Review checklist** | 1 logo · 2 address & phone · 3 spelling · 4 image CTA = headline · 5 image CTA = primary copy · 6 alignment · 7 city matches copy · 8 tracking on · 9 campaign naming · 10 lead forms connected · 11 tell Trent about new lead forms | ⬆️ Real tick-boxes saved per preview | 2 |
-| **AI review** | Retool AI reads the text and images and compares them with the client's business data, returning a list of fixes | ⬆️ Claude, run automatically when sent for review | 2 |
+| **AI review** | Retool AI reads the text and images and compares them with the client's business data, returning a list of fixes | ⬆️ Claude checks copy, image text **and video subtitles** for spelling, grammar and things that don't make sense. Runs automatically on submit; a "Hey, just double checking" prompt lists issues before publishing (can still publish). | 2 |
 | ClickUp card | Zapier webhook creates a card (client, ads manager, formatted brief) | ⬆️ ClickUp API directly | 2 |
 | LeadLabz website campaign requests | Table: status, timeline, client, budget, Drive link, ad type, requested by | ✅ | 2 |
 | "Fetch LeadForms" | Pulls the client's Meta lead forms | ⬆️ Automatic sync | 1a |
@@ -152,7 +152,7 @@ Phase numbers refer to [plan.md](plan.md) §5.
 | GHL: conversations / unread counts | ⬆️ Background, not on page load | Later |
 | Lead Google Sheets → leads (all clients, failed retry, single) | ✅ Retool keeps running it; outcomes reach the new app via the Retool bridge | Later |
 | Stripe ×2: customers, subscriptions, invoices | ⬆️ Webhooks | Later |
-| Slack alerts (sync failures, sub-account created, ad preview steps) | ✅ + morning digest | 1a–2 |
+| Slack alerts (sync failures, sub-account created, ad preview steps) | ✅ Sync failures + ad approval steps (suggestions are in-app only, no Slack) | 1a–2 |
 | New FB lead webhook (test) | ❓ Instant lead alerts wanted? | – |
 | DELETE CONTACTS | ❌ unless needed | – |
 | Demo / test workflows | ❌ | – |
