@@ -93,6 +93,14 @@ Suggestions are visible to and actionable by **only the assigned ads manager** (
 
 Pins `search_path` on every function and stops signed-out visitors calling the helper functions (from Supabase's security advisor). See [auth.md](auth.md#supabase-security-advisor).
 
+## 1100 Retool bridge (SQL)
+
+`private.retool_bridge_run(conn)`: copies Retool tables over `dblink` into the bridge tables (rules in [retool-bridge.md](retool-bridge.md)). Only the service role can run it. Tested against a fake Retool database (`supabase/tests/retool-fake.sql`).
+
+## 1200 Schedules
+
+`pg_net` + `pg_cron`; `private.call_function(name)` calls an Edge Function with the cron secret from Vault. Schedules: [background-jobs.md](background-jobs.md#schedules).
+
 ## Changing the schema
 
 Add a **new** migration file (never edit one that has been applied to Supabase), with policies for any new table, then update this page and run `npm run db:test`.

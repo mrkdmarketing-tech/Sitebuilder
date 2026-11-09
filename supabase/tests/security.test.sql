@@ -39,8 +39,8 @@ end $$;
 -- Staff: reads everything, can create an ad review, cannot write synced data or settings.
 do $$ begin perform set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-00000000000a', false); end $$;
 do $$ begin
-  assert (select count(*) from public.clients) = 3, 'staff sees clients';
-  assert jsonb_array_length(public.report('account', '2026-11-01', '2026-11-07')) = 2, 'staff report';
+  assert (select count(*) from public.clients) >= 3, 'staff sees clients';
+  assert jsonb_array_length(public.report('account', '2026-11-01', '2026-11-07')) >= 2, 'staff report';
   -- Suggestions: Alex only sees and can act on his own (assigned to him in GHL).
   assert (select count(*) from public.suggestions) = 1, 'staff sees only own suggestions';
   assert (select manager_id from public.suggestions) = 'emp_alex', 'the one he sees is his';

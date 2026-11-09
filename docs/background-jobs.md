@@ -5,7 +5,7 @@ All in [`supabase/functions/`](../supabase/functions) (Supabase Edge Functions, 
 | Function | Trigger | What it does | Status |
 |---|---|---|---|
 | `meta-sync` | Every **30 min** (pg_cron); nightly with `?days=37` to backfill | Ad accounts → campaigns → ad sets → creatives → ads → daily ad insights → leads, **each account independently** (one bad account can't stall the rest). Then triggers `run-rules`. | Skeleton: accounts + insights written; other steps TODO (Phase 1a) |
-| `retool-bridge` | Every **15 min** | Copies employees, clients (+ ads manager), onboarding, campaign specifics, sheet leads, website requests from Retool, read-only ([retool-bridge.md](retool-bridge.md)) | Skeleton (Phase 0) |
+| `retool-bridge` | Every **15 min** | Copies employees, clients (+ ads manager), ad account links, onboarding, campaign specifics, sheet leads, website requests from Retool, read-only ([retool-bridge.md](retool-bridge.md)) | **Live** (9 Nov 2026) |
 | `run-rules` | After each `meta-sync` | Evaluates suggestion rules and updates `suggestions` ([suggestions.md](suggestions.md)) | Skeleton (Phase 1b) |
 | `meta-action` | App button ("Turn off") | Pauses an ad in Meta with safety checks + audit log | Skeleton (Phase 1b) |
 | `ad-check` | App, on upload in ad approval | AI quality check with Claude ([ad-approval.md](ad-approval.md)) | Skeleton (Phase 2) |
@@ -27,7 +27,17 @@ Set in Supabase → Project Settings → Edge Functions → Secrets. **Never in 
 
 ## Schedules
 
-Set up in Phase 0 with `pg_cron` + `pg_net` (both available in Supabase). Example:
+Live (migration 1200): `pg_cron` jobs call `private.call_function(name)`, which POSTs to the function with the `x-cron-secret` header. The secret is generated randomly, stored as the `CRON_SECRET` function secret **and** in Supabase Vault (`cron_secret`), and never written in the repo. The functions URL is in `app_settings.functions_base_url`.
+
+| Job | Schedule | Status |
+|---|---|---|
+| `retool-bridge` | `*/15 * * * *` | Live |
+| `meta-sync` | `*/30 * * * *` | Phase 1a |
+| `meta-backfill` (`meta-sync?days=37`) | nightly | Phase 1a |
+
+Check them with `select jobname, schedule, active from cron.job;` and recent calls with `select * from net._http_response order by id desc limit 5;`.
+
+For reference, the raw form without the helper:
 
 ```sql
 select cron.schedule('meta-sync', '*/30 * * * *', $$
@@ -54,7 +64,7 @@ select cron.schedule('meta-backfill', '15 7 * * *', $$ … /meta-sync?days=37 �
 ## Deploying
 
 ```bash
-supabase functions deploy meta-sync retool-bridge run-rules meta-action ad-check
+SUPABASE_ACCESS_TOKEN=<token> npx supabase@latest functions deploy <name> --remote=mhayvuxqrlwyvalceerw --use-api
 ```
 
-(Requires the Supabase CLI, logged in and linked to the project; see [development.md](development.md).)
+`--use-api` bundles on Supabase's side (no Docker needed). Per-function settings (whether Supabase checks the caller's login) are in [`supabase/config.toml`](../supabase/config.toml): scheduled jobs check `CRON_SECRET` themselves; functions called from the app keep Supabase's login check. Claude deploys with the access token stored in its cloud environment ([setup/accounts.md](setup/accounts.md#progress)).

@@ -1,0 +1,22 @@
+# Supabase CLI settings (docs/background-jobs.md#deploying).
+# Linked project: mhayvuxqrlwyvalceerw (Canada Central).
+project_id = "mrkd-platform"
+
+# Scheduled jobs are called by pg_cron with a shared secret header (CRON_SECRET),
+# not a user login, so Supabase's built-in JWT check is off for them. Each
+# function checks the secret itself (functions/_shared/http.ts).
+[functions.retool-bridge]
+verify_jwt = false
+
+[functions.meta-sync]
+verify_jwt = false
+
+[functions.run-rules]
+verify_jwt = false
+
+# Called from the app by signed-in staff: keep Supabase's JWT check on.
+[functions.meta-action]
+verify_jwt = true
+
+[functions.ad-check]
+verify_jwt = true

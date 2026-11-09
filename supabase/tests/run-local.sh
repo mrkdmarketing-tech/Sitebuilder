@@ -24,6 +24,8 @@ for _ in $(seq 1 30); do pg_isready -h /tmp -p "$PORT" >/dev/null 2>&1 && break;
 
 PSQL=(psql -h /tmp -p "$PORT" -U postgres -v ON_ERROR_STOP=1 -q -X)
 "${PSQL[@]}" -c "create database mrkd_test" postgres
+"${PSQL[@]}" -c "create database retool_fake" postgres
+"${PSQL[@]}" -d retool_fake -f "$HERE/retool-fake.sql"
 
 echo "→ Supabase stand-ins"
 "${PSQL[@]}" -d mrkd_test -f "$HERE/supabase-stub.sql"
@@ -35,6 +37,6 @@ echo "→ seed (sample data)"
 "${PSQL[@]}" -d mrkd_test -f "$ROOT/supabase/seed.sql"
 for f in "$HERE"/*.test.sql; do
   echo "→ test $(basename "$f")"
-  "${PSQL[@]}" -d mrkd_test -f "$f"
+  "${PSQL[@]}" -d mrkd_test -v bridge_conn="host=/tmp port=$PORT dbname=retool_fake user=postgres" -f "$f"
 done
 echo "✓ all database tests passed"

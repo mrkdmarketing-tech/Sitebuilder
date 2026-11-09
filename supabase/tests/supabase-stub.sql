@@ -8,6 +8,7 @@ do $$ begin
 end $$;
 
 create schema if not exists auth;
+create schema if not exists extensions;  -- Supabase installs extensions here
 create table if not exists auth.users (id uuid primary key, email text);
 -- Supabase's auth.uid() reads the signed-in user's id from the request JWT.
 create or replace function auth.uid() returns uuid language sql stable as $$

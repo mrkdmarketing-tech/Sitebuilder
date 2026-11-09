@@ -9,7 +9,7 @@ Step-by-step for the accounts the platform needs. Do them in order. **Never past
 | Supabase project | **Done** (9 Nov 2026). Project ref `mhayvuxqrlwyvalceerw`, region Canada (Central), PostgreSQL 17. |
 | Database installed | **Done.** All migrations applied and verified: 36 tables, row-level security on every table, 84 access rules, private `ad-assets` bucket, thresholds and checklist loaded. Supabase security advisor clean apart from 4 intended items (see [auth.md](../auth.md#supabase-security-advisor)). |
 | Supabase access token for Claude | **Done.** Stored encrypted in the `mrkd-sitebuilder` Claude cloud environment (never in chat or the repo). Expires after 7 days; make a new one when asked. |
-| Retool DB connection (`RETOOL_DB_URL`) | To do |
+| Retool DB connection (`RETOOL_DB_URL`) | **Done.** Secret added 9 Nov 2026; bridge live every 15 min ([retool-bridge.md](../retool-bridge.md)). |
 | Cloudflare | To do |
 | Meta System User | To do (Phase 1a) |
 | GHL menu link + sign-on | To do (Phase 0) |

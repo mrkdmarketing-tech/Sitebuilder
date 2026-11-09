@@ -32,6 +32,7 @@ All of these must pass before pushing.
 `supabase/tests/run-local.sh` creates a temporary Postgres, applies `tests/supabase-stub.sql` (stand-ins for Supabase's `auth` schema and roles), every file in `supabase/migrations/`, then `supabase/seed.sql`, then each `tests/*.test.sql`. Tests are `DO` blocks with `assert`; any failure stops the run.
 
 - `report.test.sql`: report numbers for the seed data (spend, leads, outcomes, filters, status).
+- `retool_bridge.test.sql`: the Retool bridge against a fake Retool database (`retool-fake.sql`, same table names as the real one): copies, links, duplicate emails, deletions, permissions.
 - `security.test.sql`: RLS on every table; anon / stranger / staff / owner permissions.
 
 ## Project layout
