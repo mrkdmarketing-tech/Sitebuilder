@@ -6,6 +6,7 @@ MRKD Marketing's internal platform, replacing Retool. It lives inside MRKD's GoH
 
 ## Docs
 - [Plan](docs/plan.md): architecture, modules, data model, build phases, open questions
+- [Feature checklist](docs/feature-checklist.md): every Retool feature, line by line, and what happens to it
 - [Current system](docs/current-system.md): inventory of the Retool apps, workflows and database being replaced
 
 Documentation is updated alongside every change.
