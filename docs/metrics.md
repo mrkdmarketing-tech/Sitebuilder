@@ -33,7 +33,7 @@ These are the same action types Retool used ([`shared/meta/mapping.ts`](../share
 | **CR %** | leads ÷ link clicks × 100 | CR |
 | **CTR** | clicks ÷ impressions × 100 | CTR |
 | **Link CTR** | link clicks ÷ impressions × 100 | Link CTR |
-| **Active acc.** | number of ad accounts whose status is ACTIVE, IN_GRACE_PERIOD or UNSETTLED | Active Acc. ⚡ |
+| **Active acc.** | number of ad accounts whose status is ACTIVE, IN_GRACE_PERIOD or UNSETTLED | Active Acc. |
 | **Value generated** | sum of value generated (above) | Value Generated |
 
 When the bottom number is 0 (e.g. CPL with no leads) the KPI shows **—**, not $0 or ∞.

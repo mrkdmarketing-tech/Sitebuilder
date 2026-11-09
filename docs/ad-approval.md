@@ -1,6 +1,6 @@
 # Ad approval (Phase 2)
 
-Replaces Retool's **Ad Preview 🤖** and **Meta Ad Components Templates**. Design agreed with Jordan, Nov 2026. Status: **designed, database ready, screen not built yet** (the app shows a placeholder at `/approvals`).
+Replaces Retool's **Ad Preview** and **Meta Ad Components Templates**. Design agreed with Jordan, Nov 2026. Status: **designed, database ready, screen not built yet** (the app shows a placeholder at `/approvals`).
 
 ## Flow
 

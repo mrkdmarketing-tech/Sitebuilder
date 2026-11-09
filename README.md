@@ -6,7 +6,7 @@ MRKD Marketing's internal platform, replacing Retool. It lives inside MRKD's GoH
 
 **Status:** skeleton built and tested with sample data. Waiting on account setup ([docs/setup/accounts.md](docs/setup/accounts.md)). See [CHANGELOG.md](CHANGELOG.md).
 
-## 📚 Documentation
+## Documentation
 
 **[docs/README.md](docs/README.md) is the map of everything.** Main docs:
 

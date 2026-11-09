@@ -4,6 +4,7 @@ Why things are the way they are. Newest first. Add an entry whenever a real choi
 
 | Date | Decision | Why | Alternatives considered |
 |---|---|---|---|
+| 2026-11-09 | **Simple and organised style, no emojis** in the app or docs; plain labels, line icons only for navigation | Jordan's preference | Emoji labels as in Retool |
 | 2026-11-09 | **Suggestions per employee**: staff see only accounts assigned to them in GHL; owners/admins see all; enforced by RLS | Requested by Jordan | Everyone sees everything with a filter |
 | 2026-11-09 | **Four design options** (Classic, Midnight, MRKD Bold, Compact) switchable via design tokens; pick one later | Requested by Jordan | Committing to one look now |
 | 2026-11-09 | **Fonts bundled** with the app (Inter, Space Grotesk) | No third-party requests; works in GHL iframe and offline | Google Fonts |

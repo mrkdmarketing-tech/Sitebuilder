@@ -50,6 +50,12 @@ See the code map in [docs/README.md](README.md#code-map) and [architecture.md](a
 
 ## Conventions
 
+**Style (Jordan's preference, Nov 2026): simple and organised.**
+- **No emojis** anywhere: not in the app, labels, messages, docs or commit messages. Use plain words.
+- Icons only where they help navigation (the thin line icons in the menu and buttons), never decoration.
+- Short, plain labels. One idea per screen section. Consistent order and spacing.
+
+
 - TypeScript `strict`. No `any` unless unavoidable and commented.
 - `shared/` stays dependency-free and uses `.ts` import extensions (Deno compatibility).
 - Number formatting only via `web/src/lib/format.ts`.

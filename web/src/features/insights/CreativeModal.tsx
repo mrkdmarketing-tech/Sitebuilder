@@ -5,7 +5,7 @@ import { Modal } from '../../components/ui'
 import { count, money, percent } from '../../lib/format'
 import { metricsOf } from './columns'
 
-/** Creative popup (the 🌄 column in Retool): image, copy, and how the ad is doing. */
+/** Creative popup (the thumbnail column in Retool): image, copy, and how the ad is doing. */
 export function CreativeModal({ row, onClose }: { row: ReportRow | null; onClose: () => void }) {
   const ds = useData()
   const { data: creative } = useAsync<Creative | null>(

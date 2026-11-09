@@ -13,6 +13,10 @@ Four looks for the same app. **Same screens, same data; only the style changes.*
 
 Phones get a bottom tab bar in every design.
 
+## Applies to every design
+
+Simple and organised: plain text labels, no emojis, line icons only in navigation and buttons, consistent spacing.
+
 ## A · Classic
 
 | Desktop | Phone |

@@ -38,12 +38,12 @@ flowchart LR
 |---|---|---|
 | **Clients View** | Main daily dashboard. Each client with leads, booked, shown and closed counts, new members, upfront cash, MRR generated, Meta spend, ad account status, Stripe billing (MRKD and LeadLabz), last and next billed date, unread GHL messages. Filters by ads manager, active status, LeadLabz clients and client ID. "Show alerts" highlights rows red or yellow. Can bulk-update client status in GHL. | Retool DB, GHL API (live conversation counts per location), sync workflows |
 | **Meta Ads Insights** | Performance drill-down: account → campaign → ad set → ad, with period-over-period comparison, lead stats by ad name, creative previews, filter by ads manager. | Retool DB, Meta sync workflows |
-| **Ad Preview 🤖** | Ad approval pipeline. Pick a client, build the ad creative and lead form from templates plus the client's business info, then move it draft → review → changes requested → completed. Comments, Slack alerts at each step, a ClickUp card through a Zapier webhook, and AI review that checks the uploaded ad image against the client's business data. | Retool DB, GHL, Slack, Zapier→ClickUp, Retool AI |
+| **Ad Preview** | Ad approval pipeline. Pick a client, build the ad creative and lead form from templates plus the client's business info, then move it draft → review → changes requested → completed. Comments, Slack alerts at each step, a ClickUp card through a Zapier webhook, and AI review that checks the uploaded ad image against the client's business data. | Retool DB, GHL, Slack, Zapier→ClickUp, Retool AI |
 | **Clients Onboarding** | Onboarding form per client: gym details, instructors, programs, kids program, pricing, offers, area callouts, marked-area images, and up to 2 "campaign specifics" (ad type, monthly budget plus upper limit, CTA, landing page, booking link, lead flow, CRM). Pushes changes back to the client's contact in GHL. | Retool DB, GHL |
 | **Meta Ad Components Templates** | Create and edit reusable ad creative and lead form templates (CTA, questions, form type). | Retool DB |
 | **Search Meta Lead Forms** | Free-text search across all synced lead forms and ad copy. | Retool DB |
-| **LeadLabz ⚙️** | GHL admin. MRKD contacts and custom fields, assigning client IDs, creating sub-accounts from a snapshot, users and permission templates, location custom values and a custom value mapping config. | Retool DB, GHL API |
-| **Leadlabz (Website) ⚙️** | Admin for the LeadLabz website. Firebase users (create, reset password), which businesses and ad accounts each user can see, subscription plan config, onboarding flags. | Retool DB, Firebase |
+| **LeadLabz** | GHL admin. MRKD contacts and custom fields, assigning client IDs, creating sub-accounts from a snapshot, users and permission templates, location custom values and a custom value mapping config. | Retool DB, GHL API |
+| **Leadlabz (Website)** | Admin for the LeadLabz website. Firebase users (create, reset password), which businesses and ad accounts each user can see, subscription plan config, onboarding flags. | Retool DB, Firebase |
 
 ### Supporting / dev apps worth keeping ideas from
 - **Ad Ai Analyzer**, **Ad Copy Generator**: AI ad copy built from client data, booking types and GHL calendar availability, then a ClickUp task.
@@ -71,7 +71,7 @@ Two **Retool Forms** could not be exported: *Leadlabz Onboarding form* and *Unti
 | **Stripe** | Customer, Subscription and Invoice Sync | Two Stripe accounts: **MRKD Marketing** and **LeadLabz**. Polled, not webhooks. |
 | **Tests** | 7 test/demo workflows | Drop. *Update Conversations From GHL API 2.0* had its last 10 runs fail. |
 
-> ⚠️ Every workflow in the export shows `isEnabled: false` and no crontab. That may just be how Retool exports them, but **confirm which ones are actually running today** before cutover.
+> **Note:** Every workflow in the export shows `isEnabled: false` and no crontab. That may just be how Retool exports them, but **confirm which ones are actually running today** before cutover.
 
 ---
 
@@ -126,10 +126,10 @@ So **GHL's "Assigned to" field on the client contact is the source of truth** fo
 
 ## 6. Existing alert rules (Clients View "Show alerts")
 
-- 🔴 Active/New client with a lead sheet, but **0 leads in the last 3 days**
-- 🔴 **Unread messages** from the client (contact or location)
-- 🔴 Active client **not billed in 14+ days**
-- 🟡 LeadLabz location active but **no active LeadLabz subscription**
+- Red: Active/New client with a lead sheet, but **0 leads in the last 3 days**
+- Red: **Unread messages** from the client (contact or location)
+- Red: Active client **not billed in 14+ days**
+- Yellow: LeadLabz location active but **no active LeadLabz subscription**
 - Icons for ad account disabled or not
 
 These carry over as the first set of rules in the new suggestions engine.

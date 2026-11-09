@@ -83,7 +83,7 @@ export function SuggestionsPage() {
       </div>
 
       {!loading && groups.length === 0 && (
-        <Card><Empty>{isAdmin ? 'Nothing needs attention right now. 🎉' : 'Nothing needs attention on your accounts right now. 🎉'}</Empty></Card>
+        <Card><Empty>{isAdmin ? 'Nothing needs attention right now.' : 'Nothing needs attention on your accounts right now.'}</Empty></Card>
       )}
 
       <div className="grid gap-3 lg:grid-cols-2">

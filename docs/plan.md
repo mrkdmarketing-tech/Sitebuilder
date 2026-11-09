@@ -140,7 +140,7 @@ Starting rules (agreed with Jordan, Nov 2026). Metrics use the **last 7 days** b
 - **Per-client targets** live here: target CPL, monthly budget, upper limit. They feed M2.
 - Saves push to the client's GHL contact as today.
 
-### M6. Ad preview and approval *(replaces Ad Preview 🤖 + template apps)*
+### M6. Ad preview and approval *(replaces Ad Preview + template apps)*
 - Pipeline: Draft → In review → Changes requested → Approved → Launched.
 - Employees submit **copy + images and/or videos** for approval by **uploading them manually**. "Publish" in this app means *submitting for approval*; the app does not create ads in Meta. Built from **ad creative and lead form templates** plus client onboarding data.
 - Comments thread. Slack notification at each step to the right person (as today). **ClickUp task created through the ClickUp API**, not Zapier.
@@ -161,13 +161,13 @@ Each finding shows where it is (which field, which image, which second of the vi
 - Template editor *(replaces Meta Ad Components Templates)*.
 - Later: AI ad copy generator *(replaces Ad Ai Analyzer / Ad Copy Generator)*, and creative analysis *(replaces creative_analysis flow)*.
 
-### M7. GHL / LeadLabz admin *(replaces LeadLabz ⚙️, Go High Level, Create Subaccounts workflow)*
+### M7. GHL / LeadLabz admin *(replaces LeadLabz, Go High Level, Create Subaccounts workflow)*
 - Clients ↔ GHL contact link, client ID assignment.
 - **Create sub-account from snapshot** with the same steps as today, plus status and retry.
 - Users and permission templates, custom fields and custom values (incl. bulk), custom value mapping.
 - Booking calendar embed generator *(replaces Leadlabz calendar embed)*.
 
-### M8. LeadLabz website admin *(replaces Leadlabz (Website) ⚙️)*
+### M8. LeadLabz website admin *(replaces Leadlabz (Website))*
 - Website users (Firebase), password reset, which businesses and ad accounts they can see, subscription plans, campaign requests.
 
 ### M9. Platform
@@ -239,7 +239,7 @@ The exact SQL lives in `supabase/migrations/` once Phase 0 starts.
 | **0. Foundations** | Repo scaffold, Supabase project, schema, staff login (GHL sign-on plus Google fallback), Cloudflare Pages deploy, **GHL sidebar item**, **Retool bridge** (see below), docs | – | Staff open an empty app from the GHL sidebar, already signed in, and from the direct link on a phone |
 | **1a. Meta insights** | Meta syncs (independent jobs, every 30 min), M1 performance screens on phone and desktop: KPI tiles, accounts / campaigns / ad sets / ads / leads tabs, ads manager filter, date presets with comparison, creatives, CSV export, lead form and ad copy search, sync health page | **Meta Ads Insights**, Search Meta Lead Forms | Numbers match Meta Ads Manager for a week. Team stops opening Meta Ads Insights. |
 | **1b. Suggestions** | Rules engine (M2), per-account overview of suggestions in the app (no Slack), default thresholds + per-client overrides, Turn off / budget actions with confirmation and audit log | Retool "alerts" | Managers act on suggestions from their phone |
-| **2. Ad approval** | M6: submission of copy + images/videos, AI quality check (copy, image text, video subtitles), "just double checking" prompt before publishing, review checklist, comments, Slack notifications, ClickUp API, templates, LeadLabz website campaign requests, history copied from Retool | **Ad Preview 🤖**, Meta Ad Components Templates | All new ad previews go through the new app |
+| **2. Ad approval** | M6: submission of copy + images/videos, AI quality check (copy, image text, video subtitles), "just double checking" prompt before publishing, review checklist, comments, Slack notifications, ClickUp API, templates, LeadLabz website campaign requests, history copied from Retool | **Ad Preview**, Meta Ad Components Templates | All new ad previews go through the new app |
 | *Later* | Billing + leads (Clients View parity), Onboarding, GHL/LeadLabz admin, cutover | Clients View, Clients Onboarding, LeadLabz apps | Decided after Phase 2 |
 
 ### Running alongside Retool

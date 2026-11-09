@@ -34,7 +34,7 @@ Everything about the MRKD platform is documented here. **Start with the row that
 |---|---|---|
 | Meta insights | [screens/insights.md](screens/insights.md) | Meta Ads Insights |
 | Suggestions | [suggestions.md](suggestions.md) | "Show alerts" |
-| Ad approval | [ad-approval.md](ad-approval.md) | Ad Preview 🤖 |
+| Ad approval | [ad-approval.md](ad-approval.md) | Ad Preview |
 | Search | [screens/insights.md#search](screens/insights.md#search) | Search Meta Lead Forms |
 | Sync status | [background-jobs.md#sync-status-screen](background-jobs.md#sync-status-screen) | – |
 
