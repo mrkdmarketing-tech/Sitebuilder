@@ -11,7 +11,7 @@ Step-by-step for the accounts the platform needs. Do them in order. **Never past
 | Supabase access token for Claude | **Done.** Stored encrypted in the `mrkd-sitebuilder` Claude cloud environment (never in chat or the repo). Expires after 7 days; make a new one when asked. |
 | Retool DB connection (`RETOOL_DB_URL`) | **Done.** Secret added 9 Nov 2026; bridge live every 15 min ([retool-bridge.md](../retool-bridge.md)). |
 | Cloudflare | To do |
-| Meta System User | System user `MRKDPlatformTools` created and assigned ad accounts (View performance) and Pages (Leads). **App + token still to do**, full spec in [meta.md](meta.md). Blocked 9 Nov by Facebook's new-device check on developer sign-up. |
+| Meta System User | **Done.** App `MRKD Platform` + system user `MRKDPlatformTools` token (never expires) saved as `META_SYSTEM_USER_TOKEN` in Supabase secrets. Spec: [meta.md](meta.md). |
 | GHL menu link + sign-on | To do (Phase 0) |
 
 **How Claude installs database changes:** with the access token above, through Supabase's management API. Each migration file in `supabase/migrations/` runs as one all-or-nothing step and is recorded in `supabase_migrations.schema_migrations`, the same table the Supabase CLI uses, so either method can be used later.

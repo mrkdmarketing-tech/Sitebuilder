@@ -1,25 +1,19 @@
 /**
- * meta-sync — pulls Meta ads data into Postgres. Scheduled every 30 min by
- * pg_cron (docs/background-jobs.md). Phase 1a.
+ * meta-sync — pulls Meta ads data into Postgres (Phase 1a, docs/background-jobs.md).
  *
- * STATUS: skeleton. The order of steps, logging and the Meta→DB mapping
- * (shared/meta/mapping.ts, unit-tested) are in place; the API calls are
- * written but untested until the Meta System User token exists.
+ * Schedule (migration 1300): every 30 min with ?days=3 (Meta revises recent
+ * days), nightly with ?days=37 (backfill for month-over-month comparisons).
  *
- * Unlike Retool's chained workflows (30–300 min apart), every step runs in one
- * go, each account independently, so one bad account can't stall the rest.
+ * Which accounts: every ad account the MRKDPlatformTools system user can see is
+ * refreshed (name, status, currency). The detailed sync (campaigns, ad sets,
+ * ads, creatives, daily insights) runs for accounts linked to an Active or New
+ * client, which is what the dashboard shows. Accounts run 4 at a time, each
+ * independently: one failing account doesn't stop the others.
  *
- * Steps per ad account the System User can see:
- *   1. account details        → meta_ad_accounts
- *   2. campaigns              → meta_campaigns
- *   3. ad sets                → meta_adsets
- *   4. creatives (of ads)     → meta_ad_creatives
- *   5. ads                    → meta_ads
- *   6. daily insights, level=ad, last 3 days (+ nightly 37-day backfill) → meta_ad_insights_daily
- *   7. leads (since last sync)→ meta_leads
- * Then: run-rules is triggered to refresh suggestions.
+ * The token is sent in the Authorization header, never in URLs we build, and
+ * stripped from Meta's own paging URLs, so it can't leak into logs or errors.
  *
- * Secrets (Supabase → Edge Functions → Secrets): META_SYSTEM_USER_TOKEN, CRON_SECRET.
+ * Secrets: META_SYSTEM_USER_TOKEN, CRON_SECRET.
  */
 import { serviceClient } from '../_shared/supabase.ts'
 import { logRun } from '../_shared/sync-log.ts'
@@ -27,77 +21,216 @@ import { isAuthorisedCron, json } from '../_shared/http.ts'
 import {
   accountStatusLabel,
   bareAccountId,
+  budgetFromMinor,
+  gendersLabel,
+  isAdvantagePlus,
   mapInsightRow,
   type MetaInsightRow,
 } from '../../../shared/meta/mapping.ts'
 
-// Set to Meta's current Graph API version when Phase 1a starts (Retool hard-coded v20.0).
+// Meta Graph API version. Retool hard-coded v20.0. Bump deliberately.
 const GRAPH = 'https://graph.facebook.com/v23.0'
+const CONCURRENCY = 4
+const LIVE_EFFECTIVE = [
+  'ACTIVE', 'PAUSED', 'CAMPAIGN_PAUSED', 'ADSET_PAUSED', 'IN_PROCESS', 'WITH_ISSUES',
+  'PENDING_REVIEW', 'DISAPPROVED', 'PREAPPROVED', 'PENDING_BILLING_INFO',
+]
 
-async function graph<T>(path: string, params: Record<string, string> = {}): Promise<T[]> {
-  const token = Deno.env.get('META_SYSTEM_USER_TOKEN')
-  if (!token) throw new Error('META_SYSTEM_USER_TOKEN not set')
+type Row = Record<string, unknown>
+const token = () => {
+  const t = Deno.env.get('META_SYSTEM_USER_TOKEN')
+  if (!t) throw new Error('META_SYSTEM_USER_TOKEN not set')
+  return t
+}
+
+/** GET every page of a Graph API edge. Throws a short message without URLs. */
+async function graph<T = Row>(path: string, params: Record<string, string> = {}): Promise<T[]> {
   const out: T[] = []
-  let url: string | null = `${GRAPH}/${path}?${new URLSearchParams({ ...params, access_token: token, limit: '500' })}`
-  while (url) {
-    const res: Response = await fetch(url)
-    if (!res.ok) throw new Error(`Meta ${res.status}: ${await res.text()}`)
-    const body = await res.json()
+  let url: string | null = `${GRAPH}/${path}?${new URLSearchParams({ limit: '500', ...params })}`
+  let pages = 0
+  while (url && pages++ < 200) {
+    const res: Response = await fetch(url, { headers: { Authorization: `Bearer ${token()}` } })
+    const body = await res.json().catch(() => ({}))
+    if (!res.ok) {
+      const e = body?.error ?? {}
+      throw new Error(`Meta ${res.status} on ${path.split('?')[0]}: ${e.message ?? 'unknown error'} (code ${e.code ?? '?'}${e.error_subcode ? '/' + e.error_subcode : ''})`)
+    }
     out.push(...(body.data ?? []))
-    url = body.paging?.next ?? null
+    const next: string | undefined = body.paging?.next
+    if (next) {
+      const u = new URL(next)
+      u.searchParams.delete('access_token')
+      url = u.toString()
+    } else url = null
   }
   return out
+}
+
+function chunk<T>(arr: T[], size: number): T[][] {
+  const out: T[][] = []
+  for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size))
+  return out
+}
+
+async function upsert(db: ReturnType<typeof serviceClient>, table: string, rows: Row[], opts: { onConflict?: string; ignoreDuplicates?: boolean } = {}) {
+  for (const part of chunk(rows, 500)) {
+    const { error } = await db.from(table).upsert(part, opts)
+    if (error) throw new Error(`${table}: ${error.message}`)
+  }
+}
+
+async function pool<T>(items: T[], n: number, fn: (item: T) => Promise<void>) {
+  const queue = [...items]
+  await Promise.all(Array.from({ length: n }, async () => {
+    while (queue.length) await fn(queue.shift()!)
+  }))
+}
+
+function torontoDate(offsetDays = 0): string {
+  const d = new Date(Date.now() + offsetDays * 86_400_000)
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Toronto', year: 'numeric', month: '2-digit', day: '2-digit' }).format(d)
+}
+
+async function syncAccount(db: ReturnType<typeof serviceClient>, accountId: string, days: number) {
+  const act = `act_${accountId}`
+  const now = new Date().toISOString()
+  const live = JSON.stringify([{ field: 'effective_status', operator: 'IN', value: LIVE_EFFECTIVE }])
+
+  // Campaigns
+  const campaigns = await graph(`${act}/campaigns`, {
+    fields: 'id,name,status,effective_status,objective,daily_budget,lifetime_budget,buying_type,bid_strategy,pacing_type',
+    filtering: live,
+  })
+  await upsert(db, 'meta_campaigns', campaigns.map((c) => ({
+    id: c.id, account_id: accountId, name: c.name, status: c.status, effective_status: c.effective_status,
+    objective: c.objective, daily_budget: budgetFromMinor(c.daily_budget as string), lifetime_budget: budgetFromMinor(c.lifetime_budget as string),
+    buying_type: c.buying_type, bid_strategy: c.bid_strategy,
+    pacing_type: Array.isArray(c.pacing_type) ? (c.pacing_type as string[]).join(',') : (c.pacing_type ?? null),
+    raw: c, synced_at: now,
+  })))
+
+  // Ad sets
+  const adsets = await graph(`${act}/adsets`, {
+    fields: 'id,name,campaign_id,status,effective_status,optimization_goal,daily_budget,targeting,learning_stage_info',
+    filtering: live,
+  })
+  await upsert(db, 'meta_adsets', adsets.map((s) => {
+    const t = (s.targeting ?? {}) as Row
+    return {
+      id: s.id, campaign_id: s.campaign_id, account_id: accountId, name: s.name, status: s.status,
+      effective_status: s.effective_status, optimization_goal: s.optimization_goal,
+      daily_budget: budgetFromMinor(s.daily_budget as string), advantage_plus: isAdvantagePlus(t),
+      learning_stage: ((s.learning_stage_info ?? {}) as Row).status ?? null,
+      age_min: t.age_min ?? null, age_max: t.age_max ?? null, genders: gendersLabel(t.genders as number[]),
+      targeting: t, raw: { ...s, targeting: undefined }, synced_at: now,
+    }
+  }))
+
+  // Ads + their creatives
+  const ads = await graph(`${act}/ads`, {
+    fields: 'id,name,adset_id,campaign_id,status,effective_status,creative{id,name,title,body,call_to_action_type,image_url,thumbnail_url,video_id,effective_object_story_id}',
+    filtering: live,
+    thumbnail_width: '400',
+    thumbnail_height: '400',
+  })
+  // Several ads often share one creative: keep each creative once.
+  const creatives = [...new Map(
+    ads.map((a) => a.creative as Row | undefined).filter((c): c is Row => !!c?.id).map((c) => [c.id as string, c]),
+  ).values()]
+  await upsert(db, 'meta_ad_creatives', creatives.map((c) => ({
+    id: c.id, account_id: accountId, name: c.name ?? null, title: c.title ?? null, body: c.body ?? null,
+    call_to_action: c.call_to_action_type ?? null, image_url: c.image_url ?? null, thumbnail_url: c.thumbnail_url ?? null,
+    video_id: c.video_id ?? null,
+    permalink_url: c.effective_object_story_id ? `https://www.facebook.com/${c.effective_object_story_id}` : null,
+    raw: c, synced_at: now,
+  })))
+  await upsert(db, 'meta_ads', ads.map((a) => ({
+    id: a.id, adset_id: a.adset_id, campaign_id: a.campaign_id, account_id: accountId, name: a.name,
+    status: a.status, effective_status: a.effective_status, creative_id: (a.creative as Row | undefined)?.id ?? null,
+    raw: { ...a, creative: undefined }, synced_at: now,
+  })))
+
+  // Daily ad-level insights
+  const since = torontoDate(-days)
+  const until = torontoDate(0)
+  const insights = await graph<MetaInsightRow & { ad_name?: string; adset_name?: string; campaign_name?: string }>(`${act}/insights`, {
+    level: 'ad',
+    time_increment: '1',
+    time_range: JSON.stringify({ since, until }),
+    fields: 'ad_id,ad_name,adset_id,adset_name,campaign_id,campaign_name,account_id,spend,impressions,reach,clicks,actions',
+  })
+  if (insights.length) {
+    // Ads that spent in the window but are now deleted/archived weren't in the
+    // lists above: add minimal parent rows so the daily numbers can be stored.
+    const seen = (rows: Row[]) => new Set(rows.map((r) => r.id as string))
+    const haveC = seen(campaigns), haveS = seen(adsets), haveA = seen(ads)
+    const extraC = new Map<string, Row>(), extraS = new Map<string, Row>(), extraA = new Map<string, Row>()
+    for (const i of insights) {
+      if (!haveC.has(i.campaign_id)) extraC.set(i.campaign_id, { id: i.campaign_id, account_id: accountId, name: i.campaign_name, status: 'ARCHIVED', synced_at: now })
+      if (!haveS.has(i.adset_id)) extraS.set(i.adset_id, { id: i.adset_id, campaign_id: i.campaign_id, account_id: accountId, name: i.adset_name, status: 'ARCHIVED', synced_at: now })
+      if (!haveA.has(i.ad_id)) extraA.set(i.ad_id, { id: i.ad_id, adset_id: i.adset_id, campaign_id: i.campaign_id, account_id: accountId, name: i.ad_name, status: 'ARCHIVED', synced_at: now })
+    }
+    await upsert(db, 'meta_campaigns', [...extraC.values()], { ignoreDuplicates: true })
+    await upsert(db, 'meta_adsets', [...extraS.values()], { ignoreDuplicates: true })
+    await upsert(db, 'meta_ads', [...extraA.values()], { ignoreDuplicates: true })
+    // One row per ad per day (Meta can repeat a row across pages).
+    const daily = new Map<string, Row>()
+    for (const i of insights) {
+      const r = { ...mapInsightRow({ ...i, account_id: accountId }), synced_at: now }
+      daily.set(`${r.ad_id}|${r.date}`, r)
+    }
+    await upsert(db, 'meta_ad_insights_daily', [...daily.values()])
+  }
+  return { campaigns: campaigns.length, adsets: adsets.length, ads: ads.length, insightRows: insights.length }
 }
 
 Deno.serve(async (req) => {
   if (!isAuthorisedCron(req)) return json({ error: 'unauthorised' }, 401)
   const db = serviceClient()
-  const days = Number(new URL(req.url).searchParams.get('days') ?? '3')
+  const days = Math.min(Math.max(Number(new URL(req.url).searchParams.get('days') ?? '3') || 3, 1), 90)
 
-  const result = await logRun(db, 'meta.sync', async () => {
-    const accounts = await graph<Record<string, unknown>>('me/adaccounts', {
-      fields: 'account_id,name,currency,timezone_name,account_status,disable_reason,amount_spent',
-    })
-    let rows = 0
-    const failed: string[] = []
+  try {
+    const result = await logRun(db, 'meta.sync', async () => {
+      // 1. Every account the system user can see: refresh name/status/currency.
+      const accounts = await graph('me/adaccounts', {
+        fields: 'account_id,name,currency,timezone_name,account_status,disable_reason,amount_spent',
+      })
+      const now = new Date().toISOString()
+      await upsert(db, 'meta_ad_accounts', accounts.map((a) => ({
+        account_id: bareAccountId(String(a.account_id)), name: a.name, currency: a.currency, timezone_name: a.timezone_name,
+        account_status: accountStatusLabel(a.account_status as number), disable_reason: String(a.disable_reason ?? ''),
+        amount_spent: a.amount_spent === undefined ? null : Number(a.amount_spent) / 100, raw: a, synced_at: now,
+      })))
+      // (client_id is not touched here: it comes from the Retool bridge.)
 
-    for (const acc of accounts) {
-      const accountId = bareAccountId(String(acc.account_id))
-      try {
-        await db.from('meta_ad_accounts').upsert({
-          account_id: accountId,
-          name: acc.name,
-          currency: acc.currency,
-          timezone_name: acc.timezone_name,
-          account_status: accountStatusLabel(acc.account_status as number),
-          disable_reason: String(acc.disable_reason ?? ''),
-          raw: acc,
-          synced_at: new Date().toISOString(),
-        })
-        // TODO(phase 1a): campaigns, ad sets, creatives, ads (steps 2–5).
+      // 2. Detailed sync for accounts linked to Active/New clients.
+      const visible = new Set(accounts.map((a) => bareAccountId(String(a.account_id))))
+      const { data: linked, error } = await db
+        .from('meta_ad_accounts')
+        .select('account_id, clients!inner(active_status)')
+        .in('clients.active_status', ['Active', 'New'])
+      if (error) throw new Error(`linked accounts: ${error.message}`)
+      const targets = (linked ?? []).map((r) => r.account_id as string).filter((id) => visible.has(id))
+      const notVisible = (linked ?? []).map((r) => r.account_id as string).filter((id) => !visible.has(id))
 
-        // Step 6: daily ad-level insights for the last `days` days.
-        const insights = await graph<MetaInsightRow>(`act_${accountId}/insights`, {
-          level: 'ad',
-          time_increment: '1',
-          date_preset: days > 3 ? 'last_30d' : 'last_3d',
-          fields: 'ad_id,adset_id,campaign_id,account_id,spend,impressions,reach,clicks,actions',
-        })
-        const mapped = insights.map(mapInsightRow)
-        if (mapped.length) {
-          const { error } = await db.from('meta_ad_insights_daily').upsert(mapped)
-          if (error) throw error
+      const failed: Record<string, string> = {}
+      const counts = { campaigns: 0, adsets: 0, ads: 0, insightRows: 0 }
+      await pool(targets, CONCURRENCY, async (id) => {
+        try {
+          const c = await syncAccount(db, id, days)
+          for (const k of Object.keys(counts) as (keyof typeof counts)[]) counts[k] += c[k]
+        } catch (err) {
+          failed[id] = String(err instanceof Error ? err.message : err).slice(0, 300)
         }
-        rows += mapped.length
-        // TODO(phase 1a): leads (step 7).
-      } catch (err) {
-        console.error(`account ${accountId}`, err)
-        failed.push(accountId)
+      })
+      return {
+        rows: counts.insightRows,
+        partial: Object.keys(failed).length > 0,
+        details: { days, accountsVisible: accounts.length, accountsSynced: targets.length - Object.keys(failed).length, ...counts, failed, notVisibleToSystemUser: notVisible },
       }
-    }
-    return { rows, partial: failed.length > 0, details: { accounts: accounts.length, failed } }
-  })
-
-  // TODO(phase 1b): trigger run-rules.
-  return json(result)
+    })
+    return json(result)
+  } catch (err) {
+    return json({ error: String(err instanceof Error ? err.message : err) }, 500)
+  }
 })

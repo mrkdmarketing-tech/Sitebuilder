@@ -4,7 +4,7 @@ All in [`supabase/functions/`](../supabase/functions) (Supabase Edge Functions, 
 
 | Function | Trigger | What it does | Status |
 |---|---|---|---|
-| `meta-sync` | Every **30 min** (pg_cron); nightly with `?days=37` to backfill | Ad accounts → campaigns → ad sets → creatives → ads → daily ad insights → leads, **each account independently** (one bad account can't stall the rest). Then triggers `run-rules`. | Skeleton: accounts + insights written; other steps TODO (Phase 1a) |
+| `meta-sync` | Every **30 min** (`?days=3`); nightly `?days=37` backfill | All visible ad accounts (name, status, currency); then, for accounts linked to Active/New clients, campaigns → ad sets → ads + creatives → daily ad-level insights, 4 accounts at a time, each independent. Deleted/archived ads that spent in the window get minimal rows so their numbers are kept. Token only in the Authorization header. | **Live** (9 Nov 2026). Leads list and `run-rules` trigger: next. |
 | `retool-bridge` | Every **15 min** | Copies employees, clients (+ ads manager), ad account links, onboarding, campaign specifics, sheet leads, website requests from Retool, read-only ([retool-bridge.md](retool-bridge.md)) | **Live** (9 Nov 2026) |
 | `run-rules` | After each `meta-sync` | Evaluates suggestion rules and updates `suggestions` ([suggestions.md](suggestions.md)) | Skeleton (Phase 1b) |
 | `meta-action` | App button ("Turn off") | Pauses an ad in Meta with safety checks + audit log | Skeleton (Phase 1b) |
@@ -32,8 +32,8 @@ Live (migration 1200): `pg_cron` jobs call `private.call_function(name)`, which 
 | Job | Schedule | Status |
 |---|---|---|
 | `retool-bridge` | `*/15 * * * *` | Live |
-| `meta-sync` | `*/30 * * * *` | Phase 1a |
-| `meta-backfill` (`meta-sync?days=37`) | nightly | Phase 1a |
+| `meta-sync` (`?days=3`) | `*/30 * * * *` | Live |
+| `meta-backfill` (`meta-sync?days=37`) | `20 7 * * *` (~2:20am Toronto) | Live |
 
 Check them with `select jobname, schedule, active from cron.job;` and recent calls with `select * from net._http_response order by id desc limit 5;`.
 

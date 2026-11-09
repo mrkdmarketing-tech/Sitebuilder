@@ -101,6 +101,10 @@ Pins `search_path` on every function and stops signed-out visitors calling the h
 
 `pg_net` + `pg_cron`; `private.call_function(name)` calls an Edge Function with the cron secret from Vault. Schedules: [background-jobs.md](background-jobs.md#schedules).
 
+## 1300 Meta schedule
+
+`meta-sync` every 30 min (last 3 days) and a nightly 37-day backfill. See [background-jobs.md](background-jobs.md#schedules).
+
 ## Changing the schema
 
 Add a **new** migration file (never edit one that has been applied to Supabase), with policies for any new table, then update this page and run `npm run db:test`.
