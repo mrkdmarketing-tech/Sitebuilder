@@ -11,6 +11,7 @@ Everything about the MRKD platform is documented here. **Start with the row that
 | See how Retool is built today (apps, workflows, tables) | [current-system.md](current-system.md) |
 | Set up Supabase, Cloudflare and Meta (account owners) | [setup/accounts.md](setup/accounts.md) |
 | Create the Meta app and token (full spec, forwardable) | [setup/meta.md](setup/meta.md) |
+| Cloudflare build settings and Google sign-in setup | [setup/hosting-and-signin.md](setup/hosting-and-signin.md) |
 | Run the app on my computer / run the tests | [development.md](development.md) |
 | Know why something was decided | [decisions.md](decisions.md) |
 | **Pick a design (4 options with screenshots)** | [design-options.md](design-options.md) |

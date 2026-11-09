@@ -105,6 +105,10 @@ Pins `search_path` on every function and stops signed-out visitors calling the h
 
 `meta-sync` every 30 min (last 3 days) and a nightly 37-day backfill. See [background-jobs.md](background-jobs.md#schedules).
 
+## 1400 Sign-in link
+
+Trigger on `auth.users`: a new login is linked to the active employee with the same email. See [auth.md](auth.md).
+
 ## Changing the schema
 
 Add a **new** migration file (never edit one that has been applied to Supabase), with policies for any new table, then update this page and run `npm run db:test`.

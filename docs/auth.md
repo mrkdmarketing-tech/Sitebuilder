@@ -4,7 +4,11 @@
 
 Only **active employees** (`employees.active = true`). Anyone else who manages to sign in sees nothing, because the database blocks it. Clients never have access.
 
-## How people sign in (Phase 0)
+## How people sign in (live once Google is set up, see [setup/hosting-and-signin.md](setup/hosting-and-signin.md))
+
+Now: **Continue with Google** (restricted to @mrkd.ca) and an **email sign-in link** as backup. The login is linked to the staff record with the same email on first sign-in (migration 1400). GHL single sign-on inside the GHL sidebar comes later, as planned below.
+
+## Planned: sign-in inside GHL
 
 | Where | How |
 |---|---|

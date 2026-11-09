@@ -87,3 +87,16 @@ do $$ begin
   assert (select manager_id from public.suggestions where key = 'expensive_cpl:a1') = 'emp_sam', 'suggestion follows reassignment';
 end $$;
 select 'security tests ok' as result;
+
+-- First sign-in links the login to the staff record with the same email.
+insert into auth.users (id, email) values ('00000000-0000-0000-0000-0000000000dd', 'SAM@example.com');
+do $$ begin
+  assert (select auth_user_id from public.employees where id = 'emp_sam') = '00000000-0000-0000-0000-0000000000dd',
+    'login linked to employee by email (case-insensitive)';
+end $$;
+insert into auth.users (id, email) values ('00000000-0000-0000-0000-0000000000ee', 'nobody@example.com');
+do $$ begin
+  assert (select count(*) from public.employees where auth_user_id = '00000000-0000-0000-0000-0000000000ee') = 0,
+    'unknown email links to nobody';
+end $$;
+select 'auth link tests ok' as result;

@@ -2,6 +2,10 @@
 
 What changed, newest first. Every change to the platform adds a line here.
 
+## 2026-11-09: Sign-in and hosting setup
+- Sign-in screen: Continue with Google (restricted to @mrkd.ca) plus an email sign-in link; "not on the staff list" screen; sign out from the top bar. Migration 1400 links each login to the staff record by email (tested).
+- App now builds against the live Supabase project (`web/.env.production`, public values only), with `_redirects` and `.nvmrc` for Cloudflare Pages. Build settings and Google OAuth steps in [docs/setup/hosting-and-signin.md](docs/setup/hosting-and-signin.md).
+
 ## 2026-11-09: Meta sync covers 46 accounts
 - After the missing ad accounts were assigned to the system user, 46 of the active client accounts sync (2,610 campaigns, 6,876 ads, 37 days of daily numbers, about 85 seconds per full run). Still missing: Bulls Brazilian Jiu-Jitsu, Infinite Hitting Deerfield Beach, Gracie Barra Whiterock (not assigned/shared) and Campeao (no longer a client but still Active in GHL/Retool).
 - meta-sync now retries with smaller batches when Meta says "reduce the amount of data" (fixed Atlantic MMA).

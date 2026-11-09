@@ -10,7 +10,8 @@ Step-by-step for the accounts the platform needs. Do them in order. **Never past
 | Database installed | **Done.** All migrations applied and verified: 36 tables, row-level security on every table, 84 access rules, private `ad-assets` bucket, thresholds and checklist loaded. Supabase security advisor clean apart from 4 intended items (see [auth.md](../auth.md#supabase-security-advisor)). |
 | Supabase access token for Claude | **Done.** Stored encrypted in the `mrkd-sitebuilder` Claude cloud environment (never in chat or the repo). Expires after 7 days; make a new one when asked. |
 | Retool DB connection (`RETOOL_DB_URL`) | **Done.** Secret added 9 Nov 2026; bridge live every 15 min ([retool-bridge.md](../retool-bridge.md)). |
-| Cloudflare | To do |
+| Cloudflare | Account created and connected to GitHub (9 Nov 2026). Build settings: [hosting-and-signin.md](hosting-and-signin.md). |
+| Google sign-in | To do: create the Google OAuth client ([hosting-and-signin.md](hosting-and-signin.md#google-sign-in-staff-use-their-mrkdca-google-account)). |
 | Meta System User | **Done.** App `MRKD Platform` + system user `MRKDPlatformTools` token (never expires) saved as `META_SYSTEM_USER_TOKEN` in Supabase secrets. Spec: [meta.md](meta.md). |
 | GHL menu link + sign-on | To do (Phase 0) |
 

@@ -1,6 +1,7 @@
 import { NavLink, Outlet } from 'react-router-dom'
 import { BarChart3, CheckSquare, Lightbulb, Search, Activity } from 'lucide-react'
 import { SAMPLE_MODE } from '../lib/config'
+import { supabase } from '../lib/supabase'
 import { useData } from '../data/source'
 import { useAsync } from '../lib/useAsync'
 import { DESIGNS, useSession, type Design } from './session'
@@ -46,12 +47,18 @@ function UserBadge() {
   const { me } = useSession()
   if (!me) return null
   return (
-    <div className="flex items-center gap-2 text-sm">
+    <button
+      type="button"
+      title={supabase ? 'Sign out' : undefined}
+      onClick={() => supabase?.auth.signOut()}
+      className="flex items-center gap-2 text-sm"
+    >
       <span className="flex h-7 w-7 items-center justify-center rounded-full bg-brand text-xs font-bold text-on-primary">
         {me.firstName[0]}{me.lastName[0]}
       </span>
       <span className="hidden text-header-ink/80 lg:inline">{me.firstName} {me.lastName}</span>
-    </div>
+      {supabase && <span className="hidden text-xs text-header-ink/60 lg:inline">· Sign out</span>}
+    </button>
   )
 }
 

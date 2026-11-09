@@ -6,6 +6,7 @@ import { createSupabaseSource } from '../data/supabaseSource'
 import { supabase } from '../lib/supabase'
 import { Layout } from './Layout'
 import { SessionProvider } from './session'
+import { AuthGate } from './AuthGate'
 import { InsightsPage } from '../features/insights/InsightsPage'
 import { SuggestionsPage } from '../features/suggestions/SuggestionsPage'
 import { SearchPage } from '../features/search/SearchPage'
@@ -19,12 +20,13 @@ import { SyncStatusPage } from '../features/status/SyncStatusPage'
  *   /approvals    Ad approval (Phase 2)          replaces Retool "Ad Preview"
  *   /search       Lead form & ad copy search      replaces Retool "Search Meta Lead Forms"
  *   /status       Sync health
- * TODO(phase 0): sign-in gate (GHL single sign-on + Google), see docs/auth.md.
+ * Sign-in: AuthGate (Google restricted to mrkd.ca, plus email link). GHL single sign-on later.
  */
 export function App() {
   const source: DataSource = useMemo(() => (supabase ? createSupabaseSource(supabase) : createMockSource()), [])
   return (
     <DataContext.Provider value={source}>
+      <AuthGate>
       <SessionProvider>
       <Routes>
         <Route element={<Layout />}>
@@ -38,6 +40,7 @@ export function App() {
         </Route>
       </Routes>
       </SessionProvider>
+      </AuthGate>
     </DataContext.Provider>
   )
 }
