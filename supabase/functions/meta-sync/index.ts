@@ -86,6 +86,21 @@ async function pool<T>(items: T[], n: number, fn: (item: T) => Promise<void>) {
   }))
 }
 
+/** Inserts placeholder campaigns/ad sets (status ARCHIVED) for any referenced but not fetched. */
+async function ensureParents(
+  db: ReturnType<typeof serviceClient>, accountId: string, now: string, campaigns: Row[], adsets: Row[],
+  refs: { campaign_id: string; adset_id: string; campaign_name?: string; adset_name?: string }[],
+) {
+  const haveC = new Set(campaigns.map((r) => r.id as string)), haveS = new Set(adsets.map((r) => r.id as string))
+  const extraC = new Map<string, Row>(), extraS = new Map<string, Row>()
+  for (const r of refs) {
+    if (r.campaign_id && !haveC.has(r.campaign_id)) extraC.set(r.campaign_id, { id: r.campaign_id, account_id: accountId, name: r.campaign_name ?? null, status: 'ARCHIVED', synced_at: now })
+    if (r.adset_id && !haveS.has(r.adset_id)) extraS.set(r.adset_id, { id: r.adset_id, campaign_id: r.campaign_id, account_id: accountId, name: r.adset_name ?? null, status: 'ARCHIVED', synced_at: now })
+  }
+  await upsert(db, 'meta_campaigns', [...extraC.values()], { ignoreDuplicates: true })
+  await upsert(db, 'meta_adsets', [...extraS.values()], { ignoreDuplicates: true })
+}
+
 function torontoDate(offsetDays = 0): string {
   const d = new Date(Date.now() + offsetDays * 86_400_000)
   return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Toronto', year: 'numeric', month: '2-digit', day: '2-digit' }).format(d)
@@ -144,6 +159,11 @@ async function syncAccount(db: ReturnType<typeof serviceClient>, accountId: stri
     permalink_url: c.effective_object_story_id ? `https://www.facebook.com/${c.effective_object_story_id}` : null,
     raw: c, synced_at: now,
   })))
+  // An ad can be live while its ad set or campaign is archived (so it wasn't
+  // in the lists above). Add minimal parent rows first so nothing is dropped.
+  await ensureParents(db, accountId, now, campaigns, adsets, ads.map((a) => ({
+    campaign_id: a.campaign_id as string, adset_id: a.adset_id as string,
+  })))
   await upsert(db, 'meta_ads', ads.map((a) => ({
     id: a.id, adset_id: a.adset_id, campaign_id: a.campaign_id, account_id: accountId, name: a.name,
     status: a.status, effective_status: a.effective_status, creative_id: (a.creative as Row | undefined)?.id ?? null,
@@ -161,17 +181,15 @@ async function syncAccount(db: ReturnType<typeof serviceClient>, accountId: stri
   })
   if (insights.length) {
     // Ads that spent in the window but are now deleted/archived weren't in the
-    // lists above: add minimal parent rows so the daily numbers can be stored.
-    const seen = (rows: Row[]) => new Set(rows.map((r) => r.id as string))
-    const haveC = seen(campaigns), haveS = seen(adsets), haveA = seen(ads)
-    const extraC = new Map<string, Row>(), extraS = new Map<string, Row>(), extraA = new Map<string, Row>()
+    // lists above: add minimal rows (and parents) so the daily numbers are kept.
+    await ensureParents(db, accountId, now, campaigns, adsets, insights.map((i) => ({
+      campaign_id: i.campaign_id, campaign_name: i.campaign_name, adset_id: i.adset_id, adset_name: i.adset_name,
+    })))
+    const haveA = new Set(ads.map((r) => r.id as string))
+    const extraA = new Map<string, Row>()
     for (const i of insights) {
-      if (!haveC.has(i.campaign_id)) extraC.set(i.campaign_id, { id: i.campaign_id, account_id: accountId, name: i.campaign_name, status: 'ARCHIVED', synced_at: now })
-      if (!haveS.has(i.adset_id)) extraS.set(i.adset_id, { id: i.adset_id, campaign_id: i.campaign_id, account_id: accountId, name: i.adset_name, status: 'ARCHIVED', synced_at: now })
       if (!haveA.has(i.ad_id)) extraA.set(i.ad_id, { id: i.ad_id, adset_id: i.adset_id, campaign_id: i.campaign_id, account_id: accountId, name: i.ad_name, status: 'ARCHIVED', synced_at: now })
     }
-    await upsert(db, 'meta_campaigns', [...extraC.values()], { ignoreDuplicates: true })
-    await upsert(db, 'meta_adsets', [...extraS.values()], { ignoreDuplicates: true })
     await upsert(db, 'meta_ads', [...extraA.values()], { ignoreDuplicates: true })
     // One row per ad per day (Meta can repeat a row across pages).
     const daily = new Map<string, Row>()
