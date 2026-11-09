@@ -2,6 +2,10 @@
 
 What changed, newest first. Every change to the platform adds a line here.
 
+## 2026-11-09: Meta sync covers 46 accounts
+- After the missing ad accounts were assigned to the system user, 46 of the active client accounts sync (2,610 campaigns, 6,876 ads, 37 days of daily numbers, about 85 seconds per full run). Still missing: Bulls Brazilian Jiu-Jitsu, Infinite Hitting Deerfield Beach, Gracie Barra Whiterock (not assigned/shared) and Campeao (no longer a client but still Active in GHL/Retool).
+- meta-sync now retries with smaller batches when Meta says "reduce the amount of data" (fixed Atlantic MMA).
+
 ## 2026-11-09: Meta sync live
 - Meta app and system user token set up (never expires, read-only scopes), stored as a Supabase secret.
 - `meta-sync` finished and deployed: all visible ad accounts, then campaigns, ad sets, ads, creatives and daily ad-level insights for accounts linked to Active/New clients, 4 at a time; token only in the request header. Scheduled every 30 min plus a nightly 37-day backfill (migration 1300).

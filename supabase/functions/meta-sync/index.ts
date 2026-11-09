@@ -46,13 +46,23 @@ const token = () => {
 /** GET every page of a Graph API edge. Throws a short message without URLs. */
 async function graph<T = Row>(path: string, params: Record<string, string> = {}): Promise<T[]> {
   const out: T[] = []
-  let url: string | null = `${GRAPH}/${path}?${new URLSearchParams({ limit: '500', ...params })}`
+  let limit = 500
+  let url: string | null = `${GRAPH}/${path}?${new URLSearchParams({ limit: String(limit), ...params })}`
   let pages = 0
-  while (url && pages++ < 200) {
+  while (url && pages++ < 400) {
     const res: Response = await fetch(url, { headers: { Authorization: `Bearer ${token()}` } })
     const body = await res.json().catch(() => ({}))
     if (!res.ok) {
       const e = body?.error ?? {}
+      // "Please reduce the amount of data you're asking for": retry this page
+      // with a smaller batch (500 → 250 → … → 25) instead of failing the account.
+      if (e.code === 1 && /reduce the amount of data/i.test(e.message ?? '') && limit > 25) {
+        limit = Math.max(25, Math.floor(limit / 2))
+        const u = new URL(url)
+        u.searchParams.set('limit', String(limit))
+        url = u.toString()
+        continue
+      }
       throw new Error(`Meta ${res.status} on ${path.split('?')[0]}: ${e.message ?? 'unknown error'} (code ${e.code ?? '?'}${e.error_subcode ? '/' + e.error_subcode : ''})`)
     }
     out.push(...(body.data ?? []))
