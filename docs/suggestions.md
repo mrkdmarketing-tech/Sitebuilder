@@ -27,7 +27,7 @@ Evaluated over the **last 7 days**, only for Active/New clients and only for ads
 |---|---|---|---|---|
 | 1 | Expensive leads | CPL **> $50** with ≥ 1 lead | Turn off ad | High |
 | 2 | Spending, no leads | **> $50** spent, 0 leads | Turn off ad | High |
-| 3 | Budget hog | Ad has **≥ 60%** of its ad set's spend, spent ≥ $50, **and** CPL **> $80** or **≤ 2 leads**, and the ad set has other ads | Turn off ad so budget moves to the other ads (card lists the other ads' spend/leads/CPL) | High |
+| 3 | Budget hog | Ad has **≥ 60%** of its ad set's spend, spent ≥ $50, **and** either **no leads** or CPL **> $80**, and the ad set has other ads (tightened 10 Nov 2026: 2 leads at $35 is not a problem) | Turn off ad so budget moves to the other ads (card lists the other ads' spend/leads/CPL) | High |
 | 4 | Low CTR | CTR **< 0.8%** after ≥ 1,000 impressions | Refresh creative | Medium |
 | 5 | Low link CTR | Link CTR **< 0.5%** after ≥ 1,000 impressions | Refresh creative / check offer | Medium |
 | 6 | Account problem | Account not active, or UNSETTLED / IN_GRACE_PERIOD | Check billing / contact client | High |

@@ -25,12 +25,11 @@ export interface RuleSettings {
   expensiveCpl: number
   /** Rule 2: flag an ad that spent more than this ($) with 0 leads. */
   noLeadSpend: number
-  /** Rule 3: an ad is a budget hog if it has at least this share (0–1) of its ad set's spend… */
+  /** Rule 3: an ad is a budget hog if it has at least this share (0–1) of its ad set's spend
+   * and either no leads or a cost per lead above budgetHogCpl. */
   budgetHogShare: number
-  /** …and its cost per lead is above this ($)… */
+  /** Rule 3: cost per lead ($) above which a dominant ad is flagged. */
   budgetHogCpl: number
-  /** …or it has this many leads or fewer. */
-  budgetHogMaxLeads: number
   /** Rule 4: CTR below this % is low. */
   lowCtr: number
   /** Rule 5: link CTR below this % is low. */
@@ -46,7 +45,6 @@ export const DEFAULT_RULE_SETTINGS: RuleSettings = Object.freeze({
   noLeadSpend: 50,
   budgetHogShare: 0.6,
   budgetHogCpl: 80,
-  budgetHogMaxLeads: 2,
   lowCtr: 0.8,
   lowLinkCtr: 0.5,
   minImpressions: 1000,
@@ -105,7 +103,9 @@ const PRIORITY: RuleKey[] = [
 ]
 
 const money = (n: number) => `$${n.toFixed(n >= 100 ? 0 : 2).replace(/\.00$/, '')}`
-const pct = (n: number) => `${n.toFixed(2)}%`
+/** Percent with 2 decimals, or 3 when 2 would round up to look equal to the threshold. */
+const pct = (n: number, threshold?: number) =>
+  threshold !== undefined && Number(n.toFixed(2)) >= threshold ? `${n.toFixed(3)}%` : `${n.toFixed(2)}%`
 const leadsText = (n: number) => `${n} lead${n === 1 ? '' : 's'}`
 
 /** Clients the rules apply to (same filter as Retool's insights: Active or New). */
@@ -189,7 +189,9 @@ export function evaluateRules(input: RuleInput): Suggestion[] {
       siblings.length > 0 &&
       share >= s.budgetHogShare &&
       ad.spend >= s.noLeadSpend &&
-      (ad.leads <= s.budgetHogMaxLeads || (m.cpl !== null && m.cpl > s.budgetHogCpl))
+      // Agreed with Jordan: "an ad that has 1 lead or 2 at over $80-100". So a
+      // dominant ad is only a problem with no leads, or leads costing over $80.
+      (ad.leads === 0 || (m.cpl !== null && m.cpl > s.budgetHogCpl))
     ) {
       candidates.push({
         ...base(ad, 'budget_hog', 'ad'),
@@ -242,7 +244,7 @@ export function evaluateRules(input: RuleInput): Suggestion[] {
         candidates.push({
           ...base(ad, 'low_link_ctr', 'ad'),
           severity: 'medium',
-          message: `${ad.name} has a low link CTR of ${pct(m.linkCtr)} (under ${pct(s.lowLinkCtr)}).`,
+          message: `${ad.name} has a low link CTR of ${pct(m.linkCtr, s.lowLinkCtr)} (under ${pct(s.lowLinkCtr)}).`,
           question: 'Refresh the creative or check the offer?',
           action: { type: 'review_creative', adId: ad.id },
           evidence: { linkCtr: m.linkCtr, impressions: ad.impressions },
@@ -252,7 +254,7 @@ export function evaluateRules(input: RuleInput): Suggestion[] {
         candidates.push({
           ...base(ad, 'low_ctr', 'ad'),
           severity: 'medium',
-          message: `${ad.name} has a low CTR of ${pct(m.ctr)} (under ${pct(s.lowCtr)}).`,
+          message: `${ad.name} has a low CTR of ${pct(m.ctr, s.lowCtr)} (under ${pct(s.lowCtr)}).`,
           question: 'Refresh the creative?',
           action: { type: 'review_creative', adId: ad.id },
           evidence: { ctr: m.ctr, impressions: ad.impressions },

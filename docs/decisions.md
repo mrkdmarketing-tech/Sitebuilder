@@ -14,7 +14,7 @@ Why things are the way they are. Newest first. Add an entry whenever a real choi
 | 2026-11-09 | Database returns **raw totals**; KPIs computed in TypeScript | Single source of truth for formulas (see above), easy to test | Computing CPL etc. in SQL |
 | 2026-11-09 | **Sample data mode** when Supabase isn't configured | Lets Jordan/Trent review screens before accounts exist; makes local dev easy | Waiting for real data |
 | 2026-11-09 | Selecting accounts also **filters the other tabs** | Natural drill-down; Retool only recalculated KPIs | Retool's behaviour only |
-| 2026-11-09 | Suggestion thresholds: CPL > $50, > $50 no leads, budget hog ≥ 60% share & > $80 CPL or ≤ 2 leads, CTR < 0.8%, link CTR < 0.5% | Agreed with Jordan; CTR and 60% values are starting points to tune | – |
+| 2026-11-09 | Suggestion thresholds: CPL > $50, > $50 no leads, budget hog ≥ 60% share & (no leads or > $80 CPL), CTR < 0.8%, link CTR < 0.5% | Agreed with Jordan; CTR and 60% values are starting points to tune | – |
 | 2026-11-09 | Ad approval: "publish" = **submit for approval**; uploads are manual; AI warnings never block ("Submit anyway") | Agreed with Jordan | Creating ads in Meta from the app (bigger scope) |
 | 2026-11-09 | **No audio check** for videos; on-screen text and subtitles only | Agreed with Jordan; avoids a speech-to-text service | Transcribing audio |
 | 2026-11-09 | Suggestions **in the app only**, no Slack | Agreed with Jordan | Slack digest |

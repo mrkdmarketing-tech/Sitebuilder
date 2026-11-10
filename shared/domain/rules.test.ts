@@ -72,6 +72,18 @@ describe('rule 3: budget hog', () => {
     expect(s.message).toBe("Ad hog took 75% of its ad set's spend ($180) for 2 leads at $90 each.")
     expect(s.siblings?.map((x) => x.id)).toEqual(['b', 'c'])
   })
+  it('does not flag a dominant ad with 2 leads at a reasonable cost (e.g. $35)', () => {
+    const ads = [
+      ad('a', 'set1', { ...healthy, spend: 71, leads: 2 }), // 93% share, $35.50 CPL
+      ad('b', 'set1', { ...healthy, spend: 5, leads: 0 }),
+    ]
+    expect(run(ads)).toEqual([])
+  })
+  it('flags a dominant ad with no leads', () => {
+    const [s] = run([ad('a', 'set1', { ...healthy, spend: 119, leads: 0 }), ad('b', 'set1', { ...healthy, spend: 40, leads: 1 })])
+    expect(s.rule).toBe('budget_hog')
+    expect(s.message).toBe("Ad a took 75% of its ad set's spend ($119) with no leads.")
+  })
   it('does not flag a dominant ad that is performing well', () => {
     const ads = [
       ad('a', 'set1', { ...healthy, spend: 300, leads: 15 }), // $20 CPL
@@ -97,6 +109,13 @@ describe('rules 4–5: low CTR / link CTR', () => {
   })
   it('waits for 1,000 impressions before judging', () => {
     expect(run([ad('1', 'set1', { impressions: 900, clicks: 1, linkClicks: 1, spend: 10, leads: 1 })])).toEqual([])
+  })
+})
+
+describe('percent display', () => {
+  it('shows 3 decimals when 2 would look equal to the threshold', () => {
+    const [s] = run([ad('1', 'set1', { impressions: 10000, clicks: 200, linkClicks: 49.7 * 1, spend: 40, leads: 2 })])
+    expect(s.message).toContain('0.497%')
   })
 })
 

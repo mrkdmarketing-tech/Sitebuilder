@@ -113,7 +113,7 @@ Starting rules (agreed with Jordan, Nov 2026). Metrics use the **last 7 days** b
 |---|---|---|---|
 | 1 | **Expensive leads**: ad cost per lead too high | CPL **> $50** (with ≥ 1 lead) | Turn off ad |
 | 2 | **Spending with no leads** | Spent **> $50** with 0 leads | Turn off ad |
-| 3 | **Budget hog**: one ad takes most of its ad set/campaign's spend while its leads are expensive. Meta often pours most of the weekly budget into 1 of 3 ads, leaving an ad with 1–2 leads at $80–100. | Ad has **≥ 60%** of its ad set's spend **and** CPL **> $80** (or ≤ 2 leads) | Turn off that ad so budget moves to the other ads. The card shows the other ads' spend and CPL so the manager can see what they'd be shifting to. |
+| 3 | **Budget hog**: one ad takes most of its ad set/campaign's spend while its leads are expensive. Meta often pours most of the weekly budget into 1 of 3 ads, leaving an ad with 1–2 leads at $80–100. | Ad has **≥ 60%** of its ad set's spend **and** either no leads or CPL **> $80** | Turn off that ad so budget moves to the other ads. The card shows the other ads' spend and CPL so the manager can see what they'd be shifting to. |
 | 4 | **Low CTR** | CTR **< 0.8%** after ≥ 1,000 impressions | Refresh creative / new hook |
 | 5 | **Low link CTR** | Link CTR **< 0.5%** after ≥ 1,000 impressions | Refresh creative / check CTA and offer |
 | 6 | Ad account disabled, unsettled or has a payment issue | Any | Fix billing / contact client |

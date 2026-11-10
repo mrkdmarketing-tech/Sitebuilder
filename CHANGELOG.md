@@ -2,6 +2,11 @@
 
 What changed, newest first. Every change to the platform adds a line here.
 
+## 2026-11-10: Suggestion rules tuned on real data
+- Budget hog now needs no leads or CPL over $80 (it was flagging 2 leads at $35). Migration 1600 retires the old "max leads" setting.
+- Percent values show 3 decimals when 2 would look equal to the threshold (0.497%, not "0.50% (under 0.50%)").
+- On 10 Nov data: 42 suggestions before the change across 3 ads managers.
+
 ## 2026-11-10: Suggestions on live data
 - The Suggestions page runs on real numbers. Until one-click pausing is built (needs the `ads_management` scope and the meta-action function), "Turn off" opens the ad in Ads Manager instead, so nothing looks paused when it isn't.
 
