@@ -2,6 +2,10 @@
 
 What changed, newest first. Every change to the platform adds a line here.
 
+## 2026-11-10: Dashboard speed fix
+- Signed-in reports were timing out (8 s limit) because access checks ran once per row. Migration 1500 makes them run once per query: account view 8.1 s → 0.18 s, all views under 0.6 s. Same access rules; tests pass.
+- First real sign-in worked (Jordan, by email link) and linked to the staff record.
+
 ## 2026-11-10: The Lab is online
 - Cloudflare Pages deploys the app at https://sitebuilder-6iw.pages.dev on every push. Supabase sign-in redirects now point there (email sign-in link works; Google sign-in once its OAuth client is set up).
 
