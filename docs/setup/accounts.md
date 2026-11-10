@@ -13,7 +13,8 @@ Step-by-step for the accounts the platform needs. Do them in order. **Never past
 | Cloudflare | **Live** at **https://sitebuilder-6iw.pages.dev** (Pages project `sitebuilder`, builds `claude/retool-overview-hsg1ch` on every push). Supabase sign-in Site URL and redirect list point there. Build settings: [hosting-and-signin.md](hosting-and-signin.md). |
 | Google sign-in | To do: create the Google OAuth client ([hosting-and-signin.md](hosting-and-signin.md#google-sign-in-staff-use-their-mrkdca-google-account)). |
 | Meta System User | **Done.** App `MRKD Platform` + system user `MRKDPlatformTools` token (never expires) saved as `META_SYSTEM_USER_TOKEN` in Supabase secrets. Spec: [meta.md](meta.md). |
-| GHL menu link + sign-on | To do (Phase 0) |
+| GHL menu link + sign-on | To do (Phase 0). On hold until Jordan says go. |
+| Claude key for the ad mistake check (`ANTHROPIC_API_KEY`) | To do. Steps: [../sop/tokens-and-secrets.md](../sop/tokens-and-secrets.md#add-the-claude-key-ai-ad-check). Ad approval works without it; only "Check for mistakes" waits for it. |
 
 **How Claude installs database changes:** with the access token above, through Supabase's management API. Each migration file in `supabase/migrations/` runs as one all-or-nothing step and is recorded in `supabase_migrations.schema_migrations`, the same table the Supabase CLI uses, so either method can be used later.
 

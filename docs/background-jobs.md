@@ -5,11 +5,11 @@ All in [`supabase/functions/`](../supabase/functions) (Supabase Edge Functions, 
 | Function | Trigger | What it does | Status |
 |---|---|---|---|
 | `meta-sync` | Every **30 min** (`?days=3`); nightly `?days=37` backfill | All visible ad accounts (name, status, currency); then, for accounts linked to Active/New clients, campaigns → ad sets → ads + creatives → daily ad-level insights, 4 accounts at a time, each independent. Deleted/archived ads that spent in the window get minimal rows so their numbers are kept. Token only in the Authorization header. | **Live** (9 Nov 2026). Leads list and `run-rules` trigger: next. |
-| `retool-bridge` | Every **15 min** | Copies employees, clients (+ ads manager), ad account links, onboarding, campaign specifics, sheet leads, website requests from Retool, read-only ([retool-bridge.md](retool-bridge.md)) | **Live** (9 Nov 2026) |
+| `retool-bridge` | Every **15 min** | Copies employees, clients (+ ads manager), ad account links, onboarding, campaign specifics, sheet leads, website requests, and (since 10 Nov) GHL custom field names, templates and Ad Preview history from Retool, read-only ([retool-bridge.md](retool-bridge.md)) | **Live** (9 Nov 2026) |
 | `run-rules` | `10,40 * * * *` (10 min after each Meta sync) | Evaluates suggestion rules on the last 7 days and saves them to `suggestions`, stamped with the client's GHL ads manager; resolves ones that cleared; reopens expired snoozes ([suggestions.md](suggestions.md)) | **Live** (10 Nov 2026) |
 | `meta-action` | App button ("Turn off"), signed-in staff only | Checks the caller may see the suggestion, re-reads the ad, pauses it in Meta, logs to `actions_log`, marks the suggestion done | **Live** (10 Nov 2026) |
 | `meta-check` | On demand (`select private.call_function('meta-check')`, then read `net._http_response`) | Diagnostic: lists the Meta token's granted permissions and which ad accounts the system user can edit vs only view. Never returns the token. | Live |
-| `ad-check` | App, on upload in ad approval | AI quality check with Claude ([ad-approval.md](ad-approval.md)) | Skeleton (Phase 2) |
+| `ad-check` | App button "Check for mistakes", signed-in staff only | Reads the ad's copy, image previews and video frames plus the client's details, asks Claude for mistakes as strict JSON, saves findings and the checklist's AI column, records cost ([ad-approval.md](ad-approval.md#how-the-check-works-built-10-nov-2026)) | **Deployed** (10 Nov 2026). Answers "not set up yet" until `ANTHROPIC_API_KEY` is added. |
 
 Shared helpers: `_shared/supabase.ts` (service/user clients), `_shared/sync-log.ts` (records runs), `_shared/http.ts` (CORS, JSON, cron secret check). Meta API → table mapping is in `shared/meta/mapping.ts` (unit-tested).
 

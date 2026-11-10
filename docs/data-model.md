@@ -129,6 +129,18 @@ Adds `sync_runs` to Supabase Realtime so open screens reload when a job finishes
 
 `save_rule_settings(params)`: owners/admins change the global suggestion thresholds from the **Settings** screen. Refuses unknown keys, text and out-of-range values; records who changed it (`rule_settings.updated_by`) and the before/after in `actions_log` (`rules.update`). Tested in `supabase/tests/settings.test.sql`.
 
+## 2100 Ad approval screens
+
+- `set_review_status(review, to, note, reviewer, acknowledged)`: the only way to change an ad's status (a trigger blocks direct changes from the app). Checks the move is allowed, stamps submitted / reviewed / completed times, counts open findings on submit (`submitted_with_open_findings`), defaults the reviewer to the client's ads manager, writes `ad_review_events` and saves the note as a comment.
+- `ad_review_list()`: the Approvals list in one call (names, open findings, first preview).
+- `client_brief(client)`: business details for the editor, template placeholders and the AI check. Decodes GHL custom fields with `ghl_custom_fields`, leaving out billing ids, payment links and internal document links.
+- New columns: `ad_reviews.legacy` (what was kept from Retool), `ad_review_assets.frames` (JPEG previews made in the browser), `ad_review_findings.finding_key` (to keep "Ignore" across checks).
+- Imported Retool ads (`legacy_id` set) are read-only: restrictive policies on the ad and every child table. Comments can only be added as yourself.
+
+## 2200 Retool bridge, part 2
+
+`private.retool_bridge_ad_history(conn)`, run by `retool-bridge` after the main copy: GHL custom field names (`ghl_custom_fields`), ad creative and lead form templates, and Retool's Ad Preview (`ads_preview` → read-only `ad_reviews`). Base64 images are stripped on Retool's side. Details: [ad-approval.md](ad-approval.md#history-from-retool).
+
 ## Changing the schema
 
 Add a **new** migration file (never edit one that has been applied to Supabase), with policies for any new table, then update this page and run `npm run db:test`.

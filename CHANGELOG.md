@@ -2,6 +2,14 @@
 
 What changed, newest first. Every change to the platform adds a line here.
 
+## 2026-11-10: Ad approval (Phase 2)
+- **Ad approval is live** at `/approvals`, replacing Retool's Ad Preview: list with **Needs me / In progress / All / From Retool**, **New ad**, an editor for setup, creative, images and videos, lead form and notes, templates that fill in the client's details, a client info panel, the 11-point checklist, comments and history.
+- **Check for mistakes** (`ad-check` function): Claude reads the copy, lead form, the text in images and the subtitles in videos (stills taken in the browser at upload; no audio), compares against the client's details, and lists issues with a suggested fix. **Fixed** / **Ignore** per issue; ignored issues stay ignored next time. The checklist shows the AI's opinion next to the items it can judge. Waiting on the Claude key (`ANTHROPIC_API_KEY`); until then it says it isn't set up.
+- **"Hey, just double checking"**: submitting with open issues lists them with **Go back and fix** or **Submit anyway**; submitting anyway is recorded.
+- Status changes only through `set_review_status` (migration 2100): no skipping review, history of every move, reviewer defaults to the client's ads manager.
+- Retool's Ad Preview history (596 ads), templates (13 creative, 8 lead form) and GHL custom field names are now copied read-only every 15 minutes (migration 2200). Retool's base64 images are not copied.
+- Not yet: Slack and ClickUp notifications for ad approval.
+
 ## 2026-11-10: Settings screen
 - New **Settings** page: owners and admins change suggestion thresholds (CPL, no-lead spend, budget hog, CTR, link CTR, minimum impressions, no-recent-leads days). Values are checked and every change is logged with who and when (migration 2000). Staff see them read-only.
 - Settings also lets anyone switch between the four designs on real data, and links to Sync status. On phones, Settings replaces Sync in the bottom bar.

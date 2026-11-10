@@ -23,9 +23,13 @@ Rules applied while copying:
 | `campaign_specifics` | `campaign_specifics` | |
 | `sheet_leads` | `leads` | Lead outcomes from client Google Sheets (Retool keeps syncing the sheets) |
 | `website_campaign_requests` | `website_campaign_requests` | |
-| `ghl_custom_fields` | `ghl_locations.custom_fields_metadata` (agency) | |
+| `ghl_custom_fields` | `ghl_locations.custom_fields_metadata` (MRKD agency location only) | Field names for decoding client info. Live since 10 Nov 2026 (migration 2200); 147 fields. The location's access token is never read. |
+| `ad_creative_templates`, `leadform_templates` | same names | 13 and 8 on 10 Nov 2026. Templates made in The Lab are never touched. |
+| `ad_reviews` (read-only, `legacy_id` set) | `ads_preview` | Ad Preview history: 596 ads. Images (base64) stripped by Retool's database before sending. See [ad-approval.md](ad-approval.md#history-from-retool). |
 
-**Not copied:** any token or secret column (`ghl_access_token`, `ghl_locations.access_token`, `leadlabzCalendar.api_key`), Meta tables (the new app syncs Meta itself), Stripe, GPT chat, test tables.
+Parts: `private.retool_bridge_run` (migration 1100) copies the tables above it in this list; `private.retool_bridge_ad_history` (migration 2200) copies custom fields, templates and Ad Preview. The `retool-bridge` function runs both each time.
+
+**Not copied:** ad images stored in `ads_preview`, any token or secret column (`ghl_access_token`, `ghl_locations.access_token`, `leadlabzCalendar.api_key`), Meta tables (the new app syncs Meta itself), Stripe, GPT chat, test tables.
 
 Order: employees → clients → the rest (foreign keys). Rows deleted in Retool are deleted here too. `retool_bridge_state` records the last successful copy and row count per table.
 

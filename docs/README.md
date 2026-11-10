@@ -55,21 +55,22 @@ shared/                 Code used by BOTH the app and the background jobs
   domain/metrics.ts       KPI formulas — the only place they're calculated
   domain/dates.ts         Date presets (Last 7 days…), Toronto time zone
   domain/rules.ts         Suggestion rules engine
+  domain/approvals.ts     Ad approval: statuses, placeholders, AI finding format
   meta/mapping.ts         Meta API → database row mapping
   **/*.test.ts            Unit tests
 web/                    The app (React + TypeScript + Tailwind, built with Vite)
   src/app/                Routes, app shell (top bar / sidebar / phone tab bar), session (who's signed in, design)
   src/features/insights/  Meta insights screen
   src/features/suggestions/ Suggestions screen
-  src/features/approvals/ Ad approval (Phase 2 placeholder)
+  src/features/approvals/ Ad approval: list, editor, mistake check, review
   src/features/search/    Lead form & ad copy search
   src/features/status/    Sync status
   src/features/settings/  Settings (thresholds, design)
   src/data/               Where screens get data: sample data or Supabase
   src/components/         Shared UI pieces
-  src/lib/                Formatting, CSV, links, config
+  src/lib/                Formatting, CSV, links, config, media (image/video previews)
 supabase/
-  migrations/             Database setup, applied in order (0100 → 0800)
+  migrations/             Database setup, applied in order (0100 → 2200)
   functions/              Background jobs (Supabase Edge Functions)
   seed.sql                Fictional sample data for local testing
   tests/                  Database tests (run against real Postgres)

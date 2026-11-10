@@ -12,5 +12,5 @@
 2. **Insights**, **All ads managers**, last 7 days: pick two accounts and compare spend and leads with Ads Manager for the same dates. They should match (small differences on today's numbers are normal).
 3. **Suggestions**, **All ads managers**: look for suggestions more than 3 days old that nobody has acted on. Nudge the ads manager.
 4. **Recently turned off**: anything marked **Failed**? Usually an account needing Manage campaigns ([new-client-or-ad-account.md](new-client-or-ad-account.md#2-share-the-ad-account-with-the-lab)).
-5. **Approvals**: anything waiting for review for more than 2 working days?
+5. **Ad approval**, **In progress**: anything waiting for review for more than 2 working days?
 6. Once a month: open Supabase → **Advisors** (Security and Performance) and check for new warnings. Known, expected ones are listed in [../auth.md](../auth.md#supabase-security-advisor).
