@@ -117,6 +117,10 @@ Access-rule helpers are wrapped as `(select …)` so they run once per query ins
 
 1600 retires the old budget-hog "max leads" setting. 1700 schedules `run-rules` at :10 and :40 and indexes suggestions by status.
 
+## 1800 Realtime
+
+Adds `sync_runs` to Supabase Realtime so open screens reload when a job finishes.
+
 ## Changing the schema
 
 Add a **new** migration file (never edit one that has been applied to Supabase), with policies for any new table, then update this page and run `npm run db:test`.

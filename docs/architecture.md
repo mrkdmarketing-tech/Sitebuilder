@@ -41,7 +41,7 @@ The sample data deliberately includes the situations suggestions look for: a bud
 
 ## Live updates
 
-Phase 1a adds Supabase Realtime: when `sync_runs` gets a finished `meta.sync` row, open screens reload their data. Until then, data refreshes when the page or filters change.
+Live since 10 Nov 2026 (migration 1800, `web/src/lib/useLiveRefresh.ts`). Open screens subscribe to `sync_runs` through Supabase Realtime and reload when a job finishes: Insights after a Meta sync or Retool copy, Suggestions after `run-rules`, Sync status after any job. Screens also reload when a tab comes back after being hidden for 5+ minutes. The table stays on screen while it reloads. Row-level security applies to the events too.
 
 ## Security in one paragraph
 

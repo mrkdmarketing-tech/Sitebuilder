@@ -1,15 +1,17 @@
 /** Sync health: when each background job last ran and whether it worked. */
 import { useData } from '../../data/source'
 import { useAsync } from '../../lib/useAsync'
+import { useLiveRefresh } from '../../lib/useLiveRefresh'
 import { Card, Empty, PageTitle } from '../../components/ui'
 import { count, dateTime } from '../../lib/format'
 
 const STYLE = { ok: 'bg-emerald-100 text-emerald-800', partial: 'bg-amber-100 text-amber-800', error: 'bg-red-100 text-red-800', running: 'bg-sky-100 text-sky-800' }
-const NAMES: Record<string, string> = { 'meta.sync': 'Meta ads sync', 'rules.run': 'Suggestions', retool_bridge: 'Retool bridge' }
+const NAMES: Record<string, string> = { 'meta.sync': 'Meta ads sync', 'rules.run': 'Suggestions', retool_bridge: 'Retool copy' }
 
 export function SyncStatusPage() {
   const ds = useData()
-  const { data, loading } = useAsync(() => ds.syncRuns(), [ds])
+  const live = useLiveRefresh()
+  const { data, loading } = useAsync(() => ds.syncRuns(), [ds, live])
   return (
     <div>
       <PageTitle title="Sync status" subtitle="Background jobs: Meta every 30 min, Retool bridge every 15 min" />

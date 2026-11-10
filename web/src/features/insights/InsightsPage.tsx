@@ -9,6 +9,7 @@ import { presetRange, previousRange, type PresetKey } from '@shared/domain/dates
 import type { DateRange, Level, MetaLead, ReportRow } from '@shared/domain/types.ts'
 import { useData } from '../../data/source'
 import { useAsync } from '../../lib/useAsync'
+import { useLiveRefresh } from '../../lib/useLiveRefresh'
 import { downloadCsv, toCsv } from '../../lib/csv'
 import { Card, PageTitle } from '../../components/ui'
 import { useSession } from '../../app/session'
@@ -80,13 +81,16 @@ export function InsightsPage() {
   const { data: employees } = useAsync(() => ds.employees(), [ds])
   const adManagers = useMemo(() => (employees ?? []).filter((e) => e.isAdManager && e.active), [employees])
 
+  // New numbers arrive every 30 min; reload automatically when a sync finishes.
+  const live = useLiveRefresh(['meta.sync', 'retool_bridge'])
+
   const current = useAsync<LevelData>(async () => {
     const [account, campaign, adset, ad, leads] = await Promise.all([
       ds.report('account', range), ds.report('campaign', range), ds.report('adset', range), ds.report('ad', range), ds.leads(range),
     ])
     return { account, campaign, adset, ad, leads }
-  }, [ds, range.from, range.to])
-  const previous = useAsync(() => ds.report('account', previousRange(range)), [ds, range.from, range.to])
+  }, [ds, range.from, range.to, live])
+  const previous = useAsync(() => ds.report('account', previousRange(range)), [ds, range.from, range.to, live])
   const { data: lastUpdated } = useAsync(() => ds.lastUpdated(), [ds, current.data])
 
   // Filters: ads manager → selected accounts → search text.

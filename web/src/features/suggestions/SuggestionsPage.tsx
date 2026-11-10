@@ -14,6 +14,7 @@ import { DEFAULT_RULE_SETTINGS, evaluateRules, groupByAccount, type RuleSettings
 import { presetRange } from '@shared/domain/dates.ts'
 import { useData, type StoredSuggestion } from '../../data/source'
 import { useAsync } from '../../lib/useAsync'
+import { useLiveRefresh } from '../../lib/useLiveRefresh'
 import { Card, Empty, ManagerChip, Modal, PageTitle } from '../../components/ui'
 import { ManagerFilter } from '../insights/Filters'
 import { count, money } from '../../lib/format'
@@ -38,13 +39,14 @@ export function SuggestionsPage() {
   const range = useMemo(() => presetRange('last_7_days'), [])
 
   const { data: employees } = useAsync(() => ds.employees(), [ds])
+  const live = useLiveRefresh(['rules.run'])
   const { data, loading } = useAsync(async () => {
     const [stored, accounts, settings] = await Promise.all([ds.storedSuggestions(), ds.report('account', range), ds.ruleSettings()])
     if (stored) return { suggestions: stored as Shown[], settings, accounts }
     // Sample mode: run the same rules in the browser.
     const [ads, recent] = await Promise.all([ds.report('ad', range), ds.recentLeadsByAccount(3)])
     return { suggestions: evaluateRules({ ads, accounts, recentLeadsByAccount: recent, settings }) as Shown[], settings, accounts }
-  }, [ds])
+  }, [ds, live])
 
   const managerName = useMemo(() => new Map((employees ?? []).map((e) => [e.id, `${e.firstName} ${e.lastName}`])), [employees])
   const groups = useMemo(() => {

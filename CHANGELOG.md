@@ -2,6 +2,9 @@
 
 What changed, newest first. Every change to the platform adds a line here.
 
+## 2026-11-10: No more refreshing
+- Insights, Suggestions and Sync status reload by themselves when new data lands (Supabase Realtime on `sync_runs`, migration 1800), and when you come back to a tab after 5+ minutes.
+
 ## 2026-11-10: One-click Turn off
 - `run-rules` now saves suggestions every 30 minutes (first run: 38; Adam 16, Jordan 13, Zohirul 9). Each ads manager sees only theirs.
 - **Turn off** pauses the ad in Meta (confirmation first; re-checks the ad; logs who did it). Works on the 32 accounts where the system user has Manage campaigns; on view-only accounts it explains what to change and links to Ads Manager.
