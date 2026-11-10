@@ -45,4 +45,11 @@ All tests pass (60 app tests, 6 database test files). Nothing here changes live 
 
 ## Overnight jobs
 
-Checked at 04:05 UTC (11:05pm Toronto): Retool copy green every 15 minutes (41 runs in 24 h), suggestions green, Meta sync green apart from the temporary Meta errors above (fixed). The 2:20am 37-day backfill is checked after it runs; results are added below.
+Checked at 04:05 UTC (11:05pm Toronto) and again at 07:51 UTC (2:51am Toronto).
+
+| Job | Result |
+|---|---|
+| Meta sync, every 30 min | Before the retry fix, about half the hourly runs missed one account because of Meta's temporary errors. After it (04:30 to 07:30 UTC): **7 of 7 runs green**, 45 accounts each. |
+| 2:20am 37-day backfill | 44 of 45 accounts. Atlantic MMA (752 ads) failed: Meta gives "unknown error" when asked for 37 days of daily rows at once. **Fixed:** long ranges are now requested a week at a time. Re-ran at 2:57am: **45 of 45 green**, 7,000 daily rows. |
+| Retool copy, every 15 min | 15 of 15 green, including the new ad history and templates. |
+| Suggestions, :10 and :40 | 8 of 8 green. |

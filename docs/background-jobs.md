@@ -59,6 +59,7 @@ select cron.schedule('meta-backfill', '15 7 * * *', $$ â€¦ /meta-sync?days=37 â€
 - Insights are pulled at **ad level, one row per day** (`time_increment=1`) for the last 3 days every run (Meta revises recent days), plus a nightly 37-day backfill.
 - Rate limits: accounts are processed 4 at a time; failures are logged per account and the run is marked `partial`.
 - Temporary Meta errors (code 2 "Service temporarily unavailable", code 1/99, bare 5xx) are retried up to 3 times with a short wait (added 10 Nov 2026, after they failed one random account most hours). "Reduce the amount of data" halves the page size instead.
+- Insights are requested **one week at a time** (`weekWindows` in `meta-sync`), so the 37-day backfill is 6 requests per account. Added 11 Nov 2026: Atlantic MMA (752 ads) failed every time it was asked for 37 days at once.
 
 ## Sync status screen
 

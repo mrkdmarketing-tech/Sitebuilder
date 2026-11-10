@@ -2,6 +2,9 @@
 
 What changed, newest first. Every change to the platform adds a line here.
 
+## 2026-11-11: Nightly backfill fix
+- The 2:20am 37-day backfill now asks Meta for one week at a time. Atlantic MMA (752 ads) was failing on the 37-day request; the re-run synced all 45 accounts. The 30-minute syncs have been green every run since the retry fix.
+
 ## 2026-11-11: Four sleeker design options
 - Added E · Graphite, F · Onyx, G · Air and H · Studio as options only ([design-options.md](docs/design-options.md#sleeker-options), with screenshots). Nothing changes for anyone until one is picked: try them in **Settings → Look → Sleeker options**.
 

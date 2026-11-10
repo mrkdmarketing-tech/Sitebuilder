@@ -128,6 +128,17 @@ function torontoDate(offsetDays = 0): string {
   return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Toronto', year: 'numeric', month: '2-digit', day: '2-digit' }).format(d)
 }
 
+/** Splits an inclusive YYYY-MM-DD range into windows of at most 7 days. */
+function weekWindows(since: string, until: string): { since: string; until: string }[] {
+  const day = (s: string) => Date.parse(`${s}T00:00:00Z`)
+  const iso = (t: number) => new Date(t).toISOString().slice(0, 10)
+  const out: { since: string; until: string }[] = []
+  for (let t = day(since); t <= day(until); t += 7 * 86_400_000) {
+    out.push({ since: iso(t), until: iso(Math.min(t + 6 * 86_400_000, day(until))) })
+  }
+  return out
+}
+
 async function syncAccount(db: ReturnType<typeof serviceClient>, accountId: string, days: number) {
   const act = `act_${accountId}`
   const now = new Date().toISOString()
@@ -192,15 +203,18 @@ async function syncAccount(db: ReturnType<typeof serviceClient>, accountId: stri
     raw: { ...a, creative: undefined }, synced_at: now,
   })))
 
-  // Daily ad-level insights
-  const since = torontoDate(-days)
-  const until = torontoDate(0)
-  const insights = await graph<MetaInsightRow & { ad_name?: string; adset_name?: string; campaign_name?: string }>(`${act}/insights`, {
-    level: 'ad',
-    time_increment: '1',
-    time_range: JSON.stringify({ since, until }),
-    fields: 'ad_id,ad_name,adset_id,adset_name,campaign_id,campaign_name,account_id,spend,impressions,reach,clicks,actions',
-  })
+  // Daily ad-level insights, asked for one week at a time: big accounts (e.g.
+  // 750+ ads) make Meta fail with "unknown error" on a 37-day request.
+  type InsightRow = MetaInsightRow & { ad_name?: string; adset_name?: string; campaign_name?: string }
+  const insights: InsightRow[] = []
+  for (const w of weekWindows(torontoDate(-days), torontoDate(0))) {
+    insights.push(...await graph<InsightRow>(`${act}/insights`, {
+      level: 'ad',
+      time_increment: '1',
+      time_range: JSON.stringify(w),
+      fields: 'ad_id,ad_name,adset_id,adset_name,campaign_id,campaign_name,account_id,spend,impressions,reach,clicks,actions',
+    }))
+  }
   if (insights.length) {
     // Ads that spent in the window but are now deleted/archived weren't in the
     // lists above: add minimal rows (and parents) so the daily numbers are kept.
