@@ -8,6 +8,7 @@ All in [`supabase/functions/`](../supabase/functions) (Supabase Edge Functions, 
 | `retool-bridge` | Every **15 min** | Copies employees, clients (+ ads manager), ad account links, onboarding, campaign specifics, sheet leads, website requests from Retool, read-only ([retool-bridge.md](retool-bridge.md)) | **Live** (9 Nov 2026) |
 | `run-rules` | After each `meta-sync` | Evaluates suggestion rules and updates `suggestions` ([suggestions.md](suggestions.md)) | Skeleton (Phase 1b) |
 | `meta-action` | App button ("Turn off") | Pauses an ad in Meta with safety checks + audit log | Skeleton (Phase 1b) |
+| `meta-check` | On demand (`select private.call_function('meta-check')`, then read `net._http_response`) | Diagnostic: lists the Meta token's granted permissions and which ad accounts the system user can edit vs only view. Never returns the token. | Live |
 | `ad-check` | App, on upload in ad approval | AI quality check with Claude ([ad-approval.md](ad-approval.md)) | Skeleton (Phase 2) |
 
 Shared helpers: `_shared/supabase.ts` (service/user clients), `_shared/sync-log.ts` (records runs), `_shared/http.ts` (CORS, JSON, cron secret check). Meta API → table mapping is in `shared/meta/mapping.ts` (unit-tested).

@@ -28,6 +28,11 @@ Everything needed to give the platform permanent, read-only access to the client
 
 Don't tick anything else. If a scope isn't listed when generating the token, the app is missing the **Marketing API** product (step 2).
 
+## Checked 10 Nov 2026 (meta-check)
+
+- Token permissions granted: `ads_read`, `ads_management`, `business_management`, `pages_show_list`, `pages_read_engagement`. (`leads_retrieval` and `pages_manage_ads` are **not** on it yet; needed for the leads list.)
+- 54 ad accounts visible; **32 can edit ads** (pause works), **22 view-only** (assigned with View performance), so one-click Turn off won't work on those until they get **Manage campaigns**.
+
 ## Asset access for the system user (done 9 Nov 2026)
 
 | Asset | Permission | Status |
