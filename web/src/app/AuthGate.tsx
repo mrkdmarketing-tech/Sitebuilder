@@ -9,6 +9,7 @@
  * same email (migration 1400). A login with no staff record sees a clear
  * "not on the staff list" message, and the database shows it no data anyway.
  */
+import { LabMark } from '../components/LabMark'
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
@@ -84,8 +85,9 @@ function SignIn() {
 
   return (
     <Centered>
-      <div className="text-xs font-black tracking-[0.2em] text-muted">MRKD</div>
-      <h1 className="mt-1 text-3xl font-bold tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>{APP_NAME}</h1>
+      <LabMark size={56} className="mb-4" />
+      <h1 className="text-3xl font-bold tracking-tight">{APP_NAME}</h1>
+      <div className="mt-1 text-sm font-semibold text-muted">by MRKD</div>
       <p className="mt-2 text-sm text-muted">Sign in with your @{STAFF_DOMAIN} account.</p>
 
       <button

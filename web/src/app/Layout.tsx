@@ -5,8 +5,8 @@ import { supabase } from '../lib/supabase'
 import { useData } from '../data/source'
 import { useAsync } from '../lib/useAsync'
 import { useSession } from './session'
-import { APP_NAME } from './AuthGate'
 import { UpdateBanner } from './UpdateBanner'
+import { LabLockup } from '../components/LabMark'
 
 /** `phone: false` = left off the phone tab bar (5 slots); reachable from Settings. */
 const NAV = [
@@ -32,7 +32,7 @@ export function Layout() {
         <SideNav />
         <main className="mx-auto w-full min-w-0 max-w-[1600px] flex-1 px-4 pb-24 pt-4 md:pb-8">
           <div className="mb-2 flex items-center justify-between md:hidden">
-            <span className="text-lg font-black tracking-tight">MRKD <span className="text-sm font-semibold text-muted">{APP_NAME}</span></span>
+            <LabLockup size={32} />
             <ModeToggle />
           </div>
           <Outlet />
@@ -72,8 +72,7 @@ function UserBadge() {
 function SideNav() {
   return (
     <aside className="sticky top-0 hidden h-screen w-56 shrink-0 flex-col bg-header px-3 py-5 text-header-ink md:flex">
-      <span className="px-2 text-2xl font-black tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>MRKD</span>
-      <span className="px-2 text-sm font-semibold text-header-ink/70">{APP_NAME}</span>
+      <span className="px-2"><LabLockup /></span>
       <nav className="mt-6 flex flex-col gap-1">
         {NAV.map(({ to, label, icon: Icon }) => (
           <NavLink key={to} to={to} className={({ isActive }) => `flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold transition ${isActive ? 'bg-primary text-on-primary' : 'text-header-ink/70 hover:bg-header-ink/10 hover:text-header-ink'}`}>

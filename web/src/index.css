@@ -36,6 +36,9 @@
   --radius-xl: 1rem;
 }
 
+:root { --logo-tile: #0f172a; }
+[data-mode="dark"] { --logo-tile: #1a2530; }
+
 html, body, #root { height: 100%; }
 html { font-feature-settings: "cv11", "ss03"; }
 body { background: var(--color-canvas); color: var(--color-ink); -webkit-font-smoothing: antialiased; }

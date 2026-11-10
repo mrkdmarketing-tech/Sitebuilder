@@ -2,6 +2,9 @@
 
 What changed, newest first. Every change to the platform adds a line here.
 
+## 2026-11-11: Logo
+- New logo: a teal atom on a navy tile, **The Lab by MRKD**. In the sidebar, phone header, sign-in screen, browser tab, and as the icon when The Lab is added to a phone's home screen. Browser tab title is now "The Lab by MRKD".
+
 ## 2026-11-11: Clients page, and team changes in The Lab
 - New **Clients** page: every client with status, ads manager and ad accounts. Owners and admins can set **Active / New / Paused / Inactive**, change the **ads manager**, and **link or unlink ad accounts**. These win over GHL and Retool, are marked "Changed in The Lab", logged, and can be undone ("Use GHL and Retool again"). Inactive clients disappear from Insights, Suggestions, Ad approval and the Meta sync. (Migrations 2400, 2500.)
 - **Settings → Staff**: owners and admins can **remove someone from the team** (or add them back); they lose access straight away.

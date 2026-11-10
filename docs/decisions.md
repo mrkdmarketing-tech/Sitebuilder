@@ -43,3 +43,7 @@ First uses, at Jordan's request on 11 Nov 2026:
 - Removed (Inactive): Overcome Jiu Jitsu Pinnacle, The Foundry BJJ, Campeao Acworth, Infinite Hitting Deerfield Beach, Storage-Tech, Bulls Jiu Jitsu, Apex Performance Center (Ashburn). Paused: Swampfox Jiu Jitsu.
 - Removed from the team: Andres Hernandez (no longer an employee) and the "Dev MRKD" account. Team: Jordan, Trent (owners), Adam, Zohirul.
 
+## 2026-11-11: Logo: atom, "The Lab by MRKD"
+
+Jordan wanted an atom. Of four atom designs in the Air colours, he picked B: teal atom on a navy tile with one white electron (the extra electron keeps it from looking like the React logo). The product name is written "The Lab" with a smaller "by MRKD". Used in the sidebar, phone header, sign-in screen, browser tab and phone home-screen icon ([design-options.md](design-options.md#logo)).
+

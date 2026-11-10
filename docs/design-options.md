@@ -2,6 +2,23 @@
 
 The Lab has one look, **Air**: light sidebar, lots of white space, teal accent, with a **dark mode**. Picked by Jordan on 11 Nov 2026 from eight options (the decision is in [decisions.md](decisions.md#2026-11-11-look-air-with-light-and-dark-mode)).
 
+## Logo
+
+**The Lab by MRKD.** A teal atom (#14B8A6) on a navy tile (#0F172A) with one white electron: option B of four atom designs, picked by Jordan on 11 Nov 2026. Name: "The Lab", with a smaller "by MRKD" underneath.
+
+| Sidebar, light | Sidebar, dark | Sign-in |
+|---|---|---|
+| ![Logo in sidebar, light](design/images/logo-sidebar-light.png) | ![Logo in sidebar, dark](design/images/logo-sidebar-dark.png) | ![Sign-in](design/images/logo-signin.png) |
+
+| Where | File |
+|---|---|
+| In the app (sidebar, phone header, sign-in) | `web/src/components/LabMark.tsx` (`LabMark`, `LabLockup`); the tile is slightly lighter in dark mode (`--logo-tile` in `index.css`) |
+| Browser tab | `web/public/favicon.svg` |
+| Logo file to use elsewhere (SVG) | `web/public/brand/the-lab-mark.svg` |
+| Phone home screen ("Add to Home Screen") | `web/public/brand/apple-touch-icon.png`, `icon-192.png`, `icon-512.png`, `icon-512-maskable.png`, listed in `web/public/manifest.webmanifest` |
+
+The four options that were considered: [logo-options.png](design/images/logo-options.png). (A plain three-orbit atom on its own looks like the React software logo; the single electron in B makes it distinct.)
+
 ## Light and dark
 
 - **Sun / moon button** next to your name in the sidebar (on phones: top right) switches between light and dark.
