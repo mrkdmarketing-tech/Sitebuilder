@@ -2,9 +2,10 @@
  * retool-bridge — copies data still maintained in Retool into Supabase,
  * READ-ONLY, every 15 minutes (docs/retool-bridge.md).
  *
- * The heavy lifting happens inside the database (migration 1100,
- * private.retool_bridge_run): it reads each Retool table over dblink with plain
- * SELECTs and upserts it here. This function just passes in the Retool
+ * The heavy lifting happens inside the database: private.retool_bridge_run
+ * (migration 1100: staff, clients, leads...) and private.retool_bridge_ad_history
+ * (migration 2200: GHL custom field names, templates, Ad Preview history). They
+ * read each Retool table over dblink with plain SELECTs and upsert it here. This function just passes in the Retool
  * connection string from its secret and records the run in sync_runs.
  *
  * Secrets: RETOOL_DB_URL (set by Jordan in Supabase), CRON_SECRET.
@@ -26,7 +27,8 @@ Deno.serve(async (req) => {
   try {
     const result = await logRun(db, 'retool_bridge', async () => {
       const [row] = await sql`select private.retool_bridge_run(${retoolUrl}) as result`
-      const perTable = row.result as Record<string, number | string>
+      const [hist] = await sql`select private.retool_bridge_ad_history(${retoolUrl}) as result`
+      const perTable = { ...(row.result as Record<string, number | string>), ...(hist.result as Record<string, number | string>) }
       const errors = Object.entries(perTable).filter(([, v]) => typeof v === 'string')
       const rows = Object.values(perTable).reduce<number>((n, v) => n + (typeof v === 'number' ? v : 0), 0)
       return { rows, partial: errors.length > 0, details: perTable }

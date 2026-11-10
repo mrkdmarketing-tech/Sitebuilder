@@ -26,12 +26,39 @@ do $$ begin
   assert (select count(*) from public.sheet_leads where id = 'L2') = 0, 'deleted lead removed';
   assert (select count(*) from public.clients where id in (501,502)) = 2, 'no duplicates';
 end $$;
+-- Part 2: custom fields, templates, ad history (migration 2200).
+select private.retool_bridge_ad_history(:'bridge_conn') as ad_history;
+do $$ begin
+  assert (select name from public.ghl_custom_fields where id = 'cf_phone') = 'Business Phone', 'custom field names';
+  assert (select count(*) from public.ad_creative_templates where legacy_id = 'tpl1') = 1, 'creative template';
+  assert (select body->'questions'->>1 from public.leadform_templates where legacy_id = 'lf1') = 'Phone', 'lead form template';
+  assert (select status from public.ad_reviews where legacy_id = 'ap1') = 'completed', 'status mapped';
+  assert (select creative->>'description' from public.ad_reviews where legacy_id = 'ap1') = 'Free class', 'description mapped';
+  assert (select leadform->>'thankYouHeadline' from public.ad_reviews where legacy_id = 'ap1') = 'Thanks!', 'thank-you mapped';
+  assert (select (legacy->>'imageCount')::int from public.ad_reviews where legacy_id = 'ap1') = 3, 'image count kept';
+  assert (select legacy::text from public.ad_reviews where legacy_id = 'ap1') not like '%AAAA%', 'base64 images not copied';
+  assert (select legacy->'canvaLinks'->>0 from public.ad_reviews where legacy_id = 'ap1') = 'https://canva.example/x', 'canva link kept';
+  assert (select client_id from public.ad_reviews where legacy_id = 'ap2') is null, 'unknown client unlinked';
+  assert (select status from public.ad_reviews where legacy_id = 'ap2') = 'draft', 'create -> draft';
+end $$;
+select extensions.dblink_exec(:'bridge_conn', 'delete from ads_preview where id = ''ap2''');
+select private.retool_bridge_ad_history(:'bridge_conn') is not null as second_history_run;
+do $$ begin
+  assert (select count(*) from public.ad_reviews where legacy_id = 'ap2') = 0, 'deleted in Retool -> removed';
+  assert (select count(*) from public.ad_reviews where legacy_id = 'ap1') = 1, 'no duplicates';
+end $$;
+
 -- Nobody but the service role can run the bridge.
 set role authenticated;
 do $$ begin
   begin
     perform private.retool_bridge_run('x');
     assert false, 'authenticated must not run the bridge';
+  exception when insufficient_privilege then null;
+  end;
+  begin
+    perform private.retool_bridge_ad_history('x');
+    assert false, 'authenticated must not run the ad history copy';
   exception when insufficient_privilege then null;
   end;
 end $$;

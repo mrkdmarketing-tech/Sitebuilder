@@ -42,3 +42,25 @@ insert into campaign_specifics (id, name, client_id, ad_type, monthly_adspend_bu
 insert into campaign_onboarding_info (id, client_id, gyms_speciality, name_of_programs) values
   (1, 501, 'old answer', '["Adults"]'), (2, 501, 'newest answer', '["Adults","Kids"]');
 insert into website_campaign_requests values (1, 'ct1', 'webuser1', 'Spring push', 500, '2026-12-01', 'jiu jitsu', now(), now(), 'new', '{}', null);
+
+-- Ad approval history (migration 2200).
+create table ghl_locations (id text primary key, name text, access_token text, custom_fields_metadata jsonb);
+insert into ghl_locations values ('1Pbw0cdWjFMBsIFPrA0d', 'Mrkd Marketing', 'SECRET-never-copied',
+  '{"cf_phone": {"name": "Business Phone", "fieldKey": "contact.business_phone", "dataType": "PHONE"},
+    "cf_stripe": {"name": "Stripe Customer ID", "fieldKey": "contact.stripe_customer_id", "dataType": "TEXT"}}');
+create table ad_creative_templates (id text primary key, name text, metadata jsonb);
+insert into ad_creative_templates values ('tpl1', 'Free week', '{"headline": "Free week in {{ city }}"}');
+create table leadform_templates (id text primary key, name text, metadata jsonb);
+insert into leadform_templates values ('lf1', 'Basic form', '{"questions": ["Full name", "Phone"]}');
+create table ads_preview (id text primary key, name text, metadata jsonb default '{}', client_id integer,
+  updated_at timestamp, created_at timestamp, completed_at timestamp, review_started_at timestamp,
+  review_completed_at timestamp, step text default 'create', comments json default '[]', current_status text default 'create',
+  ai_response text);
+insert into ads_preview (id, name, client_id, created_at, current_status, comments, metadata) values
+  ('ap1', 'Fall offer', 501, '2026-09-01', 'completed', '[{"comment": "Looks good"}]',
+   '{"config": {"adType": "jiu jitsu kids program", "bookingType": "Landing Page"},
+     "adCreative": {"headline": "Kids BJJ", "primaryText": "Join us", "descriptionAdCreative": "Free class",
+                    "imageBase64": "AAAABIG", "images": [{"imageBase64": "AAAA", "canvaLink": "https://canva.example/x"}, {"imageBase64": "BBBB"}],
+                    "tracking": ["CRM Event"]},
+     "leadform": {"formName": "Kids form", "questions": ["Child age"], "messageForLeadsHeadline": "Thanks!"}}'),
+  ('ap2', 'Draft thing', 999, '2026-10-01', 'create', '[]', '{}');

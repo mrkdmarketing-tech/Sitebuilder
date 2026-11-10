@@ -51,7 +51,7 @@ do $$ begin
   assert (public.me()->>'id') = 'emp_alex' and (public.me() ? 'auth_user_id') = false, 'me() returns the employee';
 
   insert into public.ad_reviews (name, client_id, created_by) values ('Test ad', 1, 'emp_alex');
-  assert (select count(*) from public.ad_reviews) = 1, 'staff created a review';
+  assert (select count(*) from public.ad_reviews where legacy_id is null) = 1, 'staff created a review';
 
   begin
     insert into public.meta_ads (id, adset_id, campaign_id, account_id) values ('x', 's1', 'c1', '1001');
