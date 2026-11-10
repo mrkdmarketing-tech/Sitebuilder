@@ -2,6 +2,9 @@
 
 What changed, newest first. Every change to the platform adds a line here.
 
+## 2026-11-10: SOPs
+- Added [docs/sop/](docs/sop/README.md): step-by-step procedures for ads managers (signing in, daily account check, acting on suggestions, submitting and reviewing ads) and for owners/admins (staff and access, new client or ad account, thresholds, tokens and secrets, weekly health check, troubleshooting).
+
 ## 2026-11-10: Clear Turn off feedback
 - Found that a first Turn off attempt ran on an outdated copy of the page (from before the real Turn off), so nothing reached Meta. Added an **"The Lab was updated. Reload"** bar when a newer version is live.
 - Turn off now confirms with "Done: … is now off in Meta" plus a link to check in Ads Manager, and a **Recently turned off** list shows every attempt with who, when and the result (migration 1900 links log entries to ads).

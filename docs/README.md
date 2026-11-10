@@ -6,6 +6,7 @@ Everything about the MRKD platform is documented here. **Start with the row that
 
 | I want to… | Read |
 |---|---|
+| **Do a task in The Lab (step by step: daily check, suggestions, ad approval, staff, tokens)** | [sop/README.md](sop/README.md) |
 | Understand the project and its plan | [plan.md](plan.md) |
 | See what Retool does today and what happens to each feature | [feature-checklist.md](feature-checklist.md) |
 | See how Retool is built today (apps, workflows, tables) | [current-system.md](current-system.md) |
@@ -47,6 +48,7 @@ Everything about the MRKD platform is documented here. **Start with the row that
 README.md               Start page
 CHANGELOG.md            What changed, by date
 docs/                   ← you are here
+  sop/                    Standard operating procedures (how to use and run The Lab)
 shared/                 Code used by BOTH the app and the background jobs
   domain/types.ts         Data shapes (report rows, leads, employees…)
   domain/metrics.ts       KPI formulas — the only place they're calculated

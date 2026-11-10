@@ -4,7 +4,7 @@
 
 **Being built now:** Meta insights (every Retool KPI, on phone and desktop), per-account suggestions ("an ad has 1 lead at $120: turn it off?"), and ad approval with an AI check of copy, images and video subtitles. Clients View, Onboarding and the LeadLabz tools stay in Retool for now.
 
-**Status:** skeleton built and tested with sample data. Waiting on account setup ([docs/setup/accounts.md](docs/setup/accounts.md)). See [CHANGELOG.md](CHANGELOG.md).
+**Status:** live at https://sitebuilder-6iw.pages.dev on real data (Meta insights, suggestions, Turn off). Ad approval in progress. See [CHANGELOG.md](CHANGELOG.md).
 
 ## Documentation
 
@@ -12,6 +12,7 @@
 
 | | |
 |---|---|
+| [**SOPs**](docs/sop/README.md) | Step-by-step procedures for staff and admins |
 | [Plan](docs/plan.md) | Architecture, modules, phases, costs, decisions still open |
 | [Feature checklist](docs/feature-checklist.md) | Every Retool feature, line by line, and what happens to it |
 | [Current Retool system](docs/current-system.md) | How Retool is built today |
