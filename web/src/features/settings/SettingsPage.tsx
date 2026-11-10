@@ -15,6 +15,7 @@ import { useData } from '../../data/source'
 import { useAsync } from '../../lib/useAsync'
 import { useSession, type Mode } from '../../app/session'
 import { StaffSection } from './StaffSection'
+import { TwoStepCard } from './TwoStepCard'
 
 type Key = keyof RuleSettings
 
@@ -126,6 +127,8 @@ export function SettingsPage() {
       </Card>
 
       <StaffSection />
+
+      <TwoStepCard />
 
       <Card className="mt-4 p-4">
         <h2 className="mb-1 text-base font-semibold">Light or dark</h2>

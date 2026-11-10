@@ -80,6 +80,9 @@ export function createSupabaseSource(db: SupabaseClient): DataSource {
     async setRole(employeeId, role) {
       check(await db.rpc('set_employee_role', { p_employee: employeeId, p_role: role }))
     },
+    async resetTwoStep(employeeId) {
+      check(await db.rpc('reset_two_step', { p_employee: employeeId }))
+    },
     async setStaffActive(employeeId, active, note) {
       check(await db.rpc('set_employee_active', { p_employee: employeeId, p_active: active, p_note: note ?? null }))
     },

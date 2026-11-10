@@ -2,7 +2,7 @@
 -- security.test.sql (alex = staff, owner = owner) and the Retool history from
 -- retool_bridge.test.sql (legacy ad 'ap1').
 set role authenticated;
-do $$ begin perform set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-00000000000a', false); end $$;
+do $$ begin perform set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-00000000000a', false); perform set_config('request.jwt.claims', '{}', false); end $$;
 do $$
 declare rid uuid;
 begin
@@ -69,7 +69,7 @@ reset role;
 
 -- Strangers see nothing.
 set role authenticated;
-do $$ begin perform set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-00000000000b', false); end $$;
+do $$ begin perform set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-00000000000b', false); perform set_config('request.jwt.claims', '{}', false); end $$;
 do $$ begin
   assert jsonb_array_length(public.ad_review_list()) = 0, 'stranger sees no ads';
   assert public.client_brief(1) is null, 'stranger sees no client info';

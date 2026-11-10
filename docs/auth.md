@@ -21,6 +21,10 @@ Both go through **Supabase Auth**. The GHL sign-on step runs in a small Edge Fun
 
 Why not just Google inside GHL too: Safari blocks logins inside embedded pages often enough to be annoying; GHL sign-on avoids it.
 
+## Two-step sign-in
+
+Owners and admins confirm each sign-in with a 6-digit code from an authenticator app (Supabase MFA, TOTP); staff can turn it on in Settings. Screens: `web/src/app/MfaGate.tsx`, `web/src/features/settings/TwoStepCard.tsx`. The database enforces it: `is_admin()` is true only when the session was confirmed with the code (`mfa_ok()`, JWT `aal` = `aal2`; migration 2600), so every owner/admin rule needs it. Owners/admins can reset someone's (lost phone) with `reset_two_step()`; status shows in Settings → Staff. Procedures: [sop/security.md](sop/security.md).
+
 ## Roles
 
 | Role | Can |

@@ -21,6 +21,7 @@ The other docs explain how The Lab is built. These explain how to **use and run*
 | [Adding or removing staff](staff-and-access.md) | Someone joins or leaves |
 | [New client or new ad account](new-client-or-ad-account.md) | A client is onboarded, paused or leaves, a new ad account is created, or a client moves to another ads manager |
 | [Changing suggestion thresholds](changing-thresholds.md) | Suggestions are too noisy or too quiet |
+| [Security](security.md) | Setup checklist (2-step everywhere), two-step sign-in, lost phone |
 | [Tokens and secrets](tokens-and-secrets.md) | A token expires, leaks, or someone with access leaves |
 | [Weekly health check](weekly-health-check.md) | Every Monday |
 | [Troubleshooting](troubleshooting.md) | Something looks wrong |

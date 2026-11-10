@@ -248,6 +248,9 @@ export function createMockSource(data: MockDataset = generateMockData()): DataSo
       if (target.role === 'owner' && data.employees.filter((e) => e.role === 'owner').length <= 1) throw new Error('This is the last owner. Make someone else an owner first.')
       target.role = role
     },
+    async resetTwoStep() {
+      /* sample mode: nothing to reset */
+    },
     async setStaffActive(employeeId, active) {
       const e = data.employees.find((x) => x.id === employeeId)
       if (e) e.active = active

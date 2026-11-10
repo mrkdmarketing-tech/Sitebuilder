@@ -2,6 +2,12 @@
 
 What changed, newest first. Every change to the platform adds a line here.
 
+## 2026-11-11: Two-step sign-in
+- **Owners and admins now confirm each sign-in with a 6-digit code** from an authenticator app (Google Authenticator, Microsoft Authenticator, Authy, 1Password). First sign-in after this: scan a QR code to set it up. Staff can turn it on in Settings.
+- The database enforces it: without the code, owner/admin actions (roles, team, clients, thresholds, everyone's suggestions) are refused (migration 2600).
+- Settings → Staff shows who has it on; owners/admins can **Reset two-step** for someone who lost their phone. Settings → Two-step sign-in: turn on, or move to a new phone.
+- New SOP: [docs/sop/security.md](docs/sop/security.md) with the rest of the security checklist (Google 2-Step Verification for @mrkd.ca, 2FA on Supabase, Cloudflare, GitHub, Meta, Retool, GHL; switch off email links after Google sign-in).
+
 ## 2026-11-11: Logo
 - New logo: a teal atom on a navy tile, **The Lab by MRKD**. In the sidebar, phone header, sign-in screen, browser tab, and as the icon when The Lab is added to a phone's home screen. Browser tab title is now "The Lab by MRKD".
 

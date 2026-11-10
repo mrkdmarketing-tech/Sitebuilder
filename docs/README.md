@@ -31,6 +31,7 @@ Everything about the MRKD platform is documented here. **Start with the row that
 | Background jobs (Meta sync, Retool bridge…) and schedules | [background-jobs.md](background-jobs.md) |
 | Copying data from Retool while it's still in use | [retool-bridge.md](retool-bridge.md) |
 | Logins, roles and who can see what | [auth.md](auth.md) |
+| Security setup and two-step sign-in | [sop/security.md](sop/security.md) |
 | Asking Claude about the data with your own login (planned) | [claude-connector.md](claude-connector.md) |
 
 ## Screens
@@ -74,7 +75,7 @@ web/                    The app (React + TypeScript + Tailwind, built with Vite)
   src/components/         Shared UI pieces
   src/lib/                Formatting, CSV, links, config, media (image/video previews)
 supabase/
-  migrations/             Database setup, applied in order (0100 → 2500)
+  migrations/             Database setup, applied in order (0100 → 2600)
   functions/              Background jobs (Supabase Edge Functions)
   seed.sql                Fictional sample data for local testing
   tests/                  Database tests (run against real Postgres)

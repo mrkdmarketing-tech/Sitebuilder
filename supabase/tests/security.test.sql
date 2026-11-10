@@ -31,13 +31,13 @@ reset role;
 
 -- Signed in but not an employee: sees nothing.
 set role authenticated;
-do $$ begin perform set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-00000000000b', false); end $$;
+do $$ begin perform set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-00000000000b', false); perform set_config('request.jwt.claims', '{}', false); end $$;
 do $$ begin
   assert (select count(*) from public.clients) = 0, 'stranger must not see clients';
 end $$;
 
 -- Staff: reads everything, can create an ad review, cannot write synced data or settings.
-do $$ begin perform set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-00000000000a', false); end $$;
+do $$ begin perform set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-00000000000a', false); perform set_config('request.jwt.claims', '{}', false); end $$;
 do $$ begin
   assert (select count(*) from public.clients) >= 3, 'staff sees clients';
   assert jsonb_array_length(public.report('account', '2026-11-01', '2026-11-07')) >= 2, 'staff report';
@@ -71,7 +71,7 @@ do $$ begin
 end $$;
 
 -- Owner: can change thresholds.
-do $$ begin perform set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-00000000000c', false); end $$;
+do $$ begin perform set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-00000000000c', false); perform set_config('request.jwt.claims', '{"aal":"aal2"}', false); end $$;
 do $$ begin
   assert (select count(*) from public.suggestions) = 2, 'owner sees everyone''s suggestions';
   assert (select status from public.suggestions where key = 'low_ctr:a4') = 'open', 'Alex''s attempt to dismiss Sam''s suggestion had no effect';

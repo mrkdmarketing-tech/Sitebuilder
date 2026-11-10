@@ -67,6 +67,8 @@ export interface StaffMember {
   role: 'staff' | 'admin' | 'owner'
   /** Has signed in to The Lab at least once. */
   signedIn: boolean
+  /** Uses an authenticator app to confirm sign-in. */
+  twoStep?: boolean
   /** Active/New clients assigned to them in GHL. */
   clients: number
 }
@@ -133,6 +135,8 @@ export interface DataSource {
   staff(): Promise<StaffMember[]>
   /** Owners/admins: change someone's role (rules and log in set_employee_role, migration 2300). */
   setRole(employeeId: string, role: StaffMember['role']): Promise<void>
+  /** Owners/admins: lost phone, remove someone's authenticator so they set it up again. */
+  resetTwoStep(employeeId: string): Promise<void>
   /** Owners/admins: take someone off the team in The Lab, or add them back. */
   setStaffActive(employeeId: string, active: boolean, note?: string): Promise<void>
   /** Clients screen. */

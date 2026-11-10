@@ -1,7 +1,7 @@
 -- Overrides set in The Lab (migration 2400). Logins from security.test.sql:
 -- ...0a = emp_alex (staff), ...0c = emp_owner (owner). Seed: client 2 -> emp_sam.
 set role authenticated;
-do $$ begin perform set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-00000000000a', false); end $$;
+do $$ begin perform set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-00000000000a', false); perform set_config('request.jwt.claims', '{}', false); end $$;
 do $$ begin
   begin
     insert into public.client_overrides (client_id, ad_manager_id) values (2, 'emp_alex');
@@ -10,7 +10,7 @@ do $$ begin
   end;
 end $$;
 
-do $$ begin perform set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-00000000000c', false); end $$;
+do $$ begin perform set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-00000000000c', false); perform set_config('request.jwt.claims', '{"aal":"aal2"}', false); end $$;
 do $$ begin
   insert into public.client_overrides (client_id, ad_manager_id, active_status, note, set_by)
   values (2, 'emp_alex', 'Active', 'test', 'emp_owner');
@@ -42,7 +42,7 @@ select 'override tests ok' as result;
 
 -- Clients screen and staff on/off (migration 2500).
 set role authenticated;
-do $$ begin perform set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-00000000000a', false); end $$;
+do $$ begin perform set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-00000000000a', false); perform set_config('request.jwt.claims', '{}', false); end $$;
 do $$ begin
   begin
     perform public.set_client_control(2, 'Inactive');
@@ -55,7 +55,7 @@ do $$ begin
   exception when insufficient_privilege then null;
   end;
 end $$;
-do $$ begin perform set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-00000000000c', false); end $$;
+do $$ begin perform set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-00000000000c', false); perform set_config('request.jwt.claims', '{"aal":"aal2"}', false); end $$;
 do $$ begin
   perform public.set_client_control(2, 'Paused', 'emp_alex', array['1002'], null, 'test');
   assert (select active_status from public.clients where id = 2) = 'Paused', 'status set';

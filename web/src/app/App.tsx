@@ -7,6 +7,7 @@ import { supabase } from '../lib/supabase'
 import { Layout } from './Layout'
 import { SessionProvider } from './session'
 import { AuthGate } from './AuthGate'
+import { MfaGate } from './MfaGate'
 import { InsightsPage } from '../features/insights/InsightsPage'
 import { SuggestionsPage } from '../features/suggestions/SuggestionsPage'
 import { SearchPage } from '../features/search/SearchPage'
@@ -26,7 +27,8 @@ import { ClientsPage } from '../features/clients/ClientsPage'
  *   /status       Sync health
  *   /settings     Suggestion thresholds (admins edit), staff, light/dark, links
  *   /clients      Client status, ads manager, ad accounts (admins change; overrides GHL/Retool)
- * Sign-in: AuthGate (Google restricted to mrkd.ca, plus email link). GHL single sign-on later.
+ * Sign-in: AuthGate (Google restricted to mrkd.ca, plus email link), then MfaGate
+ * (authenticator code; required for owners/admins). GHL single sign-on later.
  */
 export function App() {
   const source: DataSource = useMemo(() => (supabase ? createSupabaseSource(supabase) : createMockSource()), [])
@@ -34,6 +36,7 @@ export function App() {
     <DataContext.Provider value={source}>
       <AuthGate>
       <SessionProvider>
+      <MfaGate>
       <Routes>
         <Route element={<Layout />}>
           <Route index element={<Navigate to="/insights" replace />} />
@@ -48,6 +51,7 @@ export function App() {
           <Route path="*" element={<Navigate to="/insights" replace />} />
         </Route>
       </Routes>
+      </MfaGate>
       </SessionProvider>
       </AuthGate>
     </DataContext.Provider>

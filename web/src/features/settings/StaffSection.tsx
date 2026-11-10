@@ -61,6 +61,21 @@ export function StaffSection() {
     }
   }
 
+  const resetTwoStep = async (s: StaffMember) => {
+    if (!window.confirm(`Reset two-step sign-in for ${s.firstName} ${s.lastName}?\n\nUse this if they lost their phone. They'll set it up again the next time they sign in.`)) return
+    setBusy(s.id)
+    setNotice(null)
+    try {
+      await ds.resetTwoStep(s.id)
+      setNotice({ ok: true, text: `${s.firstName}'s two-step sign-in was reset. They'll set it up again at their next sign-in.` })
+      setVersion((v) => v + 1)
+    } catch (e) {
+      setNotice({ ok: false, text: (e as Error).message })
+    } finally {
+      setBusy(null)
+    }
+  }
+
   const rows = list.data ?? []
   return (
     <Card className="mt-4 p-4">
@@ -92,7 +107,18 @@ export function StaffSection() {
                 <span className="flex items-center gap-1" title="Has signed in to The Lab">
                   {s.signedIn ? <Check size={13} className="text-good" /> : <Minus size={13} />} {s.signedIn ? 'Signed in' : 'Not signed in yet'}
                 </span>
+                {s.signedIn && (
+                  <span className="flex items-center gap-1" title="Confirms sign-in with an authenticator app">
+                    {s.twoStep ? <Check size={13} className="text-good" /> : <Minus size={13} />} {s.twoStep ? 'Two-step on' : 'Two-step off'}
+                  </span>
+                )}
               </div>
+              {isAdmin && s.twoStep && s.id !== me?.id && (iAmOwner || s.role !== 'owner') && (
+                <button type="button" disabled={busy === s.id} onClick={() => resetTwoStep(s)}
+                  className="text-xs font-medium text-muted hover:text-ink disabled:opacity-40">
+                  Reset two-step
+                </button>
+              )}
               {isAdmin && s.id !== me?.id && (iAmOwner || s.role !== 'owner') && (
                 <button type="button" disabled={busy === s.id} onClick={() => toggleActive(s)}
                   className="text-xs font-medium text-muted hover:text-ink disabled:opacity-40">

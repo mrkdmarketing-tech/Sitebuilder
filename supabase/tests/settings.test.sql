@@ -3,7 +3,7 @@
 set role authenticated;
 
 -- Staff cannot save.
-do $$ begin perform set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-00000000000a', false); end $$;
+do $$ begin perform set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-00000000000a', false); perform set_config('request.jwt.claims', '{}', false); end $$;
 do $$ begin
   begin
     perform public.save_rule_settings('{"expensiveCpl": 70}');
@@ -13,7 +13,7 @@ do $$ begin
 end $$;
 
 -- Owner can; bad values are refused; every save is logged.
-do $$ begin perform set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-00000000000c', false); end $$;
+do $$ begin perform set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-00000000000c', false); perform set_config('request.jwt.claims', '{"aal":"aal2"}', false); end $$;
 do $$
 declare before_count int := (select count(*) from public.actions_log where action = 'rules.update');
 begin

@@ -155,6 +155,10 @@ Adds `sync_runs` to Supabase Realtime so open screens reload when a job finishes
 - `set_client_control()`: the Clients screen's single call: status, ads manager, link/unlink ad accounts, or clear all Lab changes. Clears open suggestions for clients no longer Active/New.
 - `client_list()`, `unlinked_ad_accounts()`: the Clients screen.
 
+## 2600 Two-step sign-in for owners and admins
+
+`mfa_ok()` (session confirmed with an authenticator code, `aal2`); `is_admin()` now requires it, so every admin-only policy and function does. `set_employee_role` / `set_employee_active` check it with a clear message. `two_step_on()` and a new `staff_overview().twoStep` show who has it on; `reset_two_step()` lets an owner/admin clear someone else's (lost phone), logged. Tested in `zz_staff.test.sql`.
+
 ## Changing the schema
 
 Add a **new** migration file (never edit one that has been applied to Supabase), with policies for any new table, then update this page and run `npm run db:test`.
