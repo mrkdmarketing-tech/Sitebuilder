@@ -13,6 +13,7 @@ import { addDays, todayInZone } from '@shared/domain/dates.ts'
 import type { DateRange, DeliveryStatus, Level, ReportRow, Totals } from '@shared/domain/types.ts'
 import { generateMockData, type MockAccount, type MockClient, type MockDataset, type MockDay } from './mock/generate'
 import type { DataSource, SyncRun } from './source'
+import { createMockApprovals } from './approvalsMock'
 
 /** localStorage key for the sample-mode "Viewing as" switch. */
 export const VIEW_AS_KEY = 'mrkd.viewAs'
@@ -158,8 +159,21 @@ export function createMockSource(data: MockDataset = generateMockData()): DataSo
   let sampleSettings: Partial<RuleSettings> = { ...DEFAULT_RULE_SETTINGS }
   let sampleSettingsAt: string | null = null
 
+  const approvals = createMockApprovals({
+    employees: data.employees,
+    clients: data.clients,
+    meId: async () => {
+      try {
+        return localStorage.getItem(VIEW_AS_KEY) ?? 'emp_alex'
+      } catch {
+        return 'emp_alex'
+      }
+    },
+  })
+
   return {
     kind: 'sample',
+    approvals,
     async me() {
       // Sample mode has no login: "Viewing as" in the banner picks who you are.
       let id = 'emp_alex'

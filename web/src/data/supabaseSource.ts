@@ -9,6 +9,7 @@ import type { Creative, Employee, MetaLead, ReportRow } from '@shared/domain/typ
 import type { RuleSettings } from '@shared/domain/rules.ts'
 import type { ActionRecord, DataSource, LeadFormResult, StoredSuggestion, SyncRun, TurnOffResult } from './source'
 import type { Suggestion } from '@shared/domain/rules.ts'
+import { createSupabaseApprovals } from './approvalsSupabase'
 
 function check<T>(res: { data: T | null; error: { message: string } | null }): T {
   if (res.error) throw new Error(res.error.message)
@@ -29,6 +30,7 @@ const toCreative = (c: CreativeRow): Creative => ({
 export function createSupabaseSource(db: SupabaseClient): DataSource {
   return {
     kind: 'supabase',
+    approvals: createSupabaseApprovals(db),
     async me() {
       const row = check(await db.rpc('me')) as { id: string; first_name: string; last_name: string; email: string | null; is_ad_manager: boolean; active: boolean; role: Employee['role'] } | null
       return row

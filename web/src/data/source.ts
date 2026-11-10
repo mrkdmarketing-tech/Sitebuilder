@@ -7,6 +7,7 @@
 import { createContext, useContext } from 'react'
 import type { Creative, DateRange, Employee, Level, MetaLead, ReportRow } from '@shared/domain/types.ts'
 import type { RuleSettings, Suggestion } from '@shared/domain/rules.ts'
+import type { ApprovalsApi } from './approvals'
 
 export interface LeadFormResult {
   id: string
@@ -84,6 +85,8 @@ export interface DataSource {
   recentActions(limit?: number): Promise<ActionRecord[]>
   /** When the data was last refreshed (for the "Updated 4 min ago" stamp). */
   lastUpdated(): Promise<string | null>
+  /** Ad approval (docs/ad-approval.md). */
+  readonly approvals: ApprovalsApi
 }
 
 export const DataContext = createContext<DataSource | null>(null)

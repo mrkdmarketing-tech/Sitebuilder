@@ -11,6 +11,7 @@ import { InsightsPage } from '../features/insights/InsightsPage'
 import { SuggestionsPage } from '../features/suggestions/SuggestionsPage'
 import { SearchPage } from '../features/search/SearchPage'
 import { ApprovalsPage } from '../features/approvals/ApprovalsPage'
+import { ReviewPage } from '../features/approvals/ReviewPage'
 import { SyncStatusPage } from '../features/status/SyncStatusPage'
 import { SettingsPage } from '../features/settings/SettingsPage'
 
@@ -19,6 +20,7 @@ import { SettingsPage } from '../features/settings/SettingsPage'
  *   /insights     Meta insights (Phase 1a)       replaces Retool "Meta Ads Insights"
  *   /suggestions  Suggestions (Phase 1b)         replaces Retool alerts
  *   /approvals    Ad approval (Phase 2)          replaces Retool "Ad Preview"
+ *   /approvals/:id  One ad: edit, mistake check, submit, review
  *   /search       Lead form & ad copy search      replaces Retool "Search Meta Lead Forms"
  *   /status       Sync health
  *   /settings     Suggestion thresholds (admins edit), design, links
@@ -36,6 +38,7 @@ export function App() {
           <Route path="insights" element={<InsightsPage />} />
           <Route path="suggestions" element={<SuggestionsPage />} />
           <Route path="approvals" element={<ApprovalsPage />} />
+          <Route path="approvals/:id" element={<ReviewPage />} />
           <Route path="search" element={<SearchPage />} />
           <Route path="status" element={<SyncStatusPage />} />
           <Route path="settings" element={<SettingsPage />} />
