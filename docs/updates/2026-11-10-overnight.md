@@ -11,6 +11,7 @@ What was built while Jordan slept, what to test, and what's needed. Live at http
 | **Check for mistakes** (AI) | Button on each ad | Reads the copy, lead form, text in images and subtitles in videos (stills taken in the browser, no audio), checks against the client's details. **Needs the Claude key** (below); until then it says it isn't set up. |
 | **Retool history** | Ad approval, **From Retool** | All 596 Retool ads, 13 creative + 8 lead form templates, copied read-only every 15 minutes. Images weren't copied (Retool stored them inside the database); the screen says how many there were. |
 | **Settings** | **Settings** tab (phone: bottom bar) | Owners/admins change suggestion thresholds; every change is logged. Also a **Look** switch to try the 4 designs on real data. |
+| **4 sleeker design options** | Settings → Look → **Sleeker options**, or [design-options.md](../design-options.md#sleeker-options) | E · Graphite, F · Onyx, G · Air, H · Studio. Not applied; everyone still sees Classic. |
 | **SOPs** | [docs/sop/](../sop/README.md) | 12 step-by-step procedures for ads managers and admins. |
 | **Meta sync retry** | Sync tab | Meta's "Service temporarily unavailable" was failing one random account most hours. The sync now waits and retries those. |
 
@@ -21,7 +22,7 @@ All tests pass (60 app tests, 6 database test files). Nothing here changes live 
 1. **Ad approval → New ad** on one of your clients. Pick a creative template and check the placeholders filled in (business name, city...). Upload an image and a short video.
 2. **Submit for approval** with yourself as reviewer, then **Approve** or **Request changes** from the same ad.
 3. **From Retool**: open a few old ads and check they look right.
-4. **Settings**: try the four looks and tell me which one.
+4. **Settings → Look**: try the four **sleeker options** (E to H) and tell me which one, or what to mix.
 5. Still open from yesterday: **Turn off** one ad from Suggestions (after reloading) and check it in Ads Manager.
 
 ## Needed from you

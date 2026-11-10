@@ -9,6 +9,9 @@ import { APP_NAME } from './AuthGate'
 import { UpdateBanner } from './UpdateBanner'
 
 /** `phone: false` = left off the phone tab bar (5 slots); reachable from Settings. */
+/** Designs that use a left sidebar on desktop instead of a top bar. */
+const SIDEBAR_DESIGNS = new Set(['bold', 'air', 'studio'])
+
 const NAV = [
   { to: '/insights', label: 'Insights', icon: BarChart3, phone: true },
   { to: '/suggestions', label: 'Suggestions', icon: Lightbulb, phone: true },
@@ -19,12 +22,12 @@ const NAV = [
 ]
 
 /**
- * App shell. Desktop: top bar (designs A, B, D) or black left sidebar (design C).
+ * App shell. Desktop: top bar (designs A, B, D, E, F) or left sidebar (C, G, H).
  * Phones: bottom tab bar in every design.
  */
 export function Layout() {
   const { design } = useSession()
-  const sidebar = design === 'bold'
+  const sidebar = SIDEBAR_DESIGNS.has(design)
   return (
     <div className="flex min-h-full flex-col">
       <UpdateBanner />

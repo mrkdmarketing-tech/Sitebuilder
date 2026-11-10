@@ -2,6 +2,9 @@
 
 What changed, newest first. Every change to the platform adds a line here.
 
+## 2026-11-11: Four sleeker design options
+- Added E · Graphite, F · Onyx, G · Air and H · Studio as options only ([design-options.md](docs/design-options.md#sleeker-options), with screenshots). Nothing changes for anyone until one is picked: try them in **Settings → Look → Sleeker options**.
+
 ## 2026-11-10: Ad approval (Phase 2)
 - **Ad approval is live** at `/approvals`, replacing Retool's Ad Preview: list with **Needs me / In progress / All / From Retool**, **New ad**, an editor for setup, creative, images and videos, lead form and notes, templates that fill in the client's details, a client info panel, the 11-point checklist, comments and history.
 - **Check for mistakes** (`ad-check` function): Claude reads the copy, lead form, the text in images and the subtitles in videos (stills taken in the browser at upload; no audio), compares against the client's details, and lists issues with a suggested fix. **Fixed** / **Ignore** per issue; ignored issues stay ignored next time. The checklist shows the AI's opinion next to the items it can judge. Waiting on the Claude key (`ANTHROPIC_API_KEY`); until then it says it isn't set up.

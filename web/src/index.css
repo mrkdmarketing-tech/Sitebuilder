@@ -95,3 +95,136 @@ h1 { font-family: var(--font-display); }
   --radius-lg: 0.25rem;
 }
 [data-design="compact"] body { font-size: 14px; }
+
+/* =============================================================================
+ * Proposals, 11 Nov 2026 ("something a bit sleeker"). Not applied: the default
+ * stays Classic until one is picked (docs/design-options.md#sleeker-options).
+ * ========================================================================== */
+
+/* ---- E. Graphite: white top bar, hairline borders, soft shadows, indigo accent ---- */
+[data-design="graphite"] {
+  --color-ink: #111113;
+  --color-soft: #3f3f46;
+  --color-muted: #71717a;
+  --color-line: #ececef;
+  --color-canvas: #fafafa;
+  --color-surface: #ffffff;
+  --color-subtle: #f4f4f5;
+  --color-hover: #fafafa;
+  --color-selected: #eef0ff;
+  --color-header: #ffffff;
+  --color-header-ink: #111113;
+  --color-primary: #111113;
+  --color-on-primary: #ffffff;
+  --color-brand: #5b5bd6;
+  --color-alert-high: #fff7f7;
+  --color-alert-high-line: #f5d0d0;
+  --color-alert-med: #fffcf2;
+  --color-alert-med-line: #f3e3b5;
+  --radius-xl: 0.875rem;
+  font-feature-settings: "cv11", "ss03";
+}
+[data-design="graphite"] header { border-bottom: 1px solid var(--color-line); }
+[data-design="graphite"] .rounded-xl.bg-surface { box-shadow: 0 1px 2px rgb(16 16 20 / 0.04), 0 4px 16px rgb(16 16 20 / 0.03); }
+[data-design="graphite"] h1 { letter-spacing: -0.025em; }
+[data-design="graphite"] .kpi-value { letter-spacing: -0.03em; font-weight: 600; }
+
+/* ---- F. Onyx: true-black dark mode, white buttons, blue accent ---- */
+[data-design="onyx"] {
+  --color-ink: #ededed;
+  --color-soft: #c7c7c7;
+  --color-muted: #8f8f8f;
+  --color-line: #222222;
+  --color-canvas: #000000;
+  --color-surface: #0a0a0a;
+  --color-subtle: #161616;
+  --color-hover: #111111;
+  --color-selected: #0d1a2e;
+  --color-header: #000000;
+  --color-header-ink: #ededed;
+  --color-primary: #ededed;
+  --color-on-primary: #0a0a0a;
+  --color-brand: #52a8ff;
+  --color-good: #3ecf8e;
+  --color-bad: #ff6166;
+  --color-warn: #f5a524;
+  --color-alert-high: #1a0b0c;
+  --color-alert-high-line: #4a1d20;
+  --color-alert-med: #1a1407;
+  --color-alert-med-line: #4a3a12;
+  --radius-xl: 0.75rem;
+  color-scheme: dark;
+  font-feature-settings: "cv11", "ss03";
+}
+[data-design="onyx"] header { border-bottom: 1px solid var(--color-line); }
+[data-design="onyx"] h1, [data-design="onyx"] .kpi-value { letter-spacing: -0.03em; }
+
+/* ---- G. Air: light sidebar, lots of space, teal accent ---- */
+[data-design="air"] {
+  --color-ink: #0f172a;
+  --color-soft: #334155;
+  --color-muted: #64748b;
+  --color-line: #e8ecf1;
+  --color-canvas: #f6f8fa;
+  --color-surface: #ffffff;
+  --color-subtle: #f1f5f9;
+  --color-hover: #f8fafc;
+  --color-selected: #e6f6f4;
+  --color-header: #ffffff;
+  --color-header-ink: #0f172a;
+  --color-primary: #0d9488;
+  --color-on-primary: #ffffff;
+  --color-brand: #0f766e;
+  --radius-xl: 1rem;
+  font-feature-settings: "cv11", "ss03";
+}
+[data-design="air"] aside { border-right: 1px solid var(--color-line); }
+[data-design="air"] .rounded-xl.bg-surface { box-shadow: 0 1px 3px rgb(15 23 42 / 0.05); }
+[data-design="air"] h1 { letter-spacing: -0.02em; }
+[data-design="air"] .kpi-value { letter-spacing: -0.02em; }
+
+/* ---- H. Studio: charcoal sidebar, crisp white content, MRKD orange used sparingly ---- */
+[data-design="studio"] {
+  --font-display: "Space Grotesk", var(--font-sans);
+  --color-ink: #121212;
+  --color-soft: #3a3a3a;
+  --color-muted: #7a7a7a;
+  --color-line: #ebebeb;
+  --color-canvas: #f7f7f7;
+  --color-surface: #ffffff;
+  --color-subtle: #f2f2f2;
+  --color-hover: #fafafa;
+  --color-selected: #fff3ec;
+  --color-header: #161616;
+  --color-header-ink: #f5f5f5;
+  --color-primary: #ff5a1f;
+  --color-on-primary: #ffffff;
+  --color-brand: #e2470e;
+  --color-alert-high: #fff5f0;
+  --color-alert-high-line: #ffd6c4;
+  --radius-xl: 0.75rem;
+  font-feature-settings: "cv11", "ss03";
+}
+[data-design="studio"] .rounded-xl.bg-surface { box-shadow: 0 1px 2px rgb(0 0 0 / 0.04); }
+[data-design="studio"] h1 { letter-spacing: -0.03em; font-weight: 700; }
+[data-design="studio"] .kpi-value { font-size: 1.7rem; letter-spacing: -0.03em; }
+
+/* Sleeker options: quieter chips. The ads-manager chip becomes neutral and the
+   status pills softer; the dark one gets translucent versions that suit black. */
+:is([data-design="graphite"], [data-design="air"], [data-design="studio"]) .bg-orange-100 { background: var(--color-subtle); }
+:is([data-design="graphite"], [data-design="air"], [data-design="studio"]) .text-orange-900 { color: var(--color-soft); }
+:is([data-design="graphite"], [data-design="air"], [data-design="studio"]) .bg-emerald-100 { background: #ecfdf3; }
+:is([data-design="graphite"], [data-design="air"], [data-design="studio"]) .bg-emerald-600,
+:is([data-design="graphite"], [data-design="air"], [data-design="studio"]) .bg-sky-600 { background: transparent; color: var(--color-muted); box-shadow: inset 0 0 0 1px var(--color-line); }
+
+[data-design="onyx"] .bg-emerald-100, [data-design="onyx"] .bg-emerald-50 { background: rgb(62 207 142 / 0.12); }
+[data-design="onyx"] .text-emerald-800, [data-design="onyx"] .text-emerald-900 { color: #3ecf8e; }
+[data-design="onyx"] .bg-red-100, [data-design="onyx"] .bg-red-50 { background: rgb(255 97 102 / 0.12); }
+[data-design="onyx"] .text-red-800, [data-design="onyx"] .text-red-900 { color: #ff8a8e; }
+[data-design="onyx"] .bg-amber-100, [data-design="onyx"] .bg-amber-50 { background: rgb(245 165 36 / 0.12); }
+[data-design="onyx"] .text-amber-800, [data-design="onyx"] .text-amber-900, [data-design="onyx"] .text-amber-950 { color: #f5c46b; }
+[data-design="onyx"] .bg-sky-100, [data-design="onyx"] .bg-blue-100, [data-design="onyx"] .bg-indigo-100 { background: rgb(82 168 255 / 0.12); }
+[data-design="onyx"] .text-sky-800, [data-design="onyx"] .text-sky-900, [data-design="onyx"] .text-blue-900, [data-design="onyx"] .text-indigo-800 { color: #8cc4ff; }
+[data-design="onyx"] .bg-orange-100 { background: #1c1c1c; }
+[data-design="onyx"] .text-orange-900 { color: var(--color-soft); }
+[data-design="onyx"] .bg-emerald-600, [data-design="onyx"] .bg-sky-600 { background: transparent; color: var(--color-muted); box-shadow: inset 0 0 0 1px var(--color-line); }

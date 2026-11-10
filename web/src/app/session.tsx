@@ -13,12 +13,17 @@ import { useData } from '../data/source'
 import { VIEW_AS_KEY } from '../data/mockSource'
 import { useAsync } from '../lib/useAsync'
 
-export type Design = 'classic' | 'midnight' | 'bold' | 'compact'
-export const DESIGNS: { key: Design; label: string; blurb: string }[] = [
+export type Design = 'classic' | 'midnight' | 'bold' | 'compact' | 'graphite' | 'onyx' | 'air' | 'studio'
+/** `proposal`: the sleeker options from 11 Nov 2026, shown separately in Settings. None is the default. */
+export const DESIGNS: { key: Design; label: string; blurb: string; proposal?: boolean }[] = [
   { key: 'classic', label: 'A · Classic', blurb: 'Black top bar, white cards, blue links. Closest to a modern Retool.' },
   { key: 'midnight', label: 'B · Midnight', blurb: 'Dark dashboard with green accents. Easy on the eyes when it is open all day.' },
   { key: 'bold', label: 'C · MRKD Bold', blurb: 'Brand-forward: black sidebar, warm background, orange accent, big numbers.' },
   { key: 'compact', label: 'D · Compact', blurb: 'Dense like Retool: smaller text, tighter rows, more columns on screen.' },
+  { key: 'graphite', label: 'E · Graphite', blurb: 'White top bar, hairline borders, soft shadows, indigo accent. Clean and quiet.', proposal: true },
+  { key: 'onyx', label: 'F · Onyx', blurb: 'True-black dark mode with white buttons and a blue accent. Sharp at night.', proposal: true },
+  { key: 'air', label: 'G · Air', blurb: 'Light sidebar, lots of white space, teal accent. Calm and roomy.', proposal: true },
+  { key: 'studio', label: 'H · Studio', blurb: 'Charcoal sidebar, crisp white content, MRKD orange used sparingly.', proposal: true },
 ]
 const DESIGN_KEY = 'mrkd.design'
 

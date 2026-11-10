@@ -125,18 +125,26 @@ export function SettingsPage() {
 
       <Card className="mt-4 p-4">
         <h2 className="mb-1 text-base font-semibold">Look</h2>
-        <p className="mb-3 text-sm text-muted">Try the four designs on real data. Only changes this browser.</p>
-        <div className="grid gap-2 sm:grid-cols-2">
-          {DESIGNS.map((d) => (
-            <label key={d.key} className={`flex cursor-pointer gap-2 rounded-lg border p-3 text-sm ${design === d.key ? 'border-brand' : 'border-line'}`}>
-              <input type="radio" name="design" checked={design === d.key} onChange={() => setDesign(d.key as Design)} className="mt-0.5" />
-              <span>
-                <span className="block font-semibold">{d.label}</span>
-                <span className="block text-xs text-muted">{d.blurb}</span>
-              </span>
-            </label>
-          ))}
-        </div>
+        <p className="mb-3 text-sm text-muted">Try the designs on real data. Only changes this browser; nothing is changed for anyone else.</p>
+        {[
+          { title: 'First options (9 Nov)', list: DESIGNS.filter((d) => !d.proposal) },
+          { title: 'Sleeker options (11 Nov)', list: DESIGNS.filter((d) => d.proposal) },
+        ].map((g) => (
+          <div key={g.title} className="mb-3 last:mb-0">
+            <h3 className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-muted">{g.title}</h3>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {g.list.map((d) => (
+                <label key={d.key} className={`flex cursor-pointer gap-2 rounded-lg border p-3 text-sm ${design === d.key ? 'border-brand' : 'border-line'}`}>
+                  <input type="radio" name="design" checked={design === d.key} onChange={() => setDesign(d.key as Design)} className="mt-0.5" />
+                  <span>
+                    <span className="block font-semibold">{d.label}</span>
+                    <span className="block text-xs text-muted">{d.blurb}</span>
+                  </span>
+                </label>
+              ))}
+            </div>
+          </div>
+        ))}
       </Card>
 
       <Card className="mt-4 p-4 text-sm">
