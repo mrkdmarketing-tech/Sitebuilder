@@ -22,7 +22,7 @@ Cloudflare builds the app from the GitHub repo on every push and serves it. It o
 
 ## Google sign-in (staff use their @mrkd.ca Google account)
 
-Done once by someone with admin access to MRKD's Google Workspace.
+Done once by someone with admin access to MRKD's Google Workspace. **Free:** Google sign-in needs no billing account; skip any "free trial" or card prompt.
 
 1. **console.cloud.google.com** (signed in with an @mrkd.ca admin account) → create a project **The Lab**.
 2. **Google Auth Platform → Branding** (older menus: APIs & Services → OAuth consent screen): app name **The Lab** (what staff see on Google's sign-in screen), support email, then **Audience → Internal**. *Internal* means only @mrkd.ca Google accounts can sign in.
