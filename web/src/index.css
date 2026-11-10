@@ -210,21 +210,67 @@ h1 { font-family: var(--font-display); }
 [data-design="studio"] .kpi-value { font-size: 1.7rem; letter-spacing: -0.03em; }
 
 /* Sleeker options: quieter chips. The ads-manager chip becomes neutral and the
-   status pills softer; the dark one gets translucent versions that suit black. */
+   status pills softer (dark versions are further down). */
 :is([data-design="graphite"], [data-design="air"], [data-design="studio"]) .bg-orange-100 { background: var(--color-subtle); }
 :is([data-design="graphite"], [data-design="air"], [data-design="studio"]) .text-orange-900 { color: var(--color-soft); }
 :is([data-design="graphite"], [data-design="air"], [data-design="studio"]) .bg-emerald-100 { background: #ecfdf3; }
 :is([data-design="graphite"], [data-design="air"], [data-design="studio"]) .bg-emerald-600,
 :is([data-design="graphite"], [data-design="air"], [data-design="studio"]) .bg-sky-600 { background: transparent; color: var(--color-muted); box-shadow: inset 0 0 0 1px var(--color-line); }
 
-[data-design="onyx"] .bg-emerald-100, [data-design="onyx"] .bg-emerald-50 { background: rgb(62 207 142 / 0.12); }
-[data-design="onyx"] .text-emerald-800, [data-design="onyx"] .text-emerald-900 { color: #3ecf8e; }
-[data-design="onyx"] .bg-red-100, [data-design="onyx"] .bg-red-50 { background: rgb(255 97 102 / 0.12); }
-[data-design="onyx"] .text-red-800, [data-design="onyx"] .text-red-900 { color: #ff8a8e; }
-[data-design="onyx"] .bg-amber-100, [data-design="onyx"] .bg-amber-50 { background: rgb(245 165 36 / 0.12); }
-[data-design="onyx"] .text-amber-800, [data-design="onyx"] .text-amber-900, [data-design="onyx"] .text-amber-950 { color: #f5c46b; }
-[data-design="onyx"] .bg-sky-100, [data-design="onyx"] .bg-blue-100, [data-design="onyx"] .bg-indigo-100 { background: rgb(82 168 255 / 0.12); }
-[data-design="onyx"] .text-sky-800, [data-design="onyx"] .text-sky-900, [data-design="onyx"] .text-blue-900, [data-design="onyx"] .text-indigo-800 { color: #8cc4ff; }
-[data-design="onyx"] .bg-orange-100 { background: #1c1c1c; }
-[data-design="onyx"] .text-orange-900 { color: var(--color-soft); }
-[data-design="onyx"] .bg-emerald-600, [data-design="onyx"] .bg-sky-600 { background: transparent; color: var(--color-muted); box-shadow: inset 0 0 0 1px var(--color-line); }
+
+/* ---- G. Air, dark mode (data-mode="dark", switched in the sidebar or Settings) ---- */
+[data-design="air"][data-mode="dark"] {
+  --color-ink: #e6edf3;
+  --color-soft: #b8c4cf;
+  --color-muted: #7f8d99;
+  --color-line: #1f2b35;
+  --color-canvas: #0a0f14;
+  --color-surface: #10171e;
+  --color-subtle: #172029;
+  --color-hover: #141c24;
+  --color-selected: #0f2a29;
+  --color-header: #0d1319;
+  --color-header-ink: #e6edf3;
+  --color-primary: #14b8a6;
+  --color-on-primary: #03201c;
+  --color-brand: #2dd4bf;
+  --color-good: #34d399;
+  --color-bad: #f87171;
+  --color-warn: #fbbf24;
+  --color-alert-high: #1f1214;
+  --color-alert-high-line: #4a2126;
+  --color-alert-med: #1f1a0e;
+  --color-alert-med-line: #4a3b14;
+  color-scheme: dark;
+}
+[data-design="air"][data-mode="dark"] .rounded-xl.bg-surface { box-shadow: none; }
+
+/* Dark looks (F · Onyx, G · Air dark): translucent status colours that suit a dark page. */
+:is([data-design="onyx"], [data-design="air"][data-mode="dark"]) .bg-emerald-100,
+:is([data-design="onyx"], [data-design="air"][data-mode="dark"]) .bg-emerald-50 { background: rgb(52 211 153 / 0.13); }
+:is([data-design="onyx"], [data-design="air"][data-mode="dark"]) .text-emerald-800,
+:is([data-design="onyx"], [data-design="air"][data-mode="dark"]) .text-emerald-900 { color: #4ade80; }
+:is([data-design="onyx"], [data-design="air"][data-mode="dark"]) .bg-red-100,
+:is([data-design="onyx"], [data-design="air"][data-mode="dark"]) .bg-red-50 { background: rgb(248 113 113 / 0.13); }
+:is([data-design="onyx"], [data-design="air"][data-mode="dark"]) .text-red-800,
+:is([data-design="onyx"], [data-design="air"][data-mode="dark"]) .text-red-900 { color: #fca5a5; }
+:is([data-design="onyx"], [data-design="air"][data-mode="dark"]) .bg-amber-100,
+:is([data-design="onyx"], [data-design="air"][data-mode="dark"]) .bg-amber-50 { background: rgb(251 191 36 / 0.12); }
+:is([data-design="onyx"], [data-design="air"][data-mode="dark"]) .text-amber-800,
+:is([data-design="onyx"], [data-design="air"][data-mode="dark"]) .text-amber-900,
+:is([data-design="onyx"], [data-design="air"][data-mode="dark"]) .text-amber-950 { color: #fcd34d; }
+:is([data-design="onyx"], [data-design="air"][data-mode="dark"]) .border-amber-200 { border-color: #4a3b14; }
+:is([data-design="onyx"], [data-design="air"][data-mode="dark"]) .bg-sky-100,
+:is([data-design="onyx"], [data-design="air"][data-mode="dark"]) .bg-blue-100,
+:is([data-design="onyx"], [data-design="air"][data-mode="dark"]) .bg-indigo-100 { background: rgb(96 165 250 / 0.13); }
+:is([data-design="onyx"], [data-design="air"][data-mode="dark"]) .text-sky-800,
+:is([data-design="onyx"], [data-design="air"][data-mode="dark"]) .text-sky-900,
+:is([data-design="onyx"], [data-design="air"][data-mode="dark"]) .text-blue-900,
+:is([data-design="onyx"], [data-design="air"][data-mode="dark"]) .text-indigo-800 { color: #93c5fd; }
+:is([data-design="onyx"], [data-design="air"][data-mode="dark"]) .bg-orange-100 { background: var(--color-subtle); }
+:is([data-design="onyx"], [data-design="air"][data-mode="dark"]) .text-orange-900 { color: var(--color-soft); }
+:is([data-design="onyx"], [data-design="air"][data-mode="dark"]) .bg-gray-200,
+:is([data-design="onyx"], [data-design="air"][data-mode="dark"]) .bg-gray-300,
+:is([data-design="onyx"], [data-design="air"][data-mode="dark"]) .bg-gray-400 { background: var(--color-subtle); color: var(--color-muted); }
+:is([data-design="onyx"], [data-design="air"][data-mode="dark"]) .bg-emerald-600,
+:is([data-design="onyx"], [data-design="air"][data-mode="dark"]) .bg-sky-600 { background: transparent; color: var(--color-muted); box-shadow: inset 0 0 0 1px var(--color-line); }

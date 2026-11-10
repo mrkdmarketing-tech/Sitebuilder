@@ -1,6 +1,19 @@
-# Design options: pick one
+# Design options
 
-**New, 11 Nov 2026: four sleeker options (E to H)** are [further down](#sleeker-options). None of them is switched on for anyone.
+**Chosen, 11 Nov 2026: G · Air, with light and dark mode.** Everyone sees Air by default. Dark mode: the sun / moon button next to your name (on phones, top right), or **Settings → Look → Light or dark** (Light, Dark, or Match device, which follows the phone or computer setting; Match device is the default). The other looks stay selectable in Settings for now and can be removed once everyone is happy with Air.
+
+### G · Air, dark mode
+
+| Insights | Suggestions |
+|---|---|
+| ![Air dark insights](design/images/air-dark-insights.png) | ![Air dark suggestions](design/images/air-dark-suggestions.png) |
+| ![Air dark ad approval](design/images/air-dark-approval.png) | ![Air dark phone](design/images/air-dark-phone.png) |
+
+Light mode screenshots are under [G · Air](#g--air) below.
+
+---
+
+The options that were considered:
 
 Four looks for the same app. **Same screens, same data; only the style changes.** Pick one (or mix: "B's colours with C's sidebar") and the others get removed.
 
@@ -51,7 +64,7 @@ Simple and organised: plain text labels, no emojis, line icons only in navigatio
 
 ## Sleeker options
 
-Added 11 Nov 2026 after Jordan asked for "something a bit sleeker". **Not applied:** the app still opens in A · Classic for everyone. To try one on real data: **Settings → Look → Sleeker options** (changes only your browser), or add `?design=graphite` / `onyx` / `air` / `studio` to any link.
+Added 11 Nov 2026 after Jordan asked for "something a bit sleeker". Jordan picked **G · Air** the same day and asked for a dark mode for it (above). To try one on real data: **Settings → Look → Sleeker options** (changes only your browser), or add `?design=graphite` / `onyx` / `air` / `studio` to any link.
 
 What they share: thinner borders, softer shadows instead of heavy outlines, tighter headings, quieter chips (the ads-manager name and client status are grey instead of coloured; only problems stay coloured), and Inter's cleaner letter shapes.
 
@@ -96,4 +109,6 @@ What they share: thinner borders, softer shadows instead of heavy outlines, tigh
 
 Every colour, font and corner radius is a named setting ("design token") in [`web/src/index.css`](../web/src/index.css): `surface`, `canvas`, `ink`, `brand`, `primary`, `alert-high`… Components only use those names, so each design is just a block of values. Designs C, G and H use a left sidebar instead of the top bar (`SIDEBAR_DESIGNS` in `web/src/app/Layout.tsx`). The sleeker options also quieten a few fixed chip colours at the end of `index.css`. Fonts (Inter, Space Grotesk) are bundled with the app, so there are no Google Fonts requests and it works inside GHL.
 
-Once a design is picked: keep its values as the defaults, delete the other blocks and the switcher, and update this page.
+Light / dark: `data-mode` on the page (`light` or `dark`), set from the saved choice by a small script in `web/index.html` before the page draws (so there's no flash of the wrong look, including on the sign-in screen) and kept up to date by `web/src/app/session.tsx`. Air's dark values are the `[data-design="air"][data-mode="dark"]` block in `index.css`. Choices are remembered per browser (`mrkd.design.v2`, `mrkd.mode`).
+
+Removing the unused looks later: delete their blocks in `index.css`, their entries in `DESIGNS`, and the Look list in Settings, then update this page.

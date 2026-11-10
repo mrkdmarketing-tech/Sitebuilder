@@ -5,6 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#0b0b0f" />
     <title>The Lab · MRKD</title>
+    <!-- Apply the saved look and light/dark mode before the page draws (no flash). Same rules as web/src/app/session.tsx. -->
+    <script>
+      (function () {
+        var d = 'air', m = 'system';
+        try {
+          var q = new URLSearchParams(location.search).get('design');
+          d = q || localStorage.getItem('mrkd.design.v2') || d;
+          m = localStorage.getItem('mrkd.mode') || m;
+        } catch (e) {}
+        var dark = d === 'air' && (m === 'dark' || (m === 'system' && window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches));
+        document.documentElement.dataset.design = d;
+        document.documentElement.dataset.mode = dark ? 'dark' : 'light';
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

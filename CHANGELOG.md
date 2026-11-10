@@ -2,6 +2,12 @@
 
 What changed, newest first. Every change to the platform adds a line here.
 
+## 2026-11-11: New look: Air, light and dark
+- **G · Air is now the look for everyone** (light sidebar, white space, teal). Picked by Jordan.
+- **Dark mode**: sun / moon button next to your name (phones: top right), or Settings → Look → Light / Dark / Match device. Match device is the default, so phones in dark mode get it automatically.
+- The right look is applied before the page draws, so no flash, including on the sign-in screen.
+- Suggestions page now says thresholds can be changed in Settings (it said "will be").
+
 ## 2026-11-11: Nightly backfill fix
 - The 2:20am 37-day backfill now asks Meta for one week at a time. Atlantic MMA (752 ads) was failing on the 37-day request; the re-run synced all 45 accounts. The 30-minute syncs have been green every run since the retry fix.
 

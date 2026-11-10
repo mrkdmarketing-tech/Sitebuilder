@@ -119,7 +119,7 @@ export function SuggestionsPage() {
           Flags ads with cost per lead over <b>{money(settings.expensiveCpl)}</b>, over <b>{money(settings.noLeadSpend)}</b> spent with no leads,
           ads taking <b>{Math.round(settings.budgetHogShare * 100)}%+</b> of their ad set's budget at over <b>{money(settings.budgetHogCpl)}</b> per lead,
           CTR under <b>{settings.lowCtr}%</b> or link CTR under <b>{settings.lowLinkCtr}%</b> (after {count(settings.minImpressions)} impressions),
-          account problems, and no leads in {settings.noRecentLeadsDays} days. Updated every 30 minutes. Thresholds will be editable in settings.
+          account problems, and no leads in {settings.noRecentLeadsDays} days. Updated every 30 minutes. Owners and admins can change these in Settings.
         </span>
       </div>
 

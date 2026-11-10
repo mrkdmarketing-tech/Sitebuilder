@@ -1,10 +1,10 @@
 import { NavLink, Outlet } from 'react-router-dom'
-import { BarChart3, CheckSquare, Lightbulb, Search, Activity, Settings } from 'lucide-react'
+import { BarChart3, CheckSquare, Lightbulb, Search, Activity, Settings, Moon, Sun } from 'lucide-react'
 import { SAMPLE_MODE } from '../lib/config'
 import { supabase } from '../lib/supabase'
 import { useData } from '../data/source'
 import { useAsync } from '../lib/useAsync'
-import { DESIGNS, useSession, type Design } from './session'
+import { DESIGNS, DESIGNS_WITH_DARK, useSession, type Design } from './session'
 import { APP_NAME } from './AuthGate'
 import { UpdateBanner } from './UpdateBanner'
 
@@ -35,7 +35,12 @@ export function Layout() {
       <div className={sidebar ? 'flex flex-1' : 'flex flex-1 flex-col'}>
         {sidebar ? <SideNav /> : <TopNav />}
         <main className="mx-auto w-full min-w-0 max-w-[1600px] flex-1 px-4 pb-24 pt-4 md:pb-8">
-          {sidebar && <div className="mb-2 text-lg font-black tracking-tight md:hidden">MRKD <span className="text-sm font-semibold text-muted">{APP_NAME}</span></div>}
+          {sidebar && (
+            <div className="mb-2 flex items-center justify-between md:hidden">
+              <span className="text-lg font-black tracking-tight">MRKD <span className="text-sm font-semibold text-muted">{APP_NAME}</span></span>
+              <ModeToggle />
+            </div>
+          )}
           <Outlet />
         </main>
       </div>
@@ -104,8 +109,25 @@ function SideNav() {
           </NavLink>
         ))}
       </nav>
-      <div className="mt-auto px-2"><UserBadge /></div>
+      <div className="mt-auto flex items-center justify-between gap-2 px-2"><UserBadge /><ModeToggle /></div>
     </aside>
+  )
+}
+
+/** Sun/moon button: switches between light and dark (designs that have a dark version). */
+function ModeToggle() {
+  const { design, dark, setMode } = useSession()
+  if (!DESIGNS_WITH_DARK.has(design)) return null
+  return (
+    <button
+      type="button"
+      onClick={() => setMode(dark ? 'light' : 'dark')}
+      title={dark ? 'Switch to light mode' : 'Switch to dark mode'}
+      aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}
+      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-muted hover:bg-subtle hover:text-ink"
+    >
+      {dark ? <Sun size={17} /> : <Moon size={17} />}
+    </button>
   )
 }
 

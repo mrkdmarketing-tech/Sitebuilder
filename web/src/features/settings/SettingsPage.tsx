@@ -12,7 +12,7 @@ import { DEFAULT_RULE_SETTINGS, type RuleSettings } from '@shared/domain/rules.t
 import { Card, PageTitle } from '../../components/ui'
 import { useData } from '../../data/source'
 import { useAsync } from '../../lib/useAsync'
-import { DESIGNS, useSession, type Design } from '../../app/session'
+import { DESIGNS, DESIGNS_WITH_DARK, useSession, type Design, type Mode } from '../../app/session'
 
 type Key = keyof RuleSettings
 
@@ -32,7 +32,7 @@ const show = (f: (typeof FIELDS)[number], v: number) => String(Math.round(v * (f
 
 export function SettingsPage() {
   const ds = useData()
-  const { isAdmin, design, setDesign } = useSession()
+  const { isAdmin, design, setDesign, mode, setMode } = useSession()
   const [version, setVersion] = useState(0)
   const info = useAsync(() => ds.ruleSettingsInfo(), [ds, version])
   const current = useMemo(() => ({ ...DEFAULT_RULE_SETTINGS, ...(info.data?.params ?? {}) }), [info.data])
@@ -125,7 +125,21 @@ export function SettingsPage() {
 
       <Card className="mt-4 p-4">
         <h2 className="mb-1 text-base font-semibold">Look</h2>
-        <p className="mb-3 text-sm text-muted">Try the designs on real data. Only changes this browser; nothing is changed for anyone else.</p>
+        {DESIGNS_WITH_DARK.has(design) && (
+          <div className="mb-4">
+            <h3 className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-muted">Light or dark</h3>
+            <div className="inline-flex rounded-lg border border-line bg-surface p-0.5">
+              {([['light', 'Light'], ['dark', 'Dark'], ['system', 'Match device']] as [Mode, string][]).map(([k, label]) => (
+                <button key={k} type="button" onClick={() => setMode(k)}
+                  className={`rounded-md px-3 py-1.5 text-sm font-medium ${mode === k ? 'bg-primary text-on-primary' : 'text-muted hover:text-ink'}`}>
+                  {label}
+                </button>
+              ))}
+            </div>
+            <p className="mt-1 text-xs text-muted">Also the sun / moon button next to your name. "Match device" follows your phone or computer's setting.</p>
+          </div>
+        )}
+        <p className="mb-3 text-sm text-muted">Everyone sees G · Air unless they pick another look here. Only changes this browser.</p>
         {[
           { title: 'First options (9 Nov)', list: DESIGNS.filter((d) => !d.proposal) },
           { title: 'Sleeker options (11 Nov)', list: DESIGNS.filter((d) => d.proposal) },

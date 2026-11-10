@@ -22,10 +22,18 @@ export const DESIGNS: { key: Design; label: string; blurb: string; proposal?: bo
   { key: 'compact', label: 'D · Compact', blurb: 'Dense like Retool: smaller text, tighter rows, more columns on screen.' },
   { key: 'graphite', label: 'E · Graphite', blurb: 'White top bar, hairline borders, soft shadows, indigo accent. Clean and quiet.', proposal: true },
   { key: 'onyx', label: 'F · Onyx', blurb: 'True-black dark mode with white buttons and a blue accent. Sharp at night.', proposal: true },
-  { key: 'air', label: 'G · Air', blurb: 'Light sidebar, lots of white space, teal accent. Calm and roomy.', proposal: true },
+  { key: 'air', label: 'G · Air (default)', blurb: 'Light sidebar, lots of white space, teal accent. Calm and roomy. Has a dark mode.', proposal: true },
   { key: 'studio', label: 'H · Studio', blurb: 'Charcoal sidebar, crisp white content, MRKD orange used sparingly.', proposal: true },
 ]
-const DESIGN_KEY = 'mrkd.design'
+/** v2: Air became the default on 11 Nov 2026, so earlier saved picks (always "classic") are ignored. */
+const DESIGN_KEY = 'mrkd.design.v2'
+const MODE_KEY = 'mrkd.mode'
+export const DEFAULT_DESIGN: Design = 'air'
+
+/** Light or dark (Air only). "system" follows the phone or computer setting. */
+export type Mode = 'light' | 'dark' | 'system'
+/** Designs that have a dark version. */
+export const DESIGNS_WITH_DARK = new Set<Design>(['air'])
 
 interface Session {
   me: Employee | null
@@ -36,6 +44,11 @@ interface Session {
   setViewAs: (employeeId: string) => void
   design: Design
   setDesign: (d: Design) => void
+  /** What the person chose: light, dark or match the device. */
+  mode: Mode
+  setMode: (m: Mode) => void
+  /** What is showing right now. */
+  dark: boolean
 }
 
 const SessionContext = createContext<Session | null>(null)
@@ -49,14 +62,50 @@ function initialDesign(): Design {
   } catch {
     /* ignore */
   }
-  return 'classic'
+  return DEFAULT_DESIGN
 }
+
+function initialMode(): Mode {
+  try {
+    const saved = localStorage.getItem(MODE_KEY) as Mode | null
+    if (saved === 'light' || saved === 'dark' || saved === 'system') return saved
+  } catch {
+    /* ignore */
+  }
+  return 'system'
+}
+
+const prefersDark = () => typeof window !== 'undefined' && window.matchMedia?.('(prefers-color-scheme: dark)').matches
 
 export function SessionProvider({ children }: { children: ReactNode }) {
   const ds = useData()
   const [viewAsVersion, setViewAsVersion] = useState(0)
   const { data: me, loading } = useAsync(() => ds.me(), [ds, viewAsVersion])
   const [design, setDesignState] = useState<Design>(initialDesign)
+  const [mode, setModeState] = useState<Mode>(initialMode)
+  const [systemDark, setSystemDark] = useState(prefersDark)
+  const dark = DESIGNS_WITH_DARK.has(design) && (mode === 'dark' || (mode === 'system' && systemDark))
+
+  // Follow the device's light/dark setting while "Match device" is chosen.
+  useEffect(() => {
+    const mq = window.matchMedia?.('(prefers-color-scheme: dark)')
+    if (!mq) return
+    const on = () => setSystemDark(mq.matches)
+    mq.addEventListener('change', on)
+    return () => mq.removeEventListener('change', on)
+  }, [])
+
+  useEffect(() => {
+    document.documentElement.dataset.mode = dark ? 'dark' : 'light'
+  }, [dark])
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(MODE_KEY, mode)
+    } catch {
+      /* ignore */
+    }
+  }, [mode])
 
   useEffect(() => {
     document.documentElement.dataset.design = design
@@ -81,6 +130,9 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     },
     design,
     setDesign: setDesignState,
+    mode,
+    setMode: setModeState,
+    dark,
   }
   return <SessionContext.Provider value={session}>{children}</SessionContext.Provider>
 }

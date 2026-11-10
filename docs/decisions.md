@@ -25,3 +25,8 @@ Why things are the way they are. Newest first. Add an entry whenever a real choi
 | 2026-11-09 | **React + TypeScript + Vite + Tailwind** | Static app, fast, works on Cloudflare; Tailwind for responsive layouts | Next.js (needs a server host) |
 | 2026-11-09 | **Supabase** (Postgres, Auth, Realtime, Edge Functions, Storage) | Same engine as Retool DB; logins, live updates and jobs in one service | Firebase, Airtable, Google Sheets |
 | 2026-11-09 | **Meta System User token** | Doesn't expire like personal tokens (a likely cause of Retool breakage) | Personal access tokens |
+
+## 2026-11-11: Look: G · Air, with light and dark mode
+
+Jordan picked Air from the four sleeker options (Graphite, Onyx, Air, Studio) and asked for a dark mode. Air is now the default for everyone; dark mode follows the device unless someone chooses Light or Dark. The older looks stay selectable in Settings until everyone is settled, then get removed ([design-options.md](design-options.md)).
+
