@@ -51,7 +51,7 @@ Deno.serve(async (req) => {
 
   const log = (result: 'ok' | 'error', before: unknown, after: unknown, error?: string) =>
     db.from('actions_log').insert({
-      actor_id: me.id, action: 'meta.pause_ad', target_type: 'meta_ad', target_id: adId,
+      actor_id: me.id, action: 'meta.pause_ad', target_type: 'meta_ad', target_id: adId, ad_id: adId,
       before, after, result, error: error ?? null,
     })
   const markDone = () =>

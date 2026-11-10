@@ -43,6 +43,10 @@ The sample data deliberately includes the situations suggestions look for: a bud
 
 Live since 10 Nov 2026 (migration 1800, `web/src/lib/useLiveRefresh.ts`). Open screens subscribe to `sync_runs` through Supabase Realtime and reload when a job finishes: Insights after a Meta sync or Retool copy, Suggestions after `run-rules`, Sync status after any job. Screens also reload when a tab comes back after being hidden for 5+ minutes. The table stays on screen while it reloads. Row-level security applies to the events too.
 
+## New versions
+
+Each build gets an id (`vite.config.ts`) written into the app and `/version.json`. An open page checks every 5 minutes and when the tab comes back; if a newer version is live it shows **"The Lab was updated. Reload"** (`web/src/app/UpdateBanner.tsx`), so nobody keeps using an outdated copy.
+
 ## Security in one paragraph
 
 The browser only ever holds the public "anon" key plus the signed-in user's session. **Row-level security** in the database decides what each person can read or write ([auth.md](auth.md)). API tokens (Meta, GHL, Claude, the Retool DB connection) live only in Supabase secrets and are used only by background jobs. Nothing secret is in the repo or the browser.

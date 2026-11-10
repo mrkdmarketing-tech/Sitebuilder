@@ -6,6 +6,7 @@ import { useData } from '../data/source'
 import { useAsync } from '../lib/useAsync'
 import { DESIGNS, useSession, type Design } from './session'
 import { APP_NAME } from './AuthGate'
+import { UpdateBanner } from './UpdateBanner'
 
 const NAV = [
   { to: '/insights', label: 'Insights', icon: BarChart3 },
@@ -24,6 +25,7 @@ export function Layout() {
   const sidebar = design === 'bold'
   return (
     <div className="flex min-h-full flex-col">
+      <UpdateBanner />
       {SAMPLE_MODE && <SampleBar />}
       <div className={sidebar ? 'flex flex-1' : 'flex flex-1 flex-col'}>
         {sidebar ? <SideNav /> : <TopNav />}

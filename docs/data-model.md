@@ -121,6 +121,10 @@ Access-rule helpers are wrapped as `(select …)` so they run once per query ins
 
 Adds `sync_runs` to Supabase Realtime so open screens reload when a job finishes.
 
+## 1900 Audit log ad link
+
+`actions_log.ad_id` (optional, set by Turn off) so the app can show the ad name next to each action.
+
 ## Changing the schema
 
 Add a **new** migration file (never edit one that has been applied to Supabase), with policies for any new table, then update this page and run `npm run db:test`.

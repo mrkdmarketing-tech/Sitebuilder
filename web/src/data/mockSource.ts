@@ -233,6 +233,9 @@ export function createMockSource(data: MockDataset = generateMockData()): DataSo
       await wait(400)
       return { ok: true, message: 'Sample data: nothing was changed in Meta.' }
     },
+    async recentActions() {
+      return []
+    },
     async lastUpdated() {
       return new Date(Date.now() - 11 * 60_000).toISOString()
     },

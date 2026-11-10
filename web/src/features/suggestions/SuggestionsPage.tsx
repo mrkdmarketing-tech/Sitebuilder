@@ -17,7 +17,7 @@ import { useAsync } from '../../lib/useAsync'
 import { useLiveRefresh } from '../../lib/useLiveRefresh'
 import { Card, Empty, ManagerChip, Modal, PageTitle } from '../../components/ui'
 import { ManagerFilter } from '../insights/Filters'
-import { count, money } from '../../lib/format'
+import { count, dateTime, money } from '../../lib/format'
 import { SAMPLE_MODE } from '../../lib/config'
 import { useSession } from '../../app/session'
 
@@ -40,6 +40,8 @@ export function SuggestionsPage() {
 
   const { data: employees } = useAsync(() => ds.employees(), [ds])
   const live = useLiveRefresh(['rules.run'])
+  const [actionsVersion, setActionsVersion] = useState(0)
+  const { data: actions } = useAsync(() => ds.recentActions(10), [ds, actionsVersion, live])
   const { data, loading } = useAsync(async () => {
     const [stored, accounts, settings] = await Promise.all([ds.storedSuggestions(), ds.report('account', range), ds.ruleSettings()])
     if (stored) return { suggestions: stored as Shown[], settings, accounts }
@@ -82,9 +84,10 @@ export function SuggestionsPage() {
     const res = await ds.turnOffAd((s as StoredSuggestion).id ?? s.key)
     setBusy(false)
     setConfirm(null)
+    setActionsVersion((v) => v + 1)
     if (res.ok) {
       hide(s, 'done')
-      setNotice({ ok: true, text: res.message })
+      setNotice({ ok: true, text: `Done: ${res.message} It's recorded that you turned it off.`, adsManagerUrl: adsManagerUrl(s) })
     } else {
       setNotice({ ok: false, text: res.message, adsManagerUrl: adsManagerUrl(s) })
     }
@@ -124,7 +127,11 @@ export function SuggestionsPage() {
         <div role="status" className={`mb-4 flex items-start justify-between gap-3 rounded-xl border p-3 text-sm ${notice.ok ? 'border-line bg-surface' : 'border-alert-high-line bg-alert-high'}`}>
           <span>
             {notice.text}{' '}
-            {notice.adsManagerUrl && <a href={notice.adsManagerUrl} target="_blank" rel="noreferrer" className="font-semibold text-brand underline">Open in Ads Manager</a>}
+            {notice.adsManagerUrl && (
+              <a href={notice.adsManagerUrl} target="_blank" rel="noreferrer" className="font-semibold text-brand underline">
+                {notice.ok ? 'Check it in Ads Manager' : 'Open in Ads Manager'}
+              </a>
+            )}
           </span>
           <button onClick={() => setNotice(null)} className="text-xs text-muted">Close</button>
         </div>
@@ -179,6 +186,27 @@ export function SuggestionsPage() {
           </Card>
         ))}
       </div>
+
+      {actions && actions.length > 0 && (
+        <section className="mt-6">
+          <h2 className="mb-2 text-sm font-semibold">Recently turned off</h2>
+          <Card>
+            <ul className="divide-y divide-line">
+              {actions.map((a, i) => (
+                <li key={i} className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 text-sm">
+                  <span className="min-w-0">
+                    <span className="font-medium">{a.adName ?? 'Ad'}</span>
+                    <span className="text-muted"> · {a.accountName ?? ''} · {a.who ?? 'someone'} · {dateTime(a.at)}</span>
+                  </span>
+                  <span className={`rounded px-2 py-0.5 text-xs font-semibold ${a.ok ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}`} title={a.note ?? undefined}>
+                    {a.ok ? (a.note ? 'Already off' : 'Turned off') : 'Failed'}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </Card>
+        </section>
+      )}
 
       <Modal open={!!confirm} onClose={() => setConfirm(null)} title="Turn off this ad?">
         {confirm && (

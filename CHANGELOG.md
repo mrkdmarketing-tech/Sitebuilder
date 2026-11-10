@@ -2,6 +2,10 @@
 
 What changed, newest first. Every change to the platform adds a line here.
 
+## 2026-11-10: Clear Turn off feedback
+- Found that a first Turn off attempt ran on an outdated copy of the page (from before the real Turn off), so nothing reached Meta. Added an **"The Lab was updated. Reload"** bar when a newer version is live.
+- Turn off now confirms with "Done: … is now off in Meta" plus a link to check in Ads Manager, and a **Recently turned off** list shows every attempt with who, when and the result (migration 1900 links log entries to ads).
+
 ## 2026-11-10: No more refreshing
 - Insights, Suggestions and Sync status reload by themselves when new data lands (Supabase Realtime on `sync_runs`, migration 1800), and when you come back to a tab after 5+ minutes.
 

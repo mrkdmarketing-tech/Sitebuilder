@@ -7,7 +7,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Creative, Employee, MetaLead, ReportRow } from '@shared/domain/types.ts'
 import type { RuleSettings } from '@shared/domain/rules.ts'
-import type { DataSource, LeadFormResult, StoredSuggestion, SyncRun, TurnOffResult } from './source'
+import type { ActionRecord, DataSource, LeadFormResult, StoredSuggestion, SyncRun, TurnOffResult } from './source'
 import type { Suggestion } from '@shared/domain/rules.ts'
 
 function check<T>(res: { data: T | null; error: { message: string } | null }): T {
@@ -116,6 +116,21 @@ export function createSupabaseSource(db: SupabaseClient): DataSource {
         /* keep default */
       }
       return { ok: false, message: body.error ?? error.message, needsManageCampaigns: body.needsManageCampaigns }
+    },
+    async recentActions(limit = 10) {
+      const rows = check(
+        await db.from('actions_log')
+          .select('created_at, result, error, actor:employees(first_name, last_name), ad:meta_ads!actions_log_ad_fk(name, account:meta_ad_accounts(name))')
+          .eq('action', 'meta.pause_ad').order('created_at', { ascending: false }).limit(limit),
+      ) as unknown as {
+        created_at: string; result: 'ok' | 'error'; error: string | null
+        actor: { first_name: string; last_name: string } | null
+        ad: { name: string | null; account: { name: string | null } | null } | null
+      }[]
+      return rows.map((r): ActionRecord => ({
+        at: r.created_at, who: r.actor ? `${r.actor.first_name} ${r.actor.last_name}`.trim() : null,
+        adName: r.ad?.name ?? null, accountName: r.ad?.account?.name ?? null, ok: r.result === 'ok', note: r.error,
+      }))
     },
     async lastUpdated() {
       const row = check(

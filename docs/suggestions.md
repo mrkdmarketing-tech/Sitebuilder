@@ -65,6 +65,8 @@ Every "Turn off" asks for one confirmation first. In sample-data mode nothing is
 
 **Which accounts can be turned off:** the system user needs **Manage campaigns** on the ad account. On 10 Nov 2026, 32 of 54 accounts had it; the other 22 are view-only (list in [setup/meta.md](setup/meta.md)). On those, Turn off shows: "This ad account only lets The Lab view, not change ads…" with a link to Ads Manager.
 
+**Seeing what happened:** after Turn off, a message confirms it ("Done: … is now off in Meta") with a link to check in Ads Manager, and the **Recently turned off** list at the bottom of the page shows every attempt (ad, account, who, when, Turned off / Already off / Failed) from `actions_log`.
+
 **Not now** hides it for 24 hours. **Dismiss** stops it being suggested again for 7 days (if the problem is still there after that, it comes back).
 
 ## Later

@@ -39,6 +39,16 @@ export interface TurnOffResult {
   needsManageCampaigns?: boolean
 }
 
+/** One "Turn off" attempt from the audit log. */
+export interface ActionRecord {
+  at: string
+  who: string | null
+  adName: string | null
+  accountName: string | null
+  ok: boolean
+  note: string | null
+}
+
 export interface DataSource {
   readonly kind: 'sample' | 'supabase'
   /** The signed-in employee (null if signed in but not an employee). */
@@ -60,6 +70,8 @@ export interface DataSource {
   updateSuggestion(id: string, status: 'snoozed' | 'dismissed'): Promise<void>
   /** "Turn off": pauses the ad in Meta through the meta-action function. */
   turnOffAd(suggestionId: string): Promise<TurnOffResult>
+  /** Latest "Turn off" attempts (audit log), newest first. */
+  recentActions(limit?: number): Promise<ActionRecord[]>
   /** When the data was last refreshed (for the "Updated 4 min ago" stamp). */
   lastUpdated(): Promise<string | null>
 }
