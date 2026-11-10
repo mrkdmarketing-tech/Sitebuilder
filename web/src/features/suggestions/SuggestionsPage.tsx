@@ -79,6 +79,7 @@ export function SuggestionsPage() {
           ads taking <b>{Math.round(settings.budgetHogShare * 100)}%+</b> of their ad set's budget at over <b>{money(settings.budgetHogCpl)}</b> per lead,
           CTR under <b>{settings.lowCtr}%</b> or link CTR under <b>{settings.lowLinkCtr}%</b> (after {count(settings.minImpressions)} impressions),
           account problems, and no leads in {settings.noRecentLeadsDays} days. Thresholds will be editable in settings.
+          {!SAMPLE_MODE && ' One-click "Turn off" is coming next; for now the button opens the ad in Ads Manager so you can pause it there.'}
         </span>
       </div>
 
@@ -113,14 +114,14 @@ export function SuggestionsPage() {
                         </div>
                       )}
                       <div className="mt-2 flex flex-wrap gap-2">
-                        {s.action.type === 'pause_ad' ? (
+                        {s.action.type === 'pause_ad' && SAMPLE_MODE ? (
                           <button onClick={() => setConfirm(s)} className="rounded-md bg-primary px-3 py-1 text-xs font-semibold text-on-primary">Turn off</button>
                         ) : (
                           <a
                             href={`https://adsmanager.facebook.com/adsmanager/manage/${s.level === 'ad' ? `ads?act=${s.accountId}&selected_ad_ids=${s.entityId}` : `campaigns?act=${s.accountId}`}`}
                             target="_blank" rel="noreferrer" className="rounded-md bg-primary px-3 py-1 text-xs font-semibold text-on-primary"
                           >
-                            Open in Ads Manager
+                            {s.action.type === 'pause_ad' ? 'Turn off in Ads Manager' : 'Open in Ads Manager'}
                           </a>
                         )}
                         <button onClick={() => act(s, 'snoozed')} className="rounded-md border border-line bg-surface px-3 py-1 text-xs font-medium">Not now</button>
