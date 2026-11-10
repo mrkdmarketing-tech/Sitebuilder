@@ -4,7 +4,7 @@ Per-ad-account suggestions shown **in the app only** (no Slack), **to the employ
 
 > **Renzo Gracie Boca:** an ad has 1 lead at $120. Turn it off? **[Turn off] [Not now] [Dismiss]**
 
-Code: [`shared/domain/rules.ts`](../shared/domain/rules.ts) (tests: `rules.test.ts`). Screen: `web/src/features/suggestions/`. Phase: **1b** (a preview with sample data is already in the app).
+Code: [`shared/domain/rules.ts`](../shared/domain/rules.ts) (tests: `rules.test.ts`). Screen: `web/src/features/suggestions/`. Jobs: `run-rules` (saves suggestions every 30 min, at :10 and :40) and `meta-action` (Turn off). **Live since 10 Nov 2026.** First run: 38 suggestions (Adam 16, Jordan 13, Zohirul 9).
 
 ## Who sees which suggestions
 
@@ -62,6 +62,10 @@ Handled by the `meta-action` function, not the browser:
 5. Writes `actions_log` (who, before/after, result).
 
 Every "Turn off" asks for one confirmation first. In sample-data mode nothing is sent to Meta.
+
+**Which accounts can be turned off:** the system user needs **Manage campaigns** on the ad account. On 10 Nov 2026, 32 of 54 accounts had it; the other 22 are view-only (list in [setup/meta.md](setup/meta.md)). On those, Turn off shows: "This ad account only lets The Lab view, not change ads…" with a link to Ads Manager.
+
+**Not now** hides it for 24 hours. **Dismiss** stops it being suggested again for 7 days (if the problem is still there after that, it comes back).
 
 ## Later
 

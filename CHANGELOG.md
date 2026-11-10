@@ -2,6 +2,12 @@
 
 What changed, newest first. Every change to the platform adds a line here.
 
+## 2026-11-10: One-click Turn off
+- `run-rules` now saves suggestions every 30 minutes (first run: 38; Adam 16, Jordan 13, Zohirul 9). Each ads manager sees only theirs.
+- **Turn off** pauses the ad in Meta (confirmation first; re-checks the ad; logs who did it). Works on the 32 accounts where the system user has Manage campaigns; on view-only accounts it explains what to change and links to Ads Manager.
+- **Not now** (24 h) and **Dismiss** (7 days) are saved.
+- Added a `meta-check` diagnostic: the Meta token already had `ads_management`.
+
 ## 2026-11-10: Suggestion rules tuned on real data
 - Budget hog now needs no leads or CPL over $80 (it was flagging 2 leads at $35). Migration 1600 retires the old "max leads" setting.
 - Percent values show 3 decimals when 2 would look equal to the threshold (0.497%, not "0.50% (under 0.50%)").

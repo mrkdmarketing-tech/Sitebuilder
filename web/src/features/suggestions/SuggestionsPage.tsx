@@ -3,14 +3,16 @@
  * only (no Slack), e.g. "Renzo Gracie Boca: an ad has 1 lead at $120. Turn it off?"
  * Rules: shared/domain/rules.ts · docs/suggestions.md.
  *
- * In this preview the rules run in the browser on the last 7 days. Once live,
- * the run-rules job stores them and "Turn off" calls the meta-action function.
+ * Live: the run-rules job saves suggestions every 30 min; this page reads them
+ * (row-level security limits each ads manager to their own), "Not now" and
+ * "Dismiss" are saved, and "Turn off" pauses the ad in Meta via meta-action.
+ * Sample mode: the same rules run in the browser and nothing is saved.
  */
 import { useMemo, useState } from 'react'
 import { AlertTriangle, Info } from 'lucide-react'
 import { DEFAULT_RULE_SETTINGS, evaluateRules, groupByAccount, type RuleSettings, type Suggestion } from '@shared/domain/rules.ts'
 import { presetRange } from '@shared/domain/dates.ts'
-import { useData } from '../../data/source'
+import { useData, type StoredSuggestion } from '../../data/source'
 import { useAsync } from '../../lib/useAsync'
 import { Card, Empty, ManagerChip, Modal, PageTitle } from '../../components/ui'
 import { ManagerFilter } from '../insights/Filters'
@@ -19,6 +21,8 @@ import { SAMPLE_MODE } from '../../lib/config'
 import { useSession } from '../../app/session'
 
 type LocalState = 'done' | 'snoozed' | 'dismissed'
+type Shown = Suggestion & { id?: string }
+type Notice = { ok: boolean; text: string; adsManagerUrl?: string }
 
 export function SuggestionsPage() {
   const ds = useData()
@@ -28,15 +32,18 @@ export function SuggestionsPage() {
   // admins see everyone's and can filter. The database enforces the same rule.
   const [managers, setManagers] = useState<string[]>([])
   const [handled, setHandled] = useState<Record<string, LocalState>>({})
-  const [confirm, setConfirm] = useState<Suggestion | null>(null)
+  const [confirm, setConfirm] = useState<Shown | null>(null)
+  const [busy, setBusy] = useState(false)
+  const [notice, setNotice] = useState<Notice | null>(null)
   const range = useMemo(() => presetRange('last_7_days'), [])
 
   const { data: employees } = useAsync(() => ds.employees(), [ds])
   const { data, loading } = useAsync(async () => {
-    const [ads, accounts, recent, settings] = await Promise.all([
-      ds.report('ad', range), ds.report('account', range), ds.recentLeadsByAccount(3), ds.ruleSettings(),
-    ])
-    return { suggestions: evaluateRules({ ads, accounts, recentLeadsByAccount: recent, settings }), settings, accounts }
+    const [stored, accounts, settings] = await Promise.all([ds.storedSuggestions(), ds.report('account', range), ds.ruleSettings()])
+    if (stored) return { suggestions: stored as Shown[], settings, accounts }
+    // Sample mode: run the same rules in the browser.
+    const [ads, recent] = await Promise.all([ds.report('ad', range), ds.recentLeadsByAccount(3)])
+    return { suggestions: evaluateRules({ ads, accounts, recentLeadsByAccount: recent, settings }) as Shown[], settings, accounts }
   }, [ds])
 
   const managerName = useMemo(() => new Map((employees ?? []).map((e) => [e.id, `${e.firstName} ${e.lastName}`])), [employees])
@@ -50,7 +57,36 @@ export function SuggestionsPage() {
   const settings: RuleSettings = { ...DEFAULT_RULE_SETTINGS, ...data?.settings }
   const total = groups.reduce((n, g) => n + g.suggestions.length, 0)
 
-  const act = (s: Suggestion, state: LocalState) => setHandled((h) => ({ ...h, [s.key]: state }))
+  const hide = (s: Shown, state: LocalState) => setHandled((h) => ({ ...h, [s.key]: state }))
+  const adsManagerUrl = (s: Shown) =>
+    `https://adsmanager.facebook.com/adsmanager/manage/${s.level === 'ad' ? `ads?act=${s.accountId}&selected_ad_ids=${s.entityId}` : `campaigns?act=${s.accountId}`}`
+
+  /** "Not now" / "Dismiss": saved when live. */
+  const act = async (s: Shown, state: 'snoozed' | 'dismissed') => {
+    hide(s, state)
+    if (s.id) {
+      try {
+        await ds.updateSuggestion(s.id, state)
+      } catch (e) {
+        setHandled((h) => { const n = { ...h }; delete n[s.key]; return n })
+        setNotice({ ok: false, text: `Couldn't save that: ${(e as Error).message}` })
+      }
+    }
+  }
+
+  /** "Turn off": pauses the ad in Meta (sample mode: nothing changes). */
+  const turnOff = async (s: Shown) => {
+    setBusy(true)
+    const res = await ds.turnOffAd((s as StoredSuggestion).id ?? s.key)
+    setBusy(false)
+    setConfirm(null)
+    if (res.ok) {
+      hide(s, 'done')
+      setNotice({ ok: true, text: res.message })
+    } else {
+      setNotice({ ok: false, text: res.message, adsManagerUrl: adsManagerUrl(s) })
+    }
+  }
 
   return (
     <div>
@@ -78,10 +114,19 @@ export function SuggestionsPage() {
           Flags ads with cost per lead over <b>{money(settings.expensiveCpl)}</b>, over <b>{money(settings.noLeadSpend)}</b> spent with no leads,
           ads taking <b>{Math.round(settings.budgetHogShare * 100)}%+</b> of their ad set's budget at over <b>{money(settings.budgetHogCpl)}</b> per lead,
           CTR under <b>{settings.lowCtr}%</b> or link CTR under <b>{settings.lowLinkCtr}%</b> (after {count(settings.minImpressions)} impressions),
-          account problems, and no leads in {settings.noRecentLeadsDays} days. Thresholds will be editable in settings.
-          {!SAMPLE_MODE && ' One-click "Turn off" is coming next; for now the button opens the ad in Ads Manager so you can pause it there.'}
+          account problems, and no leads in {settings.noRecentLeadsDays} days. Updated every 30 minutes. Thresholds will be editable in settings.
         </span>
       </div>
+
+      {notice && (
+        <div role="status" className={`mb-4 flex items-start justify-between gap-3 rounded-xl border p-3 text-sm ${notice.ok ? 'border-line bg-surface' : 'border-alert-high-line bg-alert-high'}`}>
+          <span>
+            {notice.text}{' '}
+            {notice.adsManagerUrl && <a href={notice.adsManagerUrl} target="_blank" rel="noreferrer" className="font-semibold text-brand underline">Open in Ads Manager</a>}
+          </span>
+          <button onClick={() => setNotice(null)} className="text-xs text-muted">Close</button>
+        </div>
+      )}
 
       {!loading && groups.length === 0 && (
         <Card><Empty>{isAdmin ? 'Nothing needs attention right now.' : 'Nothing needs attention on your accounts right now.'}</Empty></Card>
@@ -114,14 +159,11 @@ export function SuggestionsPage() {
                         </div>
                       )}
                       <div className="mt-2 flex flex-wrap gap-2">
-                        {s.action.type === 'pause_ad' && SAMPLE_MODE ? (
+                        {s.action.type === 'pause_ad' ? (
                           <button onClick={() => setConfirm(s)} className="rounded-md bg-primary px-3 py-1 text-xs font-semibold text-on-primary">Turn off</button>
                         ) : (
-                          <a
-                            href={`https://adsmanager.facebook.com/adsmanager/manage/${s.level === 'ad' ? `ads?act=${s.accountId}&selected_ad_ids=${s.entityId}` : `campaigns?act=${s.accountId}`}`}
-                            target="_blank" rel="noreferrer" className="rounded-md bg-primary px-3 py-1 text-xs font-semibold text-on-primary"
-                          >
-                            {s.action.type === 'pause_ad' ? 'Turn off in Ads Manager' : 'Open in Ads Manager'}
+                          <a href={adsManagerUrl(s)} target="_blank" rel="noreferrer" className="rounded-md bg-primary px-3 py-1 text-xs font-semibold text-on-primary">
+                            Open in Ads Manager
                           </a>
                         )}
                         <button onClick={() => act(s, 'snoozed')} className="rounded-md border border-line bg-surface px-3 py-1 text-xs font-medium">Not now</button>
@@ -140,14 +182,16 @@ export function SuggestionsPage() {
         {confirm && (
           <>
             <p className="text-sm">
-              <b>{confirm.entityName}</b> in {confirm.clientName ?? confirm.accountName} will be paused in Meta. You can turn it back on in Ads Manager.
+              <b>{confirm.entityName}</b> in {confirm.clientName ?? confirm.accountName} will be paused in Meta, and it's recorded that you did it. You can turn it back on in Ads Manager.
             </p>
             {SAMPLE_MODE && (
               <p className="mt-2 rounded-md bg-amber-50 p-2 text-xs text-amber-900">Sample data: nothing is changed in Meta. Once live, this pauses the ad and records who did it.</p>
             )}
             <div className="mt-4 flex justify-end gap-2">
-              <button onClick={() => setConfirm(null)} className="rounded-md border border-line px-3 py-1.5 text-sm">Cancel</button>
-              <button onClick={() => { act(confirm, 'done'); setConfirm(null) }} className="rounded-md bg-bad px-3 py-1.5 text-sm font-semibold text-white">Turn off ad</button>
+              <button onClick={() => setConfirm(null)} disabled={busy} className="rounded-md border border-line px-3 py-1.5 text-sm">Cancel</button>
+              <button onClick={() => turnOff(confirm)} disabled={busy} className="rounded-md bg-bad px-3 py-1.5 text-sm font-semibold text-white disabled:opacity-60">
+                {busy ? 'Turning off…' : 'Turn off ad'}
+              </button>
             </div>
           </>
         )}

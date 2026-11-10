@@ -6,7 +6,7 @@
  */
 import { createContext, useContext } from 'react'
 import type { Creative, DateRange, Employee, Level, MetaLead, ReportRow } from '@shared/domain/types.ts'
-import type { RuleSettings } from '@shared/domain/rules.ts'
+import type { RuleSettings, Suggestion } from '@shared/domain/rules.ts'
 
 export interface LeadFormResult {
   id: string
@@ -26,6 +26,19 @@ export interface SyncRun {
   error: string | null
 }
 
+/** A suggestion saved by the run-rules job (has an id so it can be acted on). */
+export interface StoredSuggestion extends Suggestion {
+  id: string
+  lastSeenAt: string
+}
+
+export interface TurnOffResult {
+  ok: boolean
+  message: string
+  /** The account only allows viewing; MRKDPlatformTools needs "Manage campaigns". */
+  needsManageCampaigns?: boolean
+}
+
 export interface DataSource {
   readonly kind: 'sample' | 'supabase'
   /** The signed-in employee (null if signed in but not an employee). */
@@ -41,6 +54,12 @@ export interface DataSource {
   searchLeadForms(query: string): Promise<LeadFormResult[]>
   searchAdCopy(query: string): Promise<Creative[]>
   syncRuns(): Promise<SyncRun[]>
+  /** Saved suggestions the signed-in person may see (null = compute them in the browser, sample mode). */
+  storedSuggestions(): Promise<StoredSuggestion[] | null>
+  /** "Not now" (back in 24 h) or "Dismiss" (not suggested again for 7 days). */
+  updateSuggestion(id: string, status: 'snoozed' | 'dismissed'): Promise<void>
+  /** "Turn off": pauses the ad in Meta through the meta-action function. */
+  turnOffAd(suggestionId: string): Promise<TurnOffResult>
   /** When the data was last refreshed (for the "Updated 4 min ago" stamp). */
   lastUpdated(): Promise<string | null>
 }

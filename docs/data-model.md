@@ -113,6 +113,10 @@ Trigger on `auth.users`: a new login is linked to the active employee with the s
 
 Access-rule helpers are wrapped as `(select …)` so they run once per query instead of once per row (same rules). Account report for a signed-in user went from 8.1 s (timing out) to 0.18 s. Also indexes `sheet_leads.date_added`.
 
+## 1600 / 1700 Suggestion rules and schedule
+
+1600 retires the old budget-hog "max leads" setting. 1700 schedules `run-rules` at :10 and :40 and indexes suggestions by status.
+
 ## Changing the schema
 
 Add a **new** migration file (never edit one that has been applied to Supabase), with policies for any new table, then update this page and run `npm run db:test`.

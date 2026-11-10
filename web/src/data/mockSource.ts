@@ -223,6 +223,16 @@ export function createMockSource(data: MockDataset = generateMockData()): DataSo
         { job: 'meta.sync', startedAt: ago(42), finishedAt: ago(41), status: 'partial', rows: 1198, error: '1 account failed: token missing permission' },
       ]
     },
+    async storedSuggestions() {
+      return null // sample mode: the page runs the rules in the browser
+    },
+    async updateSuggestion() {
+      /* sample mode: nothing is saved */
+    },
+    async turnOffAd() {
+      await wait(400)
+      return { ok: true, message: 'Sample data: nothing was changed in Meta.' }
+    },
     async lastUpdated() {
       return new Date(Date.now() - 11 * 60_000).toISOString()
     },
