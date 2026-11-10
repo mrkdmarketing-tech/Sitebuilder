@@ -2,6 +2,8 @@
 
 ## Cloudflare Pages: build settings
 
+**Live address:** https://sitebuilder-6iw.pages.dev (project `sitebuilder`). Supabase Auth's Site URL is set to it, and the allowed redirect list includes it, its preview subdomains and localhost.
+
 Cloudflare builds the app from the GitHub repo on every push and serves it. It only holds the app's screens; all data stays in Supabase behind sign-in and row-level security ([auth.md](../auth.md)).
 
 | Setting | Value |

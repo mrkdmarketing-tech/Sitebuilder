@@ -2,6 +2,9 @@
 
 What changed, newest first. Every change to the platform adds a line here.
 
+## 2026-11-10: The Lab is online
+- Cloudflare Pages deploys the app at https://sitebuilder-6iw.pages.dev on every push. Supabase sign-in redirects now point there (email sign-in link works; Google sign-in once its OAuth client is set up).
+
 ## 2026-11-09: Named "The Lab"
 - Sign-in screen, browser tab and top bar now say The Lab; Google sign-in setup uses the same name.
 
