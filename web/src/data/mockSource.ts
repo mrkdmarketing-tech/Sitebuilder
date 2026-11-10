@@ -229,6 +229,23 @@ export function createMockSource(data: MockDataset = generateMockData()): DataSo
       sampleSettings = { ...sampleSettings, ...params }
       sampleSettingsAt = new Date().toISOString()
     },
+    async staff() {
+      return data.employees.map((e) => ({
+        id: e.id, firstName: e.firstName, lastName: e.lastName, email: e.email, isAdManager: e.isAdManager,
+        active: e.active, role: e.role ?? 'staff', signedIn: e.id === 'emp_alex' || e.id === 'emp_olive',
+        clients: data.clients.filter((c) => c.managerId === e.id && isLive(c.status)).length,
+      }))
+    },
+    async setRole(employeeId, role) {
+      // Sample mode: same rules as set_employee_role, kept in memory.
+      const me = data.employees.find((e) => e.id === (localStorage.getItem(VIEW_AS_KEY) ?? 'emp_alex'))
+      const target = data.employees.find((e) => e.id === employeeId)
+      if (!me || !target) throw new Error('Staff member not found.')
+      if (me.role !== 'owner' && me.role !== 'admin') throw new Error('Only owners and admins can change roles.')
+      if ((role === 'owner' || target.role === 'owner') && me.role !== 'owner') throw new Error("Only an owner can make someone an owner or change an owner's role.")
+      if (target.role === 'owner' && data.employees.filter((e) => e.role === 'owner').length <= 1) throw new Error('This is the last owner. Make someone else an owner first.')
+      target.role = role
+    },
     async searchLeadForms(query) {
       const q = query.trim().toLowerCase()
       return data.leadForms

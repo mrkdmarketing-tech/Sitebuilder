@@ -3,7 +3,8 @@
  *  - Suggestion thresholds: owners/admins edit, everyone else sees them read-only.
  *    Saved through save_rule_settings (migration 2000), which checks the values
  *    and logs the change.
- *  - Look: which of the four designs this browser shows (docs/design-options.md).
+ *  - Staff: everyone listed; owners/admins change roles (StaffSection.tsx).
+ *  - Light or dark mode for this browser.
  *  - Links to Sync status and the SOPs.
  */
 import { useEffect, useMemo, useState } from 'react'
@@ -12,7 +13,8 @@ import { DEFAULT_RULE_SETTINGS, type RuleSettings } from '@shared/domain/rules.t
 import { Card, PageTitle } from '../../components/ui'
 import { useData } from '../../data/source'
 import { useAsync } from '../../lib/useAsync'
-import { DESIGNS, DESIGNS_WITH_DARK, useSession, type Design, type Mode } from '../../app/session'
+import { useSession, type Mode } from '../../app/session'
+import { StaffSection } from './StaffSection'
 
 type Key = keyof RuleSettings
 
@@ -32,7 +34,7 @@ const show = (f: (typeof FIELDS)[number], v: number) => String(Math.round(v * (f
 
 export function SettingsPage() {
   const ds = useData()
-  const { isAdmin, design, setDesign, mode, setMode } = useSession()
+  const { isAdmin, mode, setMode } = useSession()
   const [version, setVersion] = useState(0)
   const info = useAsync(() => ds.ruleSettingsInfo(), [ds, version])
   const current = useMemo(() => ({ ...DEFAULT_RULE_SETTINGS, ...(info.data?.params ?? {}) }), [info.data])
@@ -123,42 +125,19 @@ export function SettingsPage() {
         {notice && <p className={`mt-3 text-sm ${notice.ok ? 'text-good' : 'text-bad'}`}>{notice.text}</p>}
       </Card>
 
+      <StaffSection />
+
       <Card className="mt-4 p-4">
-        <h2 className="mb-1 text-base font-semibold">Look</h2>
-        {DESIGNS_WITH_DARK.has(design) && (
-          <div className="mb-4">
-            <h3 className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-muted">Light or dark</h3>
-            <div className="inline-flex rounded-lg border border-line bg-surface p-0.5">
-              {([['light', 'Light'], ['dark', 'Dark'], ['system', 'Match device']] as [Mode, string][]).map(([k, label]) => (
-                <button key={k} type="button" onClick={() => setMode(k)}
-                  className={`rounded-md px-3 py-1.5 text-sm font-medium ${mode === k ? 'bg-primary text-on-primary' : 'text-muted hover:text-ink'}`}>
-                  {label}
-                </button>
-              ))}
-            </div>
-            <p className="mt-1 text-xs text-muted">Also the sun / moon button next to your name. "Match device" follows your phone or computer's setting.</p>
-          </div>
-        )}
-        <p className="mb-3 text-sm text-muted">Everyone sees G · Air unless they pick another look here. Only changes this browser.</p>
-        {[
-          { title: 'First options (9 Nov)', list: DESIGNS.filter((d) => !d.proposal) },
-          { title: 'Sleeker options (11 Nov)', list: DESIGNS.filter((d) => d.proposal) },
-        ].map((g) => (
-          <div key={g.title} className="mb-3 last:mb-0">
-            <h3 className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-muted">{g.title}</h3>
-            <div className="grid gap-2 sm:grid-cols-2">
-              {g.list.map((d) => (
-                <label key={d.key} className={`flex cursor-pointer gap-2 rounded-lg border p-3 text-sm ${design === d.key ? 'border-brand' : 'border-line'}`}>
-                  <input type="radio" name="design" checked={design === d.key} onChange={() => setDesign(d.key as Design)} className="mt-0.5" />
-                  <span>
-                    <span className="block font-semibold">{d.label}</span>
-                    <span className="block text-xs text-muted">{d.blurb}</span>
-                  </span>
-                </label>
-              ))}
-            </div>
-          </div>
-        ))}
+        <h2 className="mb-1 text-base font-semibold">Light or dark</h2>
+        <p className="mb-3 text-sm text-muted">Only changes this browser. Also the sun / moon button next to your name. "Match device" follows your phone or computer's setting.</p>
+        <div className="inline-flex rounded-lg border border-line bg-surface p-0.5">
+          {([['light', 'Light'], ['dark', 'Dark'], ['system', 'Match device']] as [Mode, string][]).map(([k, label]) => (
+            <button key={k} type="button" onClick={() => setMode(k)}
+              className={`rounded-md px-3 py-1.5 text-sm font-medium ${mode === k ? 'bg-primary text-on-primary' : 'text-muted hover:text-ink'}`}>
+              {label}
+            </button>
+          ))}
+        </div>
       </Card>
 
       <Card className="mt-4 p-4 text-sm">

@@ -56,6 +56,21 @@ export interface RuleSettingsInfo {
   updatedBy: string | null
 }
 
+/** One row of Settings -> Staff (staff_overview(), migration 2300). */
+export interface StaffMember {
+  id: string
+  firstName: string
+  lastName: string
+  email: string | null
+  isAdManager: boolean
+  active: boolean
+  role: 'staff' | 'admin' | 'owner'
+  /** Has signed in to The Lab at least once. */
+  signedIn: boolean
+  /** Active/New clients assigned to them in GHL. */
+  clients: number
+}
+
 export interface DataSource {
   readonly kind: 'sample' | 'supabase'
   /** The signed-in employee (null if signed in but not an employee). */
@@ -85,6 +100,10 @@ export interface DataSource {
   recentActions(limit?: number): Promise<ActionRecord[]>
   /** When the data was last refreshed (for the "Updated 4 min ago" stamp). */
   lastUpdated(): Promise<string | null>
+  /** Settings -> Staff. */
+  staff(): Promise<StaffMember[]>
+  /** Owners/admins: change someone's role (rules and log in set_employee_role, migration 2300). */
+  setRole(employeeId: string, role: StaffMember['role']): Promise<void>
   /** Ad approval (docs/ad-approval.md). */
   readonly approvals: ApprovalsApi
 }

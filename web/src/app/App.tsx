@@ -23,7 +23,7 @@ import { SettingsPage } from '../features/settings/SettingsPage'
  *   /approvals/:id  One ad: edit, mistake check, submit, review
  *   /search       Lead form & ad copy search      replaces Retool "Search Meta Lead Forms"
  *   /status       Sync health
- *   /settings     Suggestion thresholds (admins edit), design, links
+ *   /settings     Suggestion thresholds (admins edit), staff, light/dark, links
  * Sign-in: AuthGate (Google restricted to mrkd.ca, plus email link). GHL single sign-on later.
  */
 export function App() {

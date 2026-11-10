@@ -15,7 +15,7 @@ Everything about the MRKD platform is documented here. **Start with the row that
 | Cloudflare build settings and Google sign-in setup | [setup/hosting-and-signin.md](setup/hosting-and-signin.md) |
 | Run the app on my computer / run the tests | [development.md](development.md) |
 | Know why something was decided | [decisions.md](decisions.md) |
-| **Pick a design (4 options with screenshots)** | [design-options.md](design-options.md) |
+| The look (Air, light and dark) | [design-options.md](design-options.md) |
 | See what changed and when | [../CHANGELOG.md](../CHANGELOG.md) |
 | Read the latest overnight / status update | [updates/](updates/2026-11-10-overnight.md) |
 

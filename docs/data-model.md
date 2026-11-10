@@ -141,6 +141,10 @@ Adds `sync_runs` to Supabase Realtime so open screens reload when a job finishes
 
 `private.retool_bridge_ad_history(conn)`, run by `retool-bridge` after the main copy: GHL custom field names (`ghl_custom_fields`), ad creative and lead form templates, and Retool's Ad Preview (`ads_preview` → read-only `ad_reviews`). Base64 images are stripped on Retool's side. Details: [ad-approval.md](ad-approval.md#history-from-retool).
 
+## 2300 Staff roles
+
+`set_employee_role(employee, role)` and `staff_overview()` for **Settings → Staff**. Rules: owners/admins only, only owners touch owners, never zero owners, every change logged. A trigger stops the app editing `employees` directly (the Retool bridge and sign-in link run with elevated rights and aren't affected). Tested in `supabase/tests/zz_staff.test.sql`.
+
 ## Changing the schema
 
 Add a **new** migration file (never edit one that has been applied to Supabase), with policies for any new table, then update this page and run `npm run db:test`.

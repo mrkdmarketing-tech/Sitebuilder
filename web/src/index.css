@@ -1,225 +1,59 @@
 @import "tailwindcss";
 
 /*
- * Design tokens. Components only use these names (bg-surface, text-ink, bg-brand…),
- * so a whole design can be swapped by changing variables. Four designs are
- * defined below for Jordan/Trent to pick from (docs/design-options.md).
- * The default values here are design A "Classic".
+ * The Lab's look: "Air" (picked 11 Nov 2026, docs/design-options.md).
+ * Light sidebar, lots of white space, teal accent, with a dark mode.
+ *
+ * Components only use these token names (bg-surface, text-ink, bg-brand...),
+ * so the whole look is the values below. Dark mode is the
+ * [data-mode="dark"] block, switched by the sun / moon button or Settings
+ * (web/src/app/session.tsx; applied before the page draws by web/index.html).
  */
 @theme {
   --font-sans: "Inter Variable", "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-display: var(--font-sans);
-  --color-ink: #0b0b0f;          /* main text */
-  --color-soft: #374151;         /* secondary text */
-  --color-muted: #6b7280;        /* labels, hints */
-  --color-line: #e5e7eb;         /* borders */
-  --color-canvas: #f6f7f9;       /* page background */
+  --color-ink: #0f172a;          /* main text */
+  --color-soft: #334155;         /* secondary text */
+  --color-muted: #64748b;        /* labels, hints */
+  --color-line: #e8ecf1;         /* borders */
+  --color-canvas: #f6f8fa;       /* page background */
   --color-surface: #ffffff;      /* cards, tables */
-  --color-subtle: #f3f4f6;       /* table header, chips */
-  --color-hover: #f9fafb;        /* row hover */
-  --color-selected: #eff6ff;     /* selected rows */
-  --color-header: #0b0b0f;       /* top bar */
-  --color-header-ink: #ffffff;
-  --color-primary: #0b0b0f;      /* main buttons */
+  --color-subtle: #f1f5f9;       /* table header, chips */
+  --color-hover: #f8fafc;        /* row hover */
+  --color-selected: #e6f6f4;     /* selected rows */
+  --color-header: #ffffff;       /* sidebar */
+  --color-header-ink: #0f172a;
+  --color-primary: #0d9488;      /* main buttons, active nav item */
   --color-on-primary: #ffffff;
-  --color-brand: #2563eb;        /* links, active tab */
+  --color-brand: #0f766e;        /* links, active tab */
   --color-good: #059669;
   --color-bad: #dc2626;
   --color-warn: #d97706;
-  --color-alert-high: #fef6f6;       /* suggestion card: needs action */
+  --color-alert-high: #fef6f6;   /* suggestion card: needs action */
   --color-alert-high-line: #fecaca;
-  --color-alert-med: #fffbeb;        /* suggestion card: worth a look */
+  --color-alert-med: #fffbeb;    /* suggestion card: worth a look */
   --color-alert-med-line: #fde68a;
+  --radius-xl: 1rem;
 }
 
 html, body, #root { height: 100%; }
+html { font-feature-settings: "cv11", "ss03"; }
 body { background: var(--color-canvas); color: var(--color-ink); -webkit-font-smoothing: antialiased; }
 .tabular { font-variant-numeric: tabular-nums; }
-.kpi-value { font-family: var(--font-display); }
-h1 { font-family: var(--font-display); }
+.kpi-value { font-family: var(--font-display); letter-spacing: -0.02em; }
+h1 { font-family: var(--font-display); letter-spacing: -0.02em; }
+aside { border-right: 1px solid var(--color-line); }
+.rounded-xl.bg-surface { box-shadow: 0 1px 3px rgb(15 23 42 / 0.05); }
 
-/* ---- B. Midnight: dark ops dashboard, easy on the eyes on an always-open screen ---- */
-[data-design="midnight"] {
-  --color-ink: #e6edf3;
-  --color-soft: #c2ccd6;
-  --color-muted: #8b98a5;
-  --color-line: #253041;
-  --color-canvas: #0b1118;
-  --color-surface: #121a24;
-  --color-subtle: #1a2430;
-  --color-hover: #17212c;
-  --color-selected: #13283a;
-  --color-header: #070b10;
-  --color-header-ink: #e6edf3;
-  --color-primary: #22c55e;
-  --color-on-primary: #04130a;
-  --color-brand: #4ade80;
-  --color-good: #4ade80;
-  --color-bad: #f87171;
-  --color-warn: #fbbf24;
-  --color-alert-high: #2a1517;
-  --color-alert-high-line: #5b2328;
-  --color-alert-med: #2a2212;
-  --color-alert-med-line: #5c4715;
-  color-scheme: dark;
-}
-[data-design="midnight"] .kpi-value { color: #f0fdf4; text-shadow: 0 0 18px rgb(74 222 128 / 0.25); }
+/* Quiet chips: the ads-manager name and client status are grey; only problems
+   keep their colour. */
+.bg-orange-100 { background: var(--color-subtle); }
+.text-orange-900 { color: var(--color-soft); }
+.bg-emerald-100 { background: #ecfdf3; }
+.bg-emerald-600, .bg-sky-600 { background: transparent; color: var(--color-muted); box-shadow: inset 0 0 0 1px var(--color-line); }
 
-/* ---- C. MRKD Bold: brand-forward, black sidebar, orange accent, big numbers ---- */
-[data-design="bold"] {
-  --font-display: "Space Grotesk", var(--font-sans);
-  --color-canvas: #f4f1ea;
-  --color-surface: #fffdf8;
-  --color-subtle: #efe9dd;
-  --color-hover: #faf6ee;
-  --color-selected: #fff0e6;
-  --color-line: #e4ddcf;
-  --color-header: #0b0b0f;
-  --color-primary: #ff5a1f;
-  --color-on-primary: #ffffff;
-  --color-brand: #e2470e;
-  --color-alert-high: #fff1ea;
-  --color-alert-high-line: #ffc9b0;
-  --radius-xl: 1.25rem;
-}
-[data-design="bold"] .kpi-value { font-size: 1.85rem; letter-spacing: -0.02em; }
-
-/* ---- D. Compact: dense like Retool, more rows and columns on screen ---- */
-[data-design="compact"] {
-  font-size: 14px;   /* every rem-based size shrinks ~12% */
-  --color-canvas: #eef0f3;
-  --color-header: #1f2937;
-  --color-primary: #1f2937;
-  --color-brand: #1d4ed8;
-  --radius-xl: 0.375rem;
-  --radius-lg: 0.25rem;
-}
-[data-design="compact"] body { font-size: 14px; }
-
-/* =============================================================================
- * Proposals, 11 Nov 2026 ("something a bit sleeker"). Not applied: the default
- * stays Classic until one is picked (docs/design-options.md#sleeker-options).
- * ========================================================================== */
-
-/* ---- E. Graphite: white top bar, hairline borders, soft shadows, indigo accent ---- */
-[data-design="graphite"] {
-  --color-ink: #111113;
-  --color-soft: #3f3f46;
-  --color-muted: #71717a;
-  --color-line: #ececef;
-  --color-canvas: #fafafa;
-  --color-surface: #ffffff;
-  --color-subtle: #f4f4f5;
-  --color-hover: #fafafa;
-  --color-selected: #eef0ff;
-  --color-header: #ffffff;
-  --color-header-ink: #111113;
-  --color-primary: #111113;
-  --color-on-primary: #ffffff;
-  --color-brand: #5b5bd6;
-  --color-alert-high: #fff7f7;
-  --color-alert-high-line: #f5d0d0;
-  --color-alert-med: #fffcf2;
-  --color-alert-med-line: #f3e3b5;
-  --radius-xl: 0.875rem;
-  font-feature-settings: "cv11", "ss03";
-}
-[data-design="graphite"] header { border-bottom: 1px solid var(--color-line); }
-[data-design="graphite"] .rounded-xl.bg-surface { box-shadow: 0 1px 2px rgb(16 16 20 / 0.04), 0 4px 16px rgb(16 16 20 / 0.03); }
-[data-design="graphite"] h1 { letter-spacing: -0.025em; }
-[data-design="graphite"] .kpi-value { letter-spacing: -0.03em; font-weight: 600; }
-
-/* ---- F. Onyx: true-black dark mode, white buttons, blue accent ---- */
-[data-design="onyx"] {
-  --color-ink: #ededed;
-  --color-soft: #c7c7c7;
-  --color-muted: #8f8f8f;
-  --color-line: #222222;
-  --color-canvas: #000000;
-  --color-surface: #0a0a0a;
-  --color-subtle: #161616;
-  --color-hover: #111111;
-  --color-selected: #0d1a2e;
-  --color-header: #000000;
-  --color-header-ink: #ededed;
-  --color-primary: #ededed;
-  --color-on-primary: #0a0a0a;
-  --color-brand: #52a8ff;
-  --color-good: #3ecf8e;
-  --color-bad: #ff6166;
-  --color-warn: #f5a524;
-  --color-alert-high: #1a0b0c;
-  --color-alert-high-line: #4a1d20;
-  --color-alert-med: #1a1407;
-  --color-alert-med-line: #4a3a12;
-  --radius-xl: 0.75rem;
-  color-scheme: dark;
-  font-feature-settings: "cv11", "ss03";
-}
-[data-design="onyx"] header { border-bottom: 1px solid var(--color-line); }
-[data-design="onyx"] h1, [data-design="onyx"] .kpi-value { letter-spacing: -0.03em; }
-
-/* ---- G. Air: light sidebar, lots of space, teal accent ---- */
-[data-design="air"] {
-  --color-ink: #0f172a;
-  --color-soft: #334155;
-  --color-muted: #64748b;
-  --color-line: #e8ecf1;
-  --color-canvas: #f6f8fa;
-  --color-surface: #ffffff;
-  --color-subtle: #f1f5f9;
-  --color-hover: #f8fafc;
-  --color-selected: #e6f6f4;
-  --color-header: #ffffff;
-  --color-header-ink: #0f172a;
-  --color-primary: #0d9488;
-  --color-on-primary: #ffffff;
-  --color-brand: #0f766e;
-  --radius-xl: 1rem;
-  font-feature-settings: "cv11", "ss03";
-}
-[data-design="air"] aside { border-right: 1px solid var(--color-line); }
-[data-design="air"] .rounded-xl.bg-surface { box-shadow: 0 1px 3px rgb(15 23 42 / 0.05); }
-[data-design="air"] h1 { letter-spacing: -0.02em; }
-[data-design="air"] .kpi-value { letter-spacing: -0.02em; }
-
-/* ---- H. Studio: charcoal sidebar, crisp white content, MRKD orange used sparingly ---- */
-[data-design="studio"] {
-  --font-display: "Space Grotesk", var(--font-sans);
-  --color-ink: #121212;
-  --color-soft: #3a3a3a;
-  --color-muted: #7a7a7a;
-  --color-line: #ebebeb;
-  --color-canvas: #f7f7f7;
-  --color-surface: #ffffff;
-  --color-subtle: #f2f2f2;
-  --color-hover: #fafafa;
-  --color-selected: #fff3ec;
-  --color-header: #161616;
-  --color-header-ink: #f5f5f5;
-  --color-primary: #ff5a1f;
-  --color-on-primary: #ffffff;
-  --color-brand: #e2470e;
-  --color-alert-high: #fff5f0;
-  --color-alert-high-line: #ffd6c4;
-  --radius-xl: 0.75rem;
-  font-feature-settings: "cv11", "ss03";
-}
-[data-design="studio"] .rounded-xl.bg-surface { box-shadow: 0 1px 2px rgb(0 0 0 / 0.04); }
-[data-design="studio"] h1 { letter-spacing: -0.03em; font-weight: 700; }
-[data-design="studio"] .kpi-value { font-size: 1.7rem; letter-spacing: -0.03em; }
-
-/* Sleeker options: quieter chips. The ads-manager chip becomes neutral and the
-   status pills softer (dark versions are further down). */
-:is([data-design="graphite"], [data-design="air"], [data-design="studio"]) .bg-orange-100 { background: var(--color-subtle); }
-:is([data-design="graphite"], [data-design="air"], [data-design="studio"]) .text-orange-900 { color: var(--color-soft); }
-:is([data-design="graphite"], [data-design="air"], [data-design="studio"]) .bg-emerald-100 { background: #ecfdf3; }
-:is([data-design="graphite"], [data-design="air"], [data-design="studio"]) .bg-emerald-600,
-:is([data-design="graphite"], [data-design="air"], [data-design="studio"]) .bg-sky-600 { background: transparent; color: var(--color-muted); box-shadow: inset 0 0 0 1px var(--color-line); }
-
-
-/* ---- G. Air, dark mode (data-mode="dark", switched in the sidebar or Settings) ---- */
-[data-design="air"][data-mode="dark"] {
+/* ---- Dark mode ---- */
+[data-mode="dark"] {
   --color-ink: #e6edf3;
   --color-soft: #b8c4cf;
   --color-muted: #7f8d99;
@@ -243,34 +77,16 @@ h1 { font-family: var(--font-display); }
   --color-alert-med-line: #4a3b14;
   color-scheme: dark;
 }
-[data-design="air"][data-mode="dark"] .rounded-xl.bg-surface { box-shadow: none; }
+[data-mode="dark"] .rounded-xl.bg-surface { box-shadow: none; }
 
-/* Dark looks (F · Onyx, G · Air dark): translucent status colours that suit a dark page. */
-:is([data-design="onyx"], [data-design="air"][data-mode="dark"]) .bg-emerald-100,
-:is([data-design="onyx"], [data-design="air"][data-mode="dark"]) .bg-emerald-50 { background: rgb(52 211 153 / 0.13); }
-:is([data-design="onyx"], [data-design="air"][data-mode="dark"]) .text-emerald-800,
-:is([data-design="onyx"], [data-design="air"][data-mode="dark"]) .text-emerald-900 { color: #4ade80; }
-:is([data-design="onyx"], [data-design="air"][data-mode="dark"]) .bg-red-100,
-:is([data-design="onyx"], [data-design="air"][data-mode="dark"]) .bg-red-50 { background: rgb(248 113 113 / 0.13); }
-:is([data-design="onyx"], [data-design="air"][data-mode="dark"]) .text-red-800,
-:is([data-design="onyx"], [data-design="air"][data-mode="dark"]) .text-red-900 { color: #fca5a5; }
-:is([data-design="onyx"], [data-design="air"][data-mode="dark"]) .bg-amber-100,
-:is([data-design="onyx"], [data-design="air"][data-mode="dark"]) .bg-amber-50 { background: rgb(251 191 36 / 0.12); }
-:is([data-design="onyx"], [data-design="air"][data-mode="dark"]) .text-amber-800,
-:is([data-design="onyx"], [data-design="air"][data-mode="dark"]) .text-amber-900,
-:is([data-design="onyx"], [data-design="air"][data-mode="dark"]) .text-amber-950 { color: #fcd34d; }
-:is([data-design="onyx"], [data-design="air"][data-mode="dark"]) .border-amber-200 { border-color: #4a3b14; }
-:is([data-design="onyx"], [data-design="air"][data-mode="dark"]) .bg-sky-100,
-:is([data-design="onyx"], [data-design="air"][data-mode="dark"]) .bg-blue-100,
-:is([data-design="onyx"], [data-design="air"][data-mode="dark"]) .bg-indigo-100 { background: rgb(96 165 250 / 0.13); }
-:is([data-design="onyx"], [data-design="air"][data-mode="dark"]) .text-sky-800,
-:is([data-design="onyx"], [data-design="air"][data-mode="dark"]) .text-sky-900,
-:is([data-design="onyx"], [data-design="air"][data-mode="dark"]) .text-blue-900,
-:is([data-design="onyx"], [data-design="air"][data-mode="dark"]) .text-indigo-800 { color: #93c5fd; }
-:is([data-design="onyx"], [data-design="air"][data-mode="dark"]) .bg-orange-100 { background: var(--color-subtle); }
-:is([data-design="onyx"], [data-design="air"][data-mode="dark"]) .text-orange-900 { color: var(--color-soft); }
-:is([data-design="onyx"], [data-design="air"][data-mode="dark"]) .bg-gray-200,
-:is([data-design="onyx"], [data-design="air"][data-mode="dark"]) .bg-gray-300,
-:is([data-design="onyx"], [data-design="air"][data-mode="dark"]) .bg-gray-400 { background: var(--color-subtle); color: var(--color-muted); }
-:is([data-design="onyx"], [data-design="air"][data-mode="dark"]) .bg-emerald-600,
-:is([data-design="onyx"], [data-design="air"][data-mode="dark"]) .bg-sky-600 { background: transparent; color: var(--color-muted); box-shadow: inset 0 0 0 1px var(--color-line); }
+/* Fixed Tailwind colours used for status pills and notices, softened for a dark page. */
+[data-mode="dark"] :is(.bg-emerald-100, .bg-emerald-50) { background: rgb(52 211 153 / 0.13); }
+[data-mode="dark"] :is(.text-emerald-800, .text-emerald-900) { color: #4ade80; }
+[data-mode="dark"] :is(.bg-red-100, .bg-red-50) { background: rgb(248 113 113 / 0.13); }
+[data-mode="dark"] :is(.text-red-800, .text-red-900) { color: #fca5a5; }
+[data-mode="dark"] :is(.bg-amber-100, .bg-amber-50) { background: rgb(251 191 36 / 0.12); }
+[data-mode="dark"] :is(.text-amber-800, .text-amber-900, .text-amber-950) { color: #fcd34d; }
+[data-mode="dark"] .border-amber-200 { border-color: #4a3b14; }
+[data-mode="dark"] :is(.bg-sky-100, .bg-blue-100, .bg-indigo-100) { background: rgb(96 165 250 / 0.13); }
+[data-mode="dark"] :is(.text-sky-800, .text-sky-900, .text-blue-900, .text-indigo-800) { color: #93c5fd; }
+[data-mode="dark"] :is(.bg-gray-200, .bg-gray-300, .bg-gray-400) { background: var(--color-subtle); color: var(--color-muted); }

@@ -7,7 +7,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Creative, Employee, MetaLead, ReportRow } from '@shared/domain/types.ts'
 import type { RuleSettings } from '@shared/domain/rules.ts'
-import type { ActionRecord, DataSource, LeadFormResult, StoredSuggestion, SyncRun, TurnOffResult } from './source'
+import type { ActionRecord, DataSource, StaffMember, LeadFormResult, StoredSuggestion, SyncRun, TurnOffResult } from './source'
 import type { Suggestion } from '@shared/domain/rules.ts'
 import { createSupabaseApprovals } from './approvalsSupabase'
 
@@ -73,6 +73,12 @@ export function createSupabaseSource(db: SupabaseClient): DataSource {
     },
     async saveRuleSettings(params) {
       check(await db.rpc('save_rule_settings', { p_params: params }))
+    },
+    async staff() {
+      return check(await db.rpc('staff_overview')) as StaffMember[]
+    },
+    async setRole(employeeId, role) {
+      check(await db.rpc('set_employee_role', { p_employee: employeeId, p_role: role }))
     },
     async searchLeadForms(query) {
       const rows = check(await db.rpc('search_lead_forms', { p_query: query })) as {

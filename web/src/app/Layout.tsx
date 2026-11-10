@@ -4,14 +4,11 @@ import { SAMPLE_MODE } from '../lib/config'
 import { supabase } from '../lib/supabase'
 import { useData } from '../data/source'
 import { useAsync } from '../lib/useAsync'
-import { DESIGNS, DESIGNS_WITH_DARK, useSession, type Design } from './session'
+import { useSession } from './session'
 import { APP_NAME } from './AuthGate'
 import { UpdateBanner } from './UpdateBanner'
 
 /** `phone: false` = left off the phone tab bar (5 slots); reachable from Settings. */
-/** Designs that use a left sidebar on desktop instead of a top bar. */
-const SIDEBAR_DESIGNS = new Set(['bold', 'air', 'studio'])
-
 const NAV = [
   { to: '/insights', label: 'Insights', icon: BarChart3, phone: true },
   { to: '/suggestions', label: 'Suggestions', icon: Lightbulb, phone: true },
@@ -22,25 +19,21 @@ const NAV = [
 ]
 
 /**
- * App shell. Desktop: top bar (designs A, B, D, E, F) or left sidebar (C, G, H).
- * Phones: bottom tab bar in every design.
+ * App shell ("Air", docs/design-options.md). Desktop: left sidebar.
+ * Phones: name and light/dark button on top, tab bar at the bottom.
  */
 export function Layout() {
-  const { design } = useSession()
-  const sidebar = SIDEBAR_DESIGNS.has(design)
   return (
     <div className="flex min-h-full flex-col">
       <UpdateBanner />
       {SAMPLE_MODE && <SampleBar />}
-      <div className={sidebar ? 'flex flex-1' : 'flex flex-1 flex-col'}>
-        {sidebar ? <SideNav /> : <TopNav />}
+      <div className="flex flex-1">
+        <SideNav />
         <main className="mx-auto w-full min-w-0 max-w-[1600px] flex-1 px-4 pb-24 pt-4 md:pb-8">
-          {sidebar && (
-            <div className="mb-2 flex items-center justify-between md:hidden">
-              <span className="text-lg font-black tracking-tight">MRKD <span className="text-sm font-semibold text-muted">{APP_NAME}</span></span>
-              <ModeToggle />
-            </div>
-          )}
+          <div className="mb-2 flex items-center justify-between md:hidden">
+            <span className="text-lg font-black tracking-tight">MRKD <span className="text-sm font-semibold text-muted">{APP_NAME}</span></span>
+            <ModeToggle />
+          </div>
           <Outlet />
         </main>
       </div>
@@ -75,27 +68,6 @@ function UserBadge() {
   )
 }
 
-function TopNav() {
-  return (
-    <header className="sticky top-0 z-30 bg-header text-header-ink">
-      <div className="mx-auto flex h-14 max-w-[1600px] items-center gap-6 px-4">
-        <span className="flex items-baseline gap-2">
-          <span className="text-lg font-black tracking-tight">MRKD</span>
-          <span className="text-sm font-semibold text-header-ink/70">{APP_NAME}</span>
-        </span>
-        <nav className="hidden flex-1 gap-1 md:flex">
-          {NAV.map(({ to, label }) => (
-            <NavLink key={to} to={to} className={({ isActive }) => `rounded-md px-3 py-1.5 text-sm font-medium transition ${isActive ? 'bg-header-ink/15 text-header-ink' : 'text-header-ink/70 hover:text-header-ink'}`}>
-              {label}
-            </NavLink>
-          ))}
-        </nav>
-        <div className="ml-auto"><UserBadge /></div>
-      </div>
-    </header>
-  )
-}
-
 function SideNav() {
   return (
     <aside className="sticky top-0 hidden h-screen w-56 shrink-0 flex-col bg-header px-3 py-5 text-header-ink md:flex">
@@ -114,10 +86,9 @@ function SideNav() {
   )
 }
 
-/** Sun/moon button: switches between light and dark (designs that have a dark version). */
+/** Sun / moon button: switches between light and dark. */
 function ModeToggle() {
-  const { design, dark, setMode } = useSession()
-  if (!DESIGNS_WITH_DARK.has(design)) return null
+  const { dark, setMode } = useSession()
   return (
     <button
       type="button"
@@ -131,10 +102,10 @@ function ModeToggle() {
   )
 }
 
-/** Sample-mode controls: who you're viewing as, and which design. Gone once real logins exist. */
+/** Sample-mode control: who you're viewing as. Only in sample mode. */
 function SampleBar() {
   const ds = useData()
-  const { me, setViewAs, design, setDesign } = useSession()
+  const { me, setViewAs } = useSession()
   const { data: employees } = useAsync(() => ds.employees(), [ds])
   return (
     <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 bg-amber-100 px-4 py-1.5 text-xs text-amber-950">
@@ -147,12 +118,6 @@ function SampleBar() {
               {e.firstName} {e.lastName} ({e.role === 'owner' || e.role === 'admin' ? 'owner: sees everyone' : 'ads manager'})
             </option>
           ))}
-        </select>
-      </label>
-      <label className="flex items-center gap-1">
-        Design
-        <select value={design} onChange={(e) => setDesign(e.target.value as Design)} className="rounded border border-amber-300 bg-white px-1 py-0.5 text-amber-950">
-          {DESIGNS.map((d) => <option key={d.key} value={d.key}>{d.label}</option>)}
         </select>
       </label>
     </div>

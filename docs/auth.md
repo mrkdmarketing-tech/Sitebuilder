@@ -29,7 +29,7 @@ Why not just Google inside GHL too: Safari blocks logins inside embedded pages o
 | `admin` | Everything staff can, plus change thresholds, settings, the review checklist, staff list and lookup lists. Delete approvals/templates. |
 | `owner` | Same as admin (kept separate so owners can't be demoted by admins later). |
 
-Roles are set on the `employees` row by an admin. New employees default to `staff`.
+Roles are changed in **Settings → Staff** through `set_employee_role()` (migration 2300): owners and admins can change roles, only owners can make or change owners, the last owner can't be demoted, and every change is logged (`actions_log`, `staff.role`). A trigger blocks any other edit of `employees` from the app; names, emails, ads manager and active come from Retool. New employees default to `staff`.
 
 ## How it's enforced
 

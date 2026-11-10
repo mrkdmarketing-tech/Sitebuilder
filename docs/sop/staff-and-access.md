@@ -15,13 +15,27 @@
 3. Wait up to 15 minutes, then check they appear in The Lab: **Insights**, Ads manager filter (ads managers only) or ask them to sign in.
 4. Ask them to follow [signing-in.md](signing-in.md).
 5. To give them clients, set them as **Assigned to** on each client's contact in MRKD's GHL. Their suggestions follow automatically.
-6. They start as **staff**. To make someone an admin or owner, ask Jordan; a role change is never made without the owners' approval. It's done in Supabase (Table editor, `employees`, `role` column) until The Lab has a staff screen.
+6. They start as **staff**. To make someone an admin or owner, an owner opens **Settings → Staff** and picks the role (a confirmation box shows what the role can do). Every change is logged with who made it.
 
 ## Someone leaves
 
 1. In Retool's employees table, set them **inactive** (or remove them). Within 15 minutes they can no longer see any data in The Lab, even if still signed in.
 2. In GHL, reassign their clients (**Assigned to**). Their open suggestions move to the new ads manager on the next copy.
 3. If they ever had access to Meta Business settings, Supabase, Cloudflare or Retool admin, remove it there and follow [tokens-and-secrets.md](tokens-and-secrets.md#someone-with-access-leaves).
+
+## Roles
+
+Set in **Settings → Staff** (owners and admins only):
+
+| Role | Can |
+|---|---|
+| Staff | See all insights and their own suggestions, use ad approval |
+| Admin | Also see everyone's suggestions, change thresholds, change staff roles (not owners) |
+| Owner | Same as admin, and make or change owners |
+
+Rules, enforced by the database: only owners can make or change owners, and there must always be at least one owner. Names, emails, ads manager and active can't be edited in The Lab; they come from Retool.
+
+The same screen shows who has **signed in** yet and how many Active/New clients each ads manager has in GHL, which is a quick way to spot someone missing an email or clients.
 
 ## Email doesn't match
 

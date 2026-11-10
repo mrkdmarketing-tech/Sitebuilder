@@ -2,6 +2,10 @@
 
 What changed, newest first. Every change to the platform adds a line here.
 
+## 2026-11-11: Staff screen, and Air is the only look
+- **Settings → Staff**: everyone sees who's on the team, who has signed in, and how many Active/New clients each ads manager has. Owners and admins change roles there; only owners can make or change owners, there's always at least one owner, and every change is logged (migration 2300). Names, emails and ads manager stay in Retool.
+- **Old looks removed**: Air (light and dark) is the only look. Settings now just has Light / Dark / Match device. The unused second font was removed too, so the app loads a little faster.
+
 ## 2026-11-11: New look: Air, light and dark
 - **G · Air is now the look for everyone** (light sidebar, white space, teal). Picked by Jordan.
 - **Dark mode**: sun / moon button next to your name (phones: top right), or Settings → Look → Light / Dark / Match device. Match device is the default, so phones in dark mode get it automatically.
