@@ -34,8 +34,8 @@ All tests pass (60 app tests, 6 database test files). Nothing here changes live 
 | 3 | Google sign-in | Easier sign-in than email links | [setup/hosting-and-signin.md](../setup/hosting-and-signin.md#google-sign-in-staff-use-their-mrkdca-google-account) |
 | 4 | `leads_retrieval` on the Meta token | Leads tab | [setup/meta.md](../setup/meta.md) |
 | 5 | "Manage campaigns" on the 22 view-only accounts | One-click Turn off there | List in [setup/meta.md](../setup/meta.md) |
-| 6 | Owner/admin roles for you and Trent | Only owners/admins can change thresholds | Tell me who gets what; I won't change roles without it. |
-| 7 | Pick a design | | Settings → Look |
+| 6 | ~~Owner/admin roles for you and Trent~~ | Done 11 Nov: Jordan and Trent are owners. Other roles: Settings → Staff. | |
+| 7 | ~~Pick a design~~ | Done 11 Nov: Air, with light and dark mode. | |
 
 ## Not done yet
 

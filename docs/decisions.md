@@ -30,3 +30,7 @@ Why things are the way they are. Newest first. Add an entry whenever a real choi
 
 Jordan picked Air from the four sleeker options (Graphite, Onyx, Air, Studio) and asked for a dark mode. Air is now the default for everyone; dark mode follows the device unless someone chooses Light or Dark. The other looks were removed the same day at Jordan's request ([design-options.md](design-options.md)).
 
+## 2026-11-11: First owners: Jordan and Trent
+
+Jordan asked for Jordan Bosley and Trent Forrest to be owners. Set once directly in the database (nobody could use Settings → Staff before an owner existed) and recorded in `actions_log` (`staff.role`). Everyone else is staff; owners set other roles in Settings → Staff from now on.
+
