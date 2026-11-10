@@ -7,7 +7,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Creative, Employee, MetaLead, ReportRow } from '@shared/domain/types.ts'
 import type { RuleSettings } from '@shared/domain/rules.ts'
-import type { ActionRecord, DataSource, StaffMember, LeadFormResult, StoredSuggestion, SyncRun, TurnOffResult } from './source'
+import type { ActionRecord, ClientRow, DataSource, StaffMember, LeadFormResult, StoredSuggestion, SyncRun, TurnOffResult } from './source'
 import type { Suggestion } from '@shared/domain/rules.ts'
 import { createSupabaseApprovals } from './approvalsSupabase'
 
@@ -79,6 +79,22 @@ export function createSupabaseSource(db: SupabaseClient): DataSource {
     },
     async setRole(employeeId, role) {
       check(await db.rpc('set_employee_role', { p_employee: employeeId, p_role: role }))
+    },
+    async setStaffActive(employeeId, active, note) {
+      check(await db.rpc('set_employee_active', { p_employee: employeeId, p_active: active, p_note: note ?? null }))
+    },
+    async clients() {
+      return check(await db.rpc('client_list')) as ClientRow[]
+    },
+    async unlinkedAccounts() {
+      return check(await db.rpc('unlinked_ad_accounts')) as { id: string; name: string | null; status: string | null }[]
+    },
+    async setClient(clientId, c) {
+      check(await db.rpc('set_client_control', {
+        p_client: clientId, p_status: c.status ?? null, p_manager: c.managerId ?? null,
+        p_link_accounts: c.link?.length ? c.link : null, p_unlink_accounts: c.unlink?.length ? c.unlink : null,
+        p_note: c.note ?? null, p_clear: c.clear ?? false,
+      }))
     },
     async searchLeadForms(query) {
       const rows = check(await db.rpc('search_lead_forms', { p_query: query })) as {

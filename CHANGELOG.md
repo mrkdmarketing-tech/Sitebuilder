@@ -2,6 +2,12 @@
 
 What changed, newest first. Every change to the platform adds a line here.
 
+## 2026-11-11: Clients page, and team changes in The Lab
+- New **Clients** page: every client with status, ads manager and ad accounts. Owners and admins can set **Active / New / Paused / Inactive**, change the **ads manager**, and **link or unlink ad accounts**. These win over GHL and Retool, are marked "Changed in The Lab", logged, and can be undone ("Use GHL and Retool again"). Inactive clients disappear from Insights, Suggestions, Ad approval and the Meta sync. (Migrations 2400, 2500.)
+- **Settings → Staff**: owners and admins can **remove someone from the team** (or add them back); they lose access straight away.
+- Done at Jordan's request: Rising Tide (all four locations, with the three RTA ad accounts linked) and Gracie Barra Renton, Tacoma and Marysville moved to Zohirul; Overcome, Foundry, Campeao, Infinite Hitting Deerfield Beach, Storage-Tech, Bulls and Apex Ashburn removed; Swampfox paused; Andres Hernandez and "Dev MRKD" removed from the team.
+- Gracie Barra White Rock's live ad account is now shared with The Lab and syncing.
+
 ## 2026-11-11: Staff screen, and Air is the only look
 - **Settings → Staff**: everyone sees who's on the team, who has signed in, and how many Active/New clients each ads manager has. Owners and admins change roles there; only owners can make or change owners, there's always at least one owner, and every change is logged (migration 2300). Names, emails and ads manager stay in Retool.
 - Jordan and Trent are now **owners** (set at Jordan's request, logged); everyone else is staff.

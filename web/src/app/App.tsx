@@ -14,6 +14,7 @@ import { ApprovalsPage } from '../features/approvals/ApprovalsPage'
 import { ReviewPage } from '../features/approvals/ReviewPage'
 import { SyncStatusPage } from '../features/status/SyncStatusPage'
 import { SettingsPage } from '../features/settings/SettingsPage'
+import { ClientsPage } from '../features/clients/ClientsPage'
 
 /**
  * Routes (docs/architecture.md):
@@ -24,6 +25,7 @@ import { SettingsPage } from '../features/settings/SettingsPage'
  *   /search       Lead form & ad copy search      replaces Retool "Search Meta Lead Forms"
  *   /status       Sync health
  *   /settings     Suggestion thresholds (admins edit), staff, light/dark, links
+ *   /clients      Client status, ads manager, ad accounts (admins change; overrides GHL/Retool)
  * Sign-in: AuthGate (Google restricted to mrkd.ca, plus email link). GHL single sign-on later.
  */
 export function App() {
@@ -42,6 +44,7 @@ export function App() {
           <Route path="search" element={<SearchPage />} />
           <Route path="status" element={<SyncStatusPage />} />
           <Route path="settings" element={<SettingsPage />} />
+          <Route path="clients" element={<ClientsPage />} />
           <Route path="*" element={<Navigate to="/insights" replace />} />
         </Route>
       </Routes>

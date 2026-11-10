@@ -42,7 +42,8 @@ Everything about the MRKD platform is documented here. **Start with the row that
 | Ad approval | [ad-approval.md](ad-approval.md) | Ad Preview |
 | Search | [screens/insights.md#search](screens/insights.md#search) | Search Meta Lead Forms |
 | Sync status | [background-jobs.md#sync-status-screen](background-jobs.md#sync-status-screen) | – |
-| Settings (thresholds, design) | [sop/changing-thresholds.md](sop/changing-thresholds.md) | – |
+| Settings (thresholds, staff, light/dark) | [sop/changing-thresholds.md](sop/changing-thresholds.md), [sop/staff-and-access.md](sop/staff-and-access.md) | – |
+| Clients (status, ads manager, ad accounts) | [sop/new-client-or-ad-account.md](sop/new-client-or-ad-account.md#changing-a-client-in-the-lab) | Parts of Clients View |
 
 ## Code map
 
@@ -67,12 +68,13 @@ web/                    The app (React + TypeScript + Tailwind, built with Vite)
   src/features/approvals/ Ad approval: list, editor, mistake check, review
   src/features/search/    Lead form & ad copy search
   src/features/status/    Sync status
-  src/features/settings/  Settings (thresholds, design)
+  src/features/settings/  Settings (thresholds, staff, light/dark)
+  src/features/clients/   Clients: status, ads manager, ad accounts
   src/data/               Where screens get data: sample data or Supabase
   src/components/         Shared UI pieces
   src/lib/                Formatting, CSV, links, config, media (image/video previews)
 supabase/
-  migrations/             Database setup, applied in order (0100 → 2200)
+  migrations/             Database setup, applied in order (0100 → 2500)
   functions/              Background jobs (Supabase Edge Functions)
   seed.sql                Fictional sample data for local testing
   tests/                  Database tests (run against real Postgres)

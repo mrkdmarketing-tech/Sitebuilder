@@ -145,6 +145,16 @@ Adds `sync_runs` to Supabase Realtime so open screens reload when a job finishes
 
 `set_employee_role(employee, role)` and `staff_overview()` for **Settings → Staff**. Rules: owners/admins only, only owners touch owners, never zero owners, every change logged. A trigger stops the app editing `employees` directly (the Retool bridge and sign-in link run with elevated rights and aren't affected). Tested in `supabase/tests/zz_staff.test.sql`.
 
+## 2400 Overrides set in The Lab
+
+`client_overrides` (ads manager and/or status per client) and `ad_account_overrides` (which client an ad account belongs to). BEFORE triggers on `clients` and `meta_ad_accounts` apply them on every write, so the Retool copy can't undo them; removing one hands control back to GHL/Retool on the next copy. Owners/admins only; every change logged (`override.*`). Tested in `supabase/tests/zz_overrides.test.sql`.
+
+## 2500 Staff and client controls
+
+- `employee_overrides` + `set_employee_active()`: owners/admins take someone off the team (or back), winning over Retool. Can't remove yourself; only owners remove owners; never the last owner.
+- `set_client_control()`: the Clients screen's single call: status, ads manager, link/unlink ad accounts, or clear all Lab changes. Clears open suggestions for clients no longer Active/New.
+- `client_list()`, `unlinked_ad_accounts()`: the Clients screen.
+
 ## Changing the schema
 
 Add a **new** migration file (never edit one that has been applied to Supabase), with policies for any new table, then update this page and run `npm run db:test`.

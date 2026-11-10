@@ -2,7 +2,8 @@
  * Settings -> Staff (docs/sop/staff-and-access.md).
  * Everyone can see the list. Owners and admins can change roles; the database
  * (set_employee_role, migration 2300) enforces who may do what and logs it.
- * Names, emails, ads manager and active come from Retool and are read-only here.
+ * Owners/admins can also take someone off the team (set_employee_active,
+ * migration 2500), which wins over Retool. Names and emails stay read-only.
  */
 import { useState } from 'react'
 import { Check, Minus } from 'lucide-react'
@@ -44,6 +45,22 @@ export function StaffSection() {
     }
   }
 
+  const toggleActive = async (s: StaffMember) => {
+    const name = `${s.firstName} ${s.lastName}`
+    if (s.active && !window.confirm(`Remove ${name} from the team?\n\nThey lose access to The Lab straight away and drop out of every list. Their clients keep them as ads manager until you reassign them on the Clients page.`)) return
+    setBusy(s.id)
+    setNotice(null)
+    try {
+      await ds.setStaffActive(s.id, !s.active, s.active ? 'Removed from the team in The Lab' : 'Added back in The Lab')
+      setNotice({ ok: true, text: s.active ? `${name} removed from the team.` : `${name} is back on the team.` })
+      setVersion((v) => v + 1)
+    } catch (e) {
+      setNotice({ ok: false, text: (e as Error).message })
+    } finally {
+      setBusy(null)
+    }
+  }
+
   const rows = list.data ?? []
   return (
     <Card className="mt-4 p-4">
@@ -52,8 +69,8 @@ export function StaffSection() {
         <span className="text-xs text-muted">{rows.filter((r) => r.active).length} active</span>
       </div>
       <p className="mb-3 text-sm text-muted">
-        Names, emails, ads manager and active come from Retool's employees table (copied every 15 minutes); change them there.
-        Clients are assigned in GHL. {isAdmin ? 'You can change roles here.' : 'Owners and admins can change roles.'}
+        Names and emails come from Retool's employees table (copied every 15 minutes). Clients are assigned in GHL, or on the Clients page.
+        {isAdmin ? ' You can change roles and remove people from the team here.' : ' Owners and admins can change roles and who is on the team.'}
       </p>
       {list.error && <p className="text-sm text-bad">Couldn't load staff: {list.error.message}</p>}
       {notice && <p className={`mb-2 text-sm ${notice.ok ? 'text-good' : 'text-bad'}`}>{notice.text}</p>}
@@ -76,6 +93,12 @@ export function StaffSection() {
                   {s.signedIn ? <Check size={13} className="text-good" /> : <Minus size={13} />} {s.signedIn ? 'Signed in' : 'Not signed in yet'}
                 </span>
               </div>
+              {isAdmin && s.id !== me?.id && (iAmOwner || s.role !== 'owner') && (
+                <button type="button" disabled={busy === s.id} onClick={() => toggleActive(s)}
+                  className="text-xs font-medium text-muted hover:text-ink disabled:opacity-40">
+                  {s.active ? 'Remove from team' : 'Add back'}
+                </button>
+              )}
               {canEdit ? (
                 <select
                   value={s.role}

@@ -143,6 +143,7 @@ export function SettingsPage() {
       <Card className="mt-4 p-4 text-sm">
         <h2 className="mb-2 text-base font-semibold">More</h2>
         <ul className="space-y-1.5">
+          <li><Link to="/clients" className="font-medium text-brand">Clients</Link> <span className="text-muted">: status, ads manager and ad accounts for every client</span></li>
           <li><Link to="/status" className="font-medium text-brand">Sync status</Link> <span className="text-muted">: when data was last copied from Meta and Retool</span></li>
           <li><span className="font-medium">How-to guides (SOPs)</span> <span className="text-muted">: docs/sop in the GitHub repository</span></li>
         </ul>

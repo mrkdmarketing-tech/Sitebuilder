@@ -36,6 +36,23 @@ After 30 to 45 minutes:
 1. **Insights** → set the ads manager filter to **All ads managers** → search the client's name. Spend should match Ads Manager for the same dates.
 2. Not there? See [troubleshooting.md](troubleshooting.md#an-account-is-missing-from-insights).
 
+## Changing a client in The Lab
+
+Owners and admins can do all of the above for a client straight from The Lab, without waiting for GHL or Retool: **Clients** (sidebar; on phones, Settings → Clients) → click the client.
+
+| Change | Effect |
+|---|---|
+| **Status** Active / New | Shows in Insights, Suggestions and Ad approval |
+| **Status** Paused | Hidden everywhere until set back to Active (e.g. client on a break) |
+| **Status** Inactive | Removed from The Lab: not shown, not synced from Meta, open suggestions cleared |
+| **Ads manager** | Their suggestions move to the new ads manager straight away |
+| **Link an ad account** | Pick from the ad accounts shared with The Lab that aren't linked yet |
+| **Unlink** | Takes an ad account off this client |
+
+Changes made here **win over GHL and Retool** and are marked "Changed in The Lab" (with who and why). GHL and Retool are **not** updated (sending changes to GHL is planned, after the GHL go-ahead), so they may say something different. To hand a client back to GHL and Retool, open it and click **Use GHL and Retool again**; their values return within 15 minutes.
+
+Every change is logged.
+
 ## Client leaves
 
-Set the client's status in Retool to anything other than Active/New. The Lab stops syncing its campaigns and showing it on the next run. Optionally remove the ad account from MRKDPlatformTools in Business settings.
+Set the client to **Inactive** on The Lab's **Clients** page (or in Retool). The Lab stops syncing its campaigns and showing it on the next run. Optionally remove the ad account from MRKDPlatformTools in Business settings.

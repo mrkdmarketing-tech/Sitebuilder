@@ -155,6 +155,8 @@ export function createMockSource(data: MockDataset = generateMockData()): DataSo
       .sort((a, b) => b.spend - a.spend || a.name.localeCompare(b.name))
   }
 
+  // Sample mode: client changes kept in memory only (screens only; numbers unchanged).
+  const sampleOverrides = new Map<number, { status?: string; managerId?: string; note?: string }>()
   // Sample mode keeps threshold changes in memory only (gone on reload).
   let sampleSettings: Partial<RuleSettings> = { ...DEFAULT_RULE_SETTINGS }
   let sampleSettingsAt: string | null = null
@@ -245,6 +247,34 @@ export function createMockSource(data: MockDataset = generateMockData()): DataSo
       if ((role === 'owner' || target.role === 'owner') && me.role !== 'owner') throw new Error("Only an owner can make someone an owner or change an owner's role.")
       if (target.role === 'owner' && data.employees.filter((e) => e.role === 'owner').length <= 1) throw new Error('This is the last owner. Make someone else an owner first.')
       target.role = role
+    },
+    async setStaffActive(employeeId, active) {
+      const e = data.employees.find((x) => x.id === employeeId)
+      if (e) e.active = active
+    },
+    async clients() {
+      return data.clients.map((c) => {
+        const o = sampleOverrides.get(c.id)
+        const managerId = o?.managerId ?? c.managerId
+        const m = data.employees.find((e) => e.id === managerId)
+        return {
+          id: c.id, name: c.name, status: o?.status ?? c.status, managerId, managerName: m ? `${m.firstName} ${m.lastName}` : null,
+          city: c.city, state: null, overridden: !!o, statusOverride: o?.status ?? null, managerOverride: o?.managerId ?? null,
+          note: o?.note ?? null, overrideBy: o ? 'You (sample data)' : null, overrideAt: o ? new Date().toISOString() : null,
+          accounts: data.accounts.filter((a) => a.clientId === c.id).map((a) => ({ id: a.accountId, name: a.name, status: a.statusLabel, linkedInLab: false })),
+        }
+      }).sort((a, b) => a.name.localeCompare(b.name))
+    },
+    async unlinkedAccounts() {
+      return []
+    },
+    async setClient(clientId, c) {
+      if (c.clear) {
+        sampleOverrides.delete(clientId)
+        return
+      }
+      const o = sampleOverrides.get(clientId) ?? {}
+      sampleOverrides.set(clientId, { ...o, ...(c.status ? { status: c.status } : {}), ...(c.managerId ? { managerId: c.managerId } : {}), ...(c.note ? { note: c.note } : {}) })
     },
     async searchLeadForms(query) {
       const q = query.trim().toLowerCase()

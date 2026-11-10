@@ -1,5 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom'
-import { BarChart3, CheckSquare, Lightbulb, Search, Activity, Settings, Moon, Sun } from 'lucide-react'
+import { BarChart3, CheckSquare, Lightbulb, Search, Activity, Settings, Moon, Sun, Users } from 'lucide-react'
 import { SAMPLE_MODE } from '../lib/config'
 import { supabase } from '../lib/supabase'
 import { useData } from '../data/source'
@@ -14,6 +14,7 @@ const NAV = [
   { to: '/suggestions', label: 'Suggestions', icon: Lightbulb, phone: true },
   { to: '/approvals', label: 'Ad approval', icon: CheckSquare, phone: true },
   { to: '/search', label: 'Search', icon: Search, phone: true },
+  { to: '/clients', label: 'Clients', icon: Users, phone: false },
   { to: '/status', label: 'Sync', icon: Activity, phone: false },
   { to: '/settings', label: 'Settings', icon: Settings, phone: true },
 ]

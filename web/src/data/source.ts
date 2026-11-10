@@ -71,6 +71,35 @@ export interface StaffMember {
   clients: number
 }
 
+/** One row of the Clients screen (client_list(), migration 2500). */
+export interface ClientRow {
+  id: number
+  name: string
+  status: string | null
+  managerId: string | null
+  managerName: string | null
+  city: string | null
+  state: string | null
+  /** Something about this client was changed in The Lab (wins over GHL/Retool). */
+  overridden: boolean
+  statusOverride: string | null
+  managerOverride: string | null
+  note: string | null
+  overrideBy: string | null
+  overrideAt: string | null
+  accounts: { id: string; name: string | null; status: string | null; linkedInLab: boolean }[]
+}
+
+export interface ClientChange {
+  status?: string
+  managerId?: string
+  link?: string[]
+  unlink?: string[]
+  note?: string
+  /** Remove every Lab change for this client; GHL/Retool decide again on the next copy. */
+  clear?: boolean
+}
+
 export interface DataSource {
   readonly kind: 'sample' | 'supabase'
   /** The signed-in employee (null if signed in but not an employee). */
@@ -104,6 +133,14 @@ export interface DataSource {
   staff(): Promise<StaffMember[]>
   /** Owners/admins: change someone's role (rules and log in set_employee_role, migration 2300). */
   setRole(employeeId: string, role: StaffMember['role']): Promise<void>
+  /** Owners/admins: take someone off the team in The Lab, or add them back. */
+  setStaffActive(employeeId: string, active: boolean, note?: string): Promise<void>
+  /** Clients screen. */
+  clients(): Promise<ClientRow[]>
+  /** Ad accounts not linked to any client (to link one). */
+  unlinkedAccounts(): Promise<{ id: string; name: string | null; status: string | null }[]>
+  /** Owners/admins: change a client's status, ads manager or ad accounts (set_client_control). */
+  setClient(clientId: number, change: ClientChange): Promise<void>
   /** Ad approval (docs/ad-approval.md). */
   readonly approvals: ApprovalsApi
 }

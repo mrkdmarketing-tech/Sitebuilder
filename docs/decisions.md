@@ -34,3 +34,12 @@ Jordan picked Air from the four sleeker options (Graphite, Onyx, Air, Studio) an
 
 Jordan asked for Jordan Bosley and Trent Forrest to be owners. Set once directly in the database (nobody could use Settings → Staff before an owner existed) and recorded in `actions_log` (`staff.role`). Everyone else is staff; owners set other roles in Settings → Staff from now on.
 
+## 2026-11-11: Client and staff changes can be made in The Lab
+
+Jordan asked to move clients between ads managers, pause or remove clients, and remove staff from inside The Lab, without waiting on GHL or Retool. GHL is on hold and Retool is read-only from The Lab, so these are stored as **overrides in The Lab** that win over the copied values (migrations 2400, 2500), clearly marked "Changed in The Lab" and reversible. Sending them back to GHL (two-way) is planned once the GHL hold is lifted.
+
+First uses, at Jordan's request on 11 Nov 2026:
+- Moved to Zohirul: the four Rising Tide locations (Pikesville, Columbia, Finksburg, Timonium; the three RTA ad accounts linked and set Active) and Gracie Barra Renton, Tacoma and Marysville.
+- Removed (Inactive): Overcome Jiu Jitsu Pinnacle, The Foundry BJJ, Campeao Acworth, Infinite Hitting Deerfield Beach, Storage-Tech, Bulls Jiu Jitsu, Apex Performance Center (Ashburn). Paused: Swampfox Jiu Jitsu.
+- Removed from the team: Andres Hernandez (no longer an employee) and the "Dev MRKD" account. Team: Jordan, Trent (owners), Adam, Zohirul.
+
