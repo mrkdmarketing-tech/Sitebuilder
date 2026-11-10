@@ -49,6 +49,7 @@ async function graph<T = Row>(path: string, params: Record<string, string> = {})
   let limit = 500
   let url: string | null = `${GRAPH}/${path}?${new URLSearchParams({ limit: String(limit), ...params })}`
   let pages = 0
+  let retries = 0
   while (url && pages++ < 400) {
     const res: Response = await fetch(url, { headers: { Authorization: `Bearer ${token()}` } })
     const body = await res.json().catch(() => ({}))
@@ -63,8 +64,19 @@ async function graph<T = Row>(path: string, params: Record<string, string> = {})
         url = u.toString()
         continue
       }
+      // Meta's temporary errors ("Service temporarily unavailable", code 2;
+      // "An unknown error occurred", code 1/99; bare 5xx): wait and retry the
+      // same page up to 3 times before failing the account.
+      const transient = e.code === 2 || (e.code === 1 && e.error_subcode === 99) || (res.status >= 500 && !e.code) || e.is_transient === true
+      if (transient && retries < 3) {
+        retries++
+        pages--
+        await new Promise((r) => setTimeout(r, 2000 * retries))
+        continue
+      }
       throw new Error(`Meta ${res.status} on ${path.split('?')[0]}: ${e.message ?? 'unknown error'} (code ${e.code ?? '?'}${e.error_subcode ? '/' + e.error_subcode : ''})`)
     }
+    retries = 0
     out.push(...(body.data ?? []))
     const next: string | undefined = body.paging?.next
     if (next) {

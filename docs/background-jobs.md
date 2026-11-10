@@ -57,7 +57,8 @@ select cron.schedule('meta-backfill', '15 7 * * *', $$ â€¦ /meta-sync?days=37 â€
 
 - Graph API version is set in one constant in `meta-sync`. Retool hard-coded v20.0; set it to Meta's current version when Phase 1a starts.
 - Insights are pulled at **ad level, one row per day** (`time_increment=1`) for the last 3 days every run (Meta revises recent days), plus a nightly 37-day backfill.
-- Rate limits: accounts are processed one at a time; failures are logged per account and the run is marked `partial`.
+- Rate limits: accounts are processed 4 at a time; failures are logged per account and the run is marked `partial`.
+- Temporary Meta errors (code 2 "Service temporarily unavailable", code 1/99, bare 5xx) are retried up to 3 times with a short wait (added 10 Nov 2026, after they failed one random account most hours). "Reduce the amount of data" halves the page size instead.
 
 ## Sync status screen
 

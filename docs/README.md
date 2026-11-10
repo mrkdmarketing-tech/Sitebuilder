@@ -17,6 +17,7 @@ Everything about the MRKD platform is documented here. **Start with the row that
 | Know why something was decided | [decisions.md](decisions.md) |
 | **Pick a design (4 options with screenshots)** | [design-options.md](design-options.md) |
 | See what changed and when | [../CHANGELOG.md](../CHANGELOG.md) |
+| Read the latest overnight / status update | [updates/](updates/2026-11-10-overnight.md) |
 
 ## How it works
 
@@ -50,6 +51,7 @@ README.md               Start page
 CHANGELOG.md            What changed, by date
 docs/                   ← you are here
   sop/                    Standard operating procedures (how to use and run The Lab)
+  updates/                Dated status updates (what was done, what's needed)
 shared/                 Code used by BOTH the app and the background jobs
   domain/types.ts         Data shapes (report rows, leads, employees…)
   domain/metrics.ts       KPI formulas — the only place they're calculated

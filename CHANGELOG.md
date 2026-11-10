@@ -9,6 +9,8 @@ What changed, newest first. Every change to the platform adds a line here.
 - Status changes only through `set_review_status` (migration 2100): no skipping review, history of every move, reviewer defaults to the client's ads manager.
 - Retool's Ad Preview history (596 ads), templates (13 creative, 8 lead form) and GHL custom field names are now copied read-only every 15 minutes (migration 2200). Retool's base64 images are not copied.
 - Not yet: Slack and ClickUp notifications for ad approval.
+- Meta sync now retries Meta's temporary errors ("Service temporarily unavailable") instead of failing that account for the run.
+- Status update for the morning: [docs/updates/2026-11-10-overnight.md](docs/updates/2026-11-10-overnight.md).
 
 ## 2026-11-10: Settings screen
 - New **Settings** page: owners and admins change suggestion thresholds (CPL, no-lead spend, budget hog, CTR, link CTR, minimum impressions, no-recent-leads days). Values are checked and every change is logged with who and when (migration 2000). Staff see them read-only.
