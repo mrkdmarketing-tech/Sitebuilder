@@ -3,8 +3,9 @@
  * to Supabase; skipped in sample-data mode.
  *
  * - "Continue with Google": restricted to mrkd.ca Google accounts.
- * - Email link: backup for anyone without Google access (Supabase emails a
- *   one-time sign-in link).
+ * - Email code: backup for anyone without Google access. Supabase emails a
+ *   6-digit code (and a link); typing the code signs in on this device, which
+ *   matters on iPhones where the home-screen app and Safari don't share sign-ins.
  * After sign-in, the database links the login to the staff record with the
  * same email (migration 1400). A login with no staff record sees a clear
  * "not on the staff list" message, and the database shows it no data anyway.
@@ -79,8 +80,22 @@ function SignIn() {
     setError(null)
     const { error } = await supabase!.auth.signInWithOtp({ email: email.trim(), options: { emailRedirectTo: window.location.origin } })
     setBusy(false)
-    if (error) setError(error.message)
+    if (error) setError(/rate limit|too many/i.test(error.message)
+      ? 'Too many sign-in emails were sent in the last hour. Use the code from an earlier email if you have one, or try again shortly.'
+      : error.message)
     else setSent(true)
+  }
+
+  // Typing the code signs in on THIS device and app. Opening the email link can
+  // sign in a different browser instead (e.g. Safari vs the home-screen app).
+  const [code, setCode] = useState('')
+  const verifyCode = async (e: FormEvent) => {
+    e.preventDefault()
+    setBusy(true)
+    setError(null)
+    const { error } = await supabase!.auth.verifyOtp({ email: email.trim(), token: code, type: 'email' })
+    setBusy(false)
+    if (error) setError("That code didn't work. Use the newest email's code; codes work once, for 1 hour.")
   }
 
   return (
@@ -98,11 +113,24 @@ function SignIn() {
       </button>
 
       <div className="my-5 flex items-center gap-3 text-xs text-muted">
-        <span className="h-px flex-1 bg-line" /> or get a sign-in link by email <span className="h-px flex-1 bg-line" />
+        <span className="h-px flex-1 bg-line" /> or get a sign-in code by email <span className="h-px flex-1 bg-line" />
       </div>
 
       {sent ? (
-        <p className="rounded-lg bg-subtle p-3 text-sm">Check your inbox at <strong>{email}</strong> and click the link to sign in.</p>
+        <form onSubmit={verifyCode} className="flex flex-col gap-2">
+          <p className="text-sm">We emailed a 6-digit code to <strong>{email}</strong>. Type it here:</p>
+          <input
+            value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+            inputMode="numeric" autoComplete="one-time-code" autoFocus placeholder="123456" aria-label="Sign-in code"
+            className="tabular h-11 rounded-lg border border-line bg-surface px-3 text-center text-xl tracking-[0.4em]"
+          />
+          <button disabled={busy || code.length !== 6} className="h-10 rounded-lg bg-primary text-sm font-semibold text-on-primary disabled:opacity-60">
+            {busy ? 'Signing in…' : 'Sign in'}
+          </button>
+          <button type="button" onClick={() => { setSent(false); setCode('') }} className="text-xs font-medium text-muted hover:text-ink">
+            Use a different email, or send a new code
+          </button>
+        </form>
       ) : (
         <form onSubmit={emailLink} className="flex flex-col gap-2">
           <label htmlFor="signin-email" className="text-xs font-semibold text-muted">Work email</label>
@@ -111,7 +139,7 @@ function SignIn() {
             placeholder={`you@${STAFF_DOMAIN}`} className="h-10 rounded-lg border border-line bg-surface px-3 text-sm"
           />
           <button disabled={busy} className="h-10 rounded-lg bg-primary text-sm font-semibold text-on-primary disabled:opacity-60">
-            {busy ? 'Sending…' : 'Email me a sign-in link'}
+            {busy ? 'Sending…' : 'Email me a sign-in code'}
           </button>
         </form>
       )}

@@ -2,6 +2,10 @@
 
 What changed, newest first. Every change to the platform adds a line here.
 
+## 2026-11-11: Fewer repeat sign-ins
+- Sign-in emails now have a **6-digit code** as well as the link, and the sign-in screen asks for it. Typing the code signs in the app you're actually using. The link could sign in a different browser (on iPhones the home-screen app and Safari don't share sign-ins), which is why people kept being asked to sign in again.
+- Clearer message when the email limit (2 per hour across MRKD, Supabase's built-in sender) is hit. Google sign-in removes that limit.
+
 ## 2026-11-11: Two-step sign-in
 - **Owners and admins now confirm each sign-in with a 6-digit code** from an authenticator app (Google Authenticator, Microsoft Authenticator, Authy, 1Password). First sign-in after this: scan a QR code to set it up. Staff can turn it on in Settings.
 - The database enforces it: without the code, owner/admin actions (roles, team, clients, thresholds, everyone's suggestions) are refused (migration 2600).

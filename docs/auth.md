@@ -6,7 +6,7 @@ Only **active employees** (`employees.active = true`). Anyone else who manages t
 
 ## How people sign in (live once Google is set up, see [setup/hosting-and-signin.md](setup/hosting-and-signin.md))
 
-Now: **Continue with Google** (restricted to @mrkd.ca) and an **email sign-in link** as backup. The login is linked to the staff record with the same email on first sign-in (migration 1400). GHL single sign-on inside the GHL sidebar comes later, as planned below.
+Now: **Continue with Google** (restricted to @mrkd.ca) and an **email sign-in code** as backup (the email has a 6-digit code and a link; the code signs in the device it's typed on, which avoids the iPhone home-screen app vs Safari problem). Sessions don't expire on their own (no time limit or idle timeout), so people stay signed in on each device. The built-in email sender allows only 2 sign-in emails per hour project-wide, which is a reason to switch to Google sign-in. The login is linked to the staff record with the same email on first sign-in (migration 1400). GHL single sign-on inside the GHL sidebar comes later, as planned below.
 
 ## Planned: sign-in inside GHL
 
