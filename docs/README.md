@@ -41,6 +41,7 @@ Everything about the MRKD platform is documented here. **Start with the row that
 | Ad approval | [ad-approval.md](ad-approval.md) | Ad Preview |
 | Search | [screens/insights.md#search](screens/insights.md#search) | Search Meta Lead Forms |
 | Sync status | [background-jobs.md#sync-status-screen](background-jobs.md#sync-status-screen) | – |
+| Settings (thresholds, design) | [sop/changing-thresholds.md](sop/changing-thresholds.md) | – |
 
 ## Code map
 
@@ -63,6 +64,7 @@ web/                    The app (React + TypeScript + Tailwind, built with Vite)
   src/features/approvals/ Ad approval (Phase 2 placeholder)
   src/features/search/    Lead form & ad copy search
   src/features/status/    Sync status
+  src/features/settings/  Settings (thresholds, design)
   src/data/               Where screens get data: sample data or Supabase
   src/components/         Shared UI pieces
   src/lib/                Formatting, CSV, links, config

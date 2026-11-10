@@ -39,7 +39,7 @@ Evaluated over the **last 7 days**, only for Active/New clients and only for ads
 
 ## Thresholds
 
-Stored in `rule_settings` ([data-model.md](data-model.md#0400-suggestions)), editable by admins. Lookup order: **client override → ad type override → global → code defaults**. The CTR cutoffs (0.8% / 0.5%) and the 60% share are starting guesses to tune after a few weeks of real data.
+Stored in `rule_settings` ([data-model.md](data-model.md#0400-suggestions)). Owners and admins change them on the **Settings** screen (everyone else sees them read-only); every change is logged ([sop/changing-thresholds.md](sop/changing-thresholds.md)). Lookup order: **client override → ad type override → global → code defaults**. The CTR cutoffs (0.8% / 0.5%) and the 60% share are starting guesses to tune after a few weeks of real data.
 
 ## Lifecycle
 

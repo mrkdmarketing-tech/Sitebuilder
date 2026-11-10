@@ -125,6 +125,10 @@ Adds `sync_runs` to Supabase Realtime so open screens reload when a job finishes
 
 `actions_log.ad_id` (optional, set by Turn off) so the app can show the ad name next to each action.
 
+## 2000 Settings
+
+`save_rule_settings(params)`: owners/admins change the global suggestion thresholds from the **Settings** screen. Refuses unknown keys, text and out-of-range values; records who changed it (`rule_settings.updated_by`) and the before/after in `actions_log` (`rules.update`). Tested in `supabase/tests/settings.test.sql`.
+
 ## Changing the schema
 
 Add a **new** migration file (never edit one that has been applied to Supabase), with policies for any new table, then update this page and run `npm run db:test`.

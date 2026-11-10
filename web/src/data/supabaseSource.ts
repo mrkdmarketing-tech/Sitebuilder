@@ -59,6 +59,19 @@ export function createSupabaseSource(db: SupabaseClient): DataSource {
       const row = check(await db.from('rule_settings').select('params').eq('scope', 'global').maybeSingle()) as { params: Partial<RuleSettings> } | null
       return row?.params ?? {}
     },
+    async ruleSettingsInfo() {
+      const row = check(
+        await db.from('rule_settings').select('params, updated_at, by:employees(first_name, last_name)').eq('scope', 'global').maybeSingle(),
+      ) as unknown as { params: Partial<RuleSettings>; updated_at: string; by: { first_name: string; last_name: string } | null } | null
+      return {
+        params: row?.params ?? {},
+        updatedAt: row?.by ? row.updated_at : null,
+        updatedBy: row?.by ? `${row.by.first_name} ${row.by.last_name}`.trim() : null,
+      }
+    },
+    async saveRuleSettings(params) {
+      check(await db.rpc('save_rule_settings', { p_params: params }))
+    },
     async searchLeadForms(query) {
       const rows = check(await db.rpc('search_lead_forms', { p_query: query })) as {
         id: string; name: string | null; page_id: string | null; questions: { label?: string }[]

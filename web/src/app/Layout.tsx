@@ -1,5 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom'
-import { BarChart3, CheckSquare, Lightbulb, Search, Activity } from 'lucide-react'
+import { BarChart3, CheckSquare, Lightbulb, Search, Activity, Settings } from 'lucide-react'
 import { SAMPLE_MODE } from '../lib/config'
 import { supabase } from '../lib/supabase'
 import { useData } from '../data/source'
@@ -8,12 +8,14 @@ import { DESIGNS, useSession, type Design } from './session'
 import { APP_NAME } from './AuthGate'
 import { UpdateBanner } from './UpdateBanner'
 
+/** `phone: false` = left off the phone tab bar (5 slots); reachable from Settings. */
 const NAV = [
-  { to: '/insights', label: 'Insights', icon: BarChart3 },
-  { to: '/suggestions', label: 'Suggestions', icon: Lightbulb },
-  { to: '/approvals', label: 'Ad approval', icon: CheckSquare },
-  { to: '/search', label: 'Search', icon: Search },
-  { to: '/status', label: 'Sync', icon: Activity },
+  { to: '/insights', label: 'Insights', icon: BarChart3, phone: true },
+  { to: '/suggestions', label: 'Suggestions', icon: Lightbulb, phone: true },
+  { to: '/approvals', label: 'Ad approval', icon: CheckSquare, phone: true },
+  { to: '/search', label: 'Search', icon: Search, phone: true },
+  { to: '/status', label: 'Sync', icon: Activity, phone: false },
+  { to: '/settings', label: 'Settings', icon: Settings, phone: true },
 ]
 
 /**
@@ -35,7 +37,7 @@ export function Layout() {
         </main>
       </div>
       <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-line bg-surface pb-[env(safe-area-inset-bottom)] md:hidden">
-        {NAV.map(({ to, label, icon: Icon }) => (
+        {NAV.filter((n) => n.phone).map(({ to, label, icon: Icon }) => (
           <NavLink key={to} to={to} className={({ isActive }) => `flex flex-col items-center gap-0.5 py-2 text-[11px] font-medium ${isActive ? 'text-brand' : 'text-muted'}`}>
             <Icon size={20} />
             {label}

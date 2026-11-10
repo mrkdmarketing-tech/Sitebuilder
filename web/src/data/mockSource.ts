@@ -8,7 +8,7 @@
  *   - campaigns/ad sets/ads are listed if they spent or are currently active
  */
 import { sumTotals, EMPTY_TOTALS } from '@shared/domain/metrics.ts'
-import { DEFAULT_RULE_SETTINGS } from '@shared/domain/rules.ts'
+import { DEFAULT_RULE_SETTINGS, type RuleSettings } from '@shared/domain/rules.ts'
 import { addDays, todayInZone } from '@shared/domain/dates.ts'
 import type { DateRange, DeliveryStatus, Level, ReportRow, Totals } from '@shared/domain/types.ts'
 import { generateMockData, type MockAccount, type MockClient, type MockDataset, type MockDay } from './mock/generate'
@@ -154,6 +154,10 @@ export function createMockSource(data: MockDataset = generateMockData()): DataSo
       .sort((a, b) => b.spend - a.spend || a.name.localeCompare(b.name))
   }
 
+  // Sample mode keeps threshold changes in memory only (gone on reload).
+  let sampleSettings: Partial<RuleSettings> = { ...DEFAULT_RULE_SETTINGS }
+  let sampleSettingsAt: string | null = null
+
   return {
     kind: 'sample',
     async me() {
@@ -201,7 +205,15 @@ export function createMockSource(data: MockDataset = generateMockData()): DataSo
       return out
     },
     async ruleSettings() {
-      return DEFAULT_RULE_SETTINGS
+      return sampleSettings
+    },
+    async ruleSettingsInfo() {
+      return { params: sampleSettings, updatedAt: sampleSettingsAt, updatedBy: sampleSettingsAt ? 'You (sample data)' : null }
+    },
+    async saveRuleSettings(params) {
+      await wait(200)
+      sampleSettings = { ...sampleSettings, ...params }
+      sampleSettingsAt = new Date().toISOString()
     },
     async searchLeadForms(query) {
       const q = query.trim().toLowerCase()

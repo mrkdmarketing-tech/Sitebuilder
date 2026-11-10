@@ -49,6 +49,12 @@ export interface ActionRecord {
   note: string | null
 }
 
+export interface RuleSettingsInfo {
+  params: Partial<RuleSettings>
+  updatedAt: string | null
+  updatedBy: string | null
+}
+
 export interface DataSource {
   readonly kind: 'sample' | 'supabase'
   /** The signed-in employee (null if signed in but not an employee). */
@@ -61,6 +67,10 @@ export interface DataSource {
   /** Meta leads per account over the last N days (suggestion rule 7). */
   recentLeadsByAccount(days: number): Promise<Map<string, number>>
   ruleSettings(): Promise<Partial<RuleSettings>>
+  /** Thresholds plus who last changed them (Settings screen). */
+  ruleSettingsInfo(): Promise<RuleSettingsInfo>
+  /** Owners/admins: save thresholds (checked and logged by save_rule_settings, migration 2000). */
+  saveRuleSettings(params: Partial<RuleSettings>): Promise<void>
   searchLeadForms(query: string): Promise<LeadFormResult[]>
   searchAdCopy(query: string): Promise<Creative[]>
   syncRuns(): Promise<SyncRun[]>

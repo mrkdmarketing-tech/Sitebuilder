@@ -2,6 +2,10 @@
 
 What changed, newest first. Every change to the platform adds a line here.
 
+## 2026-11-10: Settings screen
+- New **Settings** page: owners and admins change suggestion thresholds (CPL, no-lead spend, budget hog, CTR, link CTR, minimum impressions, no-recent-leads days). Values are checked and every change is logged with who and when (migration 2000). Staff see them read-only.
+- Settings also lets anyone switch between the four designs on real data, and links to Sync status. On phones, Settings replaces Sync in the bottom bar.
+
 ## 2026-11-10: SOPs
 - Added [docs/sop/](docs/sop/README.md): step-by-step procedures for ads managers (signing in, daily account check, acting on suggestions, submitting and reviewing ads) and for owners/admins (staff and access, new client or ad account, thresholds, tokens and secrets, weekly health check, troubleshooting).
 
