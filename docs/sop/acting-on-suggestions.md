@@ -9,7 +9,7 @@ Today is The Lab's home page. It lists only what needs doing on your accounts, o
 1. Open The Lab. **Today** opens first; the number next to it in the sidebar is how many things are waiting.
 2. Read the top line: "**6 things** need you today. Your other 34 accounts are fine."
 3. For each row: the account, one plain sentence ("An ad spent $240 with no leads"), one button, and an **X**.
-   - **X (Dismiss)**: you don't want to act on it. It disappears and won't come back for 7 days (sooner never; after 7 days only if the problem is still there). The message that appears has **Undo**.
+   - **X (Dismiss)**: you don't want to act on it. It disappears for 7 days, and after that comes back only if the problem is still there. The message that appears has **Undo**.
    - **Turn off**: pauses that ad in Meta after one confirmation.
    - **Open billing**: the account's billing page in Meta (payment or account problems).
    - **Open**: the ad or account in Ads Manager, for things a person needs to look at (few clicks, no recent leads).
