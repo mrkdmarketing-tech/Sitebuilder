@@ -70,7 +70,8 @@ Handled by the `meta-action` function, not the browser:
 2. The suggestion must still be open, and be about an ad (any ad-level rule, not only the pause rules).
 3. Re-reads the ad from Meta; if it's already off, just marks it done.
 4. Pauses the ad using the Meta System User token.
-5. Writes `actions_log` (who, before/after, result).
+5. Reads the ad back from Meta and answers `verified: true` only if Meta now shows it paused. The screen shows "Done: the ad is off. Meta confirms it's paused" or "Sent to Meta, not confirmed yet".
+6. Writes `actions_log` (who, before/after including `confirmed`, result).
 
 Every "Turn off" asks for one confirmation first. In sample-data mode nothing is sent to Meta.
 
