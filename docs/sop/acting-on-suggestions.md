@@ -29,6 +29,7 @@ Turned off the wrong ad? Click **Undo** in the "Done" box, on the ticked row, or
 
 | Message | Meaning | Do this |
 |---|---|---|
+| "Meta won't let The Lab change this lead ad... can't see this client's Facebook Page" | The Lab's Meta login has no access to that client's Page, so Meta thinks the lead form is missing. | Turn it off in Ads Manager. Owners: give MRKDPlatformTools access to the Page ([../setup/meta.md](../setup/meta.md#checked-11-nov-2026-why-turn-off-failed)). |
 | "This ad account only lets The Lab view, not change ads..." | The account wasn't shared with **Manage campaigns**. | Turn the ad off in Ads Manager by hand, and ask an admin to follow [new-client-or-ad-account.md](new-client-or-ad-account.md#2-share-the-ad-account-with-the-lab). |
 | "... was already off" | Someone already paused it. | Nothing. It's recorded. |
 | "Meta refused: ..." | Meta rejected the change. | Turn it off in Ads Manager and tell an admin the message. |

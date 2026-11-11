@@ -2,6 +2,11 @@
 
 What changed, newest first. Every change to the platform adds a line here.
 
+## 2026-11-11: Why Turn off failed, and clearer messages
+- Jordan's Turn offs this morning were refused by Meta. Checked all 28 suggested ads (validate only, nothing paused): 9 can be turned off, 11 are on view-only ad accounts, 7 are lead ads on Pages The Lab can't see (Meta calls this "Missing Lead Form"), 1 account isn't writable. Details and fixes: [docs/setup/meta.md](docs/setup/meta.md#checked-11-nov-2026-why-turn-off-failed).
+- The failure message now says which access is missing and to turn it off in Ads Manager meanwhile. The log keeps Meta's full answer.
+- `meta-check` can now test whether ads can be paused without pausing them.
+
 ## 2026-11-11: Turn off shows that it worked
 - After **Turn off**, The Lab asks Meta for the ad's status again and shows a clear box: "Done: the ad is off. Meta confirms it's paused", with the time, **Undo**, **Check in Ads Manager** and **Done**. If it failed, the same box says why.
 - The row stays on Today with a green tick ("Turned off, confirmed in Meta", time, Undo) instead of disappearing, and the count at the top goes down. `meta-action` updated and deployed (Undo is confirmed the same way).

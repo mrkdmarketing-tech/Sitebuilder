@@ -33,6 +33,21 @@ Don't tick anything else. If a scope isn't listed when generating the token, the
 - Token permissions granted: `ads_read`, `ads_management`, `business_management`, `pages_show_list`, `pages_read_engagement`. (`leads_retrieval` and `pages_manage_ads` are **not** on it yet; needed for the leads list.)
 - 54 ad accounts visible; **32 can edit ads** (pause works), **22 view-only** (assigned with View performance), so one-click Turn off won't work on those until they get **Manage campaigns**.
 
+## Checked 11 Nov 2026: why Turn off failed
+
+Meta was asked to *validate* pausing each of the 28 ads suggested that morning (nothing was paused):
+
+| Result | Ads | Clients | Fix |
+|---|---|---|---|
+| Works | 9 | 100% Martial Arts, Atlantic MMA, DeSantos, GB White Rock, Infinity Jiu Jitsu Tennessee, Rising Tide | None |
+| "Can't manage ads: missing permission" | 11 | Apex Performance Gym, Artemis, GB Cloverdale, GB Ottawa HQ, GB Renton, Grappletown, New Level Grappling | Ad account: **Manage campaigns** for MRKDPlatformTools |
+| "Missing Lead Form" | 7 | Apex Sterling, Flux MMA, Gentle Arts Dojo, GB Tacoma, Legion San Diego, Reyson Gracie Boca Raton | Page: MRKDPlatformTools needs access to the client's **Facebook Page** |
+| "Ad account not writable" | 1 | Double Five Mid-Cities | Check the account in Ads Manager (often disabled or a payment problem) |
+
+"Missing Lead Form" is misleading: the form exists. Meta re-checks the whole ad on any change, and The Lab can't see the client's Page, so it can't see the instant form. The Lab could see only **26 Pages** that day; Gentle Arts' Page wasn't one of them. Lead ads on Pages it *can* see pause fine, so Page access is the fix (no new token needed).
+
+To check again: `select private.call_function('meta-check', '?ads=<ad id>,<ad id>')` (validate only), or `?ad=<id>` for one ad in detail. The answer is in `net._http_response`.
+
 ## Asset access for the system user (done 9 Nov 2026)
 
 | Asset | Permission | Status |
