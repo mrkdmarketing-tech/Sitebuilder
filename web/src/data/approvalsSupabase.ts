@@ -124,7 +124,7 @@ export function createSupabaseApprovals(db: SupabaseClient): ApprovalsApi {
           id: f.id as string, assetId: f.asset_id as string | null, field: f.field as string | null, location: f.location as string | null,
           category: f.category as ReviewDetail['findings'][number]['category'], severity: f.severity as ReviewDetail['findings'][number]['severity'],
           excerpt: f.excerpt as string | null, message: f.message as string, suggestion: f.suggestion as string | null,
-          status: f.status as ReviewDetail['findings'][number]['status'],
+          status: f.status as ReviewDetail['findings'][number]['status'], ai: f.check_run_id != null,
         })),
         comments: (check(comments) as Record<string, unknown>[]).map((c) => ({
           id: c.id as string, authorName: nameOf(c.author_id), body: c.body as string, at: c.created_at as string,
@@ -231,9 +231,9 @@ export function createSupabaseApprovals(db: SupabaseClient): ApprovalsApi {
     },
 
     async clients() {
-      const rows = check(await db.from('clients').select('id, business_name, ad_manager_id, active_status')
-        .in('active_status', ['Active', 'New']).order('business_name')) as { id: number; business_name: string | null; ad_manager_id: string | null; active_status: string | null }[]
-      return rows.map((c) => ({ id: c.id, name: c.business_name ?? `Client ${c.id}`, managerId: c.ad_manager_id, status: c.active_status }))
+      const rows = check(await db.from('clients').select('id, business_name, ad_manager_id, active_status, city')
+        .in('active_status', ['Active', 'New']).order('business_name')) as { id: number; business_name: string | null; ad_manager_id: string | null; active_status: string | null; city: string | null }[]
+      return rows.map((c) => ({ id: c.id, name: c.business_name ?? `Client ${c.id}`, managerId: c.ad_manager_id, status: c.active_status, city: c.city }))
     },
 
     async brief(clientId) {

@@ -2,15 +2,20 @@
  * One ad: edit, check for mistakes, submit, review (docs/ad-approval.md,
  * docs/sop/ad-approval-submit.md, docs/sop/ad-approval-review.md).
  *
+ * The built-in checks (shared/domain/adChecks.ts) run as you type; Submit
+ * saves, runs the full check (ad-check) and then shows "Hey, just double
+ * checking" if anything is open.
+ *
  * Editable while Draft or Changes requested. Status moves go through
  * set_review_status (database), which also records "Submit anyway".
  * Ads imported from Retool are shown read-only.
  */
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { AlertTriangle, ArrowLeft, Check, ExternalLink, Film, Link2, Plus, Sparkles, Trash2, Upload, X } from 'lucide-react'
+import { AlertTriangle, ArrowLeft, Check, ChevronDown, ExternalLink, Film, Link2, Plus, Sparkles, Trash2, Upload, X } from 'lucide-react'
+import { checkClient, quickChecks } from '@shared/domain/adChecks.ts'
 import {
-  CATEGORY_LABEL, MOVES, fieldLabel, fillTemplate, placeholderValues, toCreative, toLeadForm, unfilledPlaceholders,
+  CATEGORY_LABEL, MOVES, checkableText, fieldLabel, fillTemplate, findingKey, placeholderValues, toCreative, toLeadForm, unfilledPlaceholders,
   type CreativeCopy, type LeadFormCopy, type ReviewStatus, type StatusMove,
 } from '@shared/domain/approvals.ts'
 import { Card, Modal } from '../../components/ui'
@@ -66,6 +71,30 @@ export function ReviewPage() {
   const [busy, setBusy] = useState<string | null>(null)
   const [notice, setNotice] = useState<{ ok: boolean; text: string } | null>(null)
   const [move, setMove] = useState<StatusMove | null>(null)
+  // What "Hey, just double checking" lists (from the check run at Submit).
+  const [moveIssues, setMoveIssues] = useState<{ issues: ReviewFinding[]; warning: string | null } | null>(null)
+  const clientList = useAsync(() => ds.approvals.clients(), [ds])
+  // Built-in issues the person chose to ignore before the check saved them.
+  const [localIgnored, setLocalIgnored] = useState<Set<string>>(new Set())
+
+  // Built-in checks, live as you type (null when the ad can't be edited).
+  const live = useMemo((): ReviewFinding[] | null => {
+    if (!d || !draft || d.legacy || !(d.status === 'draft' || d.status === 'request_changes')) return null
+    const savedIgnored = new Set(d.findings.filter((f) => !f.ai && f.status === 'ignored').map(findingKey))
+    return quickChecks({
+      texts: checkableText(draft.creative, draft.leadform),
+      client: checkClient(brief.data),
+      adType: draft.adType || null,
+      otherClients: (clientList.data ?? []).filter((c) => c.id !== d.clientId).map((c) => ({ name: c.name, city: c.city })),
+    }).map((f) => {
+      const key = findingKey(f)
+      return {
+        id: `live-${key}`, assetId: null, field: f.field, location: f.location, category: f.category, severity: f.severity,
+        excerpt: f.excerpt || null, message: f.message, suggestion: f.suggestion,
+        status: localIgnored.has(key) || savedIgnored.has(key) ? 'ignored' : 'open', ai: false,
+      }
+    })
+  }, [d, draft, brief.data, clientList.data, localIgnored])
 
   if (detail.error) return <p className="text-sm text-bad">Couldn't load this ad: {detail.error.message}</p>
   if (!d || !draft) return <p className="py-8 text-center text-sm text-muted">{detail.loading ? 'Loading...' : 'Ad not found.'}</p>
@@ -118,7 +147,56 @@ export function ReviewPage() {
     }
   }
 
+  const setFindingStatus = (f: ReviewFinding, status: ReviewFinding['status']) => {
+    if (!f.id.startsWith('live-')) return void run('finding', () => ds.approvals.setFinding(f.id, status))
+    const key = findingKey(f)
+    setLocalIgnored((prev) => {
+      const next = new Set(prev)
+      if (status === 'ignored') next.add(key)
+      else next.delete(key)
+      return next
+    })
+    const savedRow = d.findings.find((x) => !x.ai && findingKey(x) === key)
+    if (savedRow && savedRow.status !== status) void run('finding', () => ds.approvals.setFinding(savedRow.id, status))
+  }
+
+  // Submit / Submit again: save, run the full check, then confirm.
+  const submit = async (m: StatusMove) => {
+    setBusy('submit')
+    setNotice(null)
+    try {
+      await saveIfDirty()
+      let warning: string | null = null
+      const failed = (why: string) => `The full check didn't finish (${why}). Anything listed comes from the checks in your browser.`
+      try {
+        const r = await ds.approvals.runCheck(d.id)
+        if (r.status === 'error') warning = failed(r.message)
+      } catch (e) {
+        warning = failed((e as Error).message)
+      }
+      let fresh = (await ds.approvals.get(d.id)) ?? d
+      const toIgnore = fresh.findings.filter((f) => !f.ai && f.status === 'open' && localIgnored.has(findingKey(f)))
+      if (toIgnore.length) {
+        await Promise.all(toIgnore.map((f) => ds.approvals.setFinding(f.id, 'ignored')))
+        fresh = (await ds.approvals.get(d.id)) ?? fresh
+      }
+      const issues = warning
+        ? [...(live ?? []), ...fresh.findings.filter((f) => f.ai)].filter((f) => f.status === 'open')
+        : fresh.findings.filter((f) => f.status === 'open')
+      setMoveIssues({ issues, warning })
+      setMove(m)
+      reload()
+    } catch (e) {
+      setNotice({ ok: false, text: (e as Error).message })
+    } finally {
+      setBusy(null)
+    }
+  }
+
   const moves = d.legacy ? [] : MOVES[d.status]
+  const liveFor = (field: string) => (live ?? []).filter((f) => f.field === field && f.status === 'open')
+  const hasMore = !!(draft.creative.description || draft.creative.callToAction || draft.creative.urlParameters || draft.creative.tracking.length)
+  const hasLeadform = !!(draft.metaLeadformId || JSON.stringify(draft.leadform) !== JSON.stringify(toLeadForm({})))
 
   return (
     <div className="pb-8">
@@ -150,8 +228,11 @@ export function ReviewPage() {
           )}
           {moves.map((m) => (
             <Button key={m.to} kind={m.to === 'request_changes' ? 'secondary' : 'primary'} disabled={!!busy}
-              onClick={async () => { try { await saveIfDirty(); setMove(m) } catch (e) { setNotice({ ok: false, text: (e as Error).message }) } }}>
-              {m.label}
+              onClick={async () => {
+                if (m.to === 'review_pending') return submit(m)
+                try { await saveIfDirty(); setMoveIssues(null); setMove(m) } catch (e) { setNotice({ ok: false, text: (e as Error).message }) }
+              }}>
+              {busy === 'submit' && m.to === 'review_pending' ? 'Checking...' : m.label}
             </Button>
           ))}
         </div>
@@ -170,9 +251,59 @@ export function ReviewPage() {
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_380px]">
         <div className="min-w-0 space-y-4">
-          <Section title="Setup">
+          <MediaSection d={d} editable={editable} onChanged={reload} onNotice={setNotice} />
+
+          <Section title="Copy">
+            <div className="space-y-3">
+              {editable && (
+                <TemplatePicker label="Start from a template" templates={templates.data?.creative} brief={brief.data ?? null}
+                  onUse={(body) => setCreative(toCreative({ ...draft.creative, ...body }))} />
+              )}
+              <div>
+                <Field label="Primary text">
+                  <textarea rows={7} spellCheck value={draft.creative.primaryText} disabled={!editable} onChange={(e) => setCreative({ primaryText: e.target.value })} className={inputClass} />
+                </Field>
+                <Hints list={liveFor('creative.primaryText')} />
+              </div>
+              <div>
+                <Field label="Headline"><input spellCheck value={draft.creative.headline} disabled={!editable} onChange={(e) => setCreative({ headline: e.target.value })} className={inputClass} /></Field>
+                <Hints list={liveFor('creative.headline')} />
+              </div>
+              <Unfilled draft={draft} />
+              <Fold title="More" note="Call to action, description, tracking, URL parameters" open={hasMore || !editable}>
+                <div className="space-y-3">
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <Field label="Call to action">
+                      <select value={draft.creative.callToAction} disabled={!editable} onChange={(e) => setCreative({ callToAction: e.target.value })} className={inputClass}>
+                        <option value="">Choose...</option>
+                        {withCurrent(lookups.data?.ctaOptions, draft.creative.callToAction).map((x) => <option key={x}>{x}</option>)}
+                      </select>
+                    </Field>
+                    <Field label="URL parameters"><input value={draft.creative.urlParameters} disabled={!editable} onChange={(e) => setCreative({ urlParameters: e.target.value })} className={inputClass} /></Field>
+                  </div>
+                  <div>
+                    <Field label="Description"><input spellCheck value={draft.creative.description} disabled={!editable} onChange={(e) => setCreative({ description: e.target.value })} className={inputClass} /></Field>
+                    <Hints list={liveFor('creative.description')} />
+                  </div>
+                  <Field label="Tracking">
+                    <div className="flex flex-wrap gap-3 py-1.5">
+                      {withCurrent(TRACKING, ...draft.creative.tracking).map((t) => (
+                        <label key={t} className="flex items-center gap-1.5 text-sm">
+                          <input type="checkbox" disabled={!editable} checked={draft.creative.tracking.includes(t)}
+                            onChange={(e) => setCreative({ tracking: e.target.checked ? [...draft.creative.tracking, t] : draft.creative.tracking.filter((x) => x !== t) })} />
+                          {t}
+                        </label>
+                      ))}
+                    </div>
+                  </Field>
+                </div>
+              </Fold>
+            </div>
+          </Section>
+
+          <Section title="Ad type and booking">
             <div className="grid gap-3 sm:grid-cols-2">
-              <Field label="Ad type">
+              <Field label="Ad type" hint={editable ? 'Used to spot the wrong discipline, like Muay Thai in a jiu jitsu ad.' : undefined}>
                 <select value={draft.adType} disabled={!editable} onChange={(e) => set({ adType: e.target.value })} className={inputClass}>
                   <option value="">Choose...</option>
                   {withCurrent(lookups.data?.adTypes, draft.adType).map((x) => <option key={x}>{x}</option>)}
@@ -185,53 +316,14 @@ export function ReviewPage() {
                 </select>
               </Field>
             </div>
-            {editable && (
-              <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                <TemplatePicker label="Start from a creative template" templates={templates.data?.creative} brief={brief.data ?? null}
-                  onUse={(body) => setCreative(toCreative({ ...draft.creative, ...body }))} />
+          </Section>
+
+          <Fold title="Lead form" note={hasLeadform ? undefined : 'Optional'} open={hasLeadform} boxed>
+            <div className="space-y-3">
+              {editable && (
                 <TemplatePicker label="Start from a lead form template" templates={templates.data?.leadform} brief={brief.data ?? null}
                   onUse={(body) => setLeadform(toLeadForm({ ...draft.leadform, ...body }))} />
-              </div>
-            )}
-            <Unfilled draft={draft} />
-          </Section>
-
-          <Section title="Creative">
-            <div className="space-y-3">
-              <Field label="Primary text">
-                <textarea rows={7} value={draft.creative.primaryText} disabled={!editable} onChange={(e) => setCreative({ primaryText: e.target.value })} className={inputClass} />
-              </Field>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <Field label="Headline"><input value={draft.creative.headline} disabled={!editable} onChange={(e) => setCreative({ headline: e.target.value })} className={inputClass} /></Field>
-                <Field label="Call to action">
-                  <select value={draft.creative.callToAction} disabled={!editable} onChange={(e) => setCreative({ callToAction: e.target.value })} className={inputClass}>
-                    <option value="">Choose...</option>
-                    {withCurrent(lookups.data?.ctaOptions, draft.creative.callToAction).map((x) => <option key={x}>{x}</option>)}
-                  </select>
-                </Field>
-              </div>
-              <Field label="Description"><input value={draft.creative.description} disabled={!editable} onChange={(e) => setCreative({ description: e.target.value })} className={inputClass} /></Field>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <Field label="Tracking">
-                  <div className="flex flex-wrap gap-3 py-1.5">
-                    {withCurrent(TRACKING, ...draft.creative.tracking).map((t) => (
-                      <label key={t} className="flex items-center gap-1.5 text-sm">
-                        <input type="checkbox" disabled={!editable} checked={draft.creative.tracking.includes(t)}
-                          onChange={(e) => setCreative({ tracking: e.target.checked ? [...draft.creative.tracking, t] : draft.creative.tracking.filter((x) => x !== t) })} />
-                        {t}
-                      </label>
-                    ))}
-                  </div>
-                </Field>
-                <Field label="URL parameters"><input value={draft.creative.urlParameters} disabled={!editable} onChange={(e) => setCreative({ urlParameters: e.target.value })} className={inputClass} /></Field>
-              </div>
-            </div>
-          </Section>
-
-          <MediaSection d={d} editable={editable} onChanged={reload} onNotice={setNotice} />
-
-          <Section title="Lead form">
-            <div className="space-y-3">
+              )}
               <div className="grid gap-3 sm:grid-cols-2">
                 <Field label="Form name"><input value={draft.leadform.formName} disabled={!editable} onChange={(e) => setLeadform({ formName: e.target.value })} className={inputClass} /></Field>
                 <Field label="Form type">
@@ -244,18 +336,18 @@ export function ReviewPage() {
               <Field label="Reusing an existing Meta lead form? Its name or ID" hint="Leave blank for a new form described below.">
                 <input value={draft.metaLeadformId} disabled={!editable} onChange={(e) => set({ metaLeadformId: e.target.value })} className={inputClass} />
               </Field>
-              <Field label="Greeting headline"><input value={draft.leadform.greetingHeadline} disabled={!editable} onChange={(e) => setLeadform({ greetingHeadline: e.target.value })} className={inputClass} /></Field>
-              <Field label="Greeting description"><textarea rows={3} value={draft.leadform.greetingDescription} disabled={!editable} onChange={(e) => setLeadform({ greetingDescription: e.target.value })} className={inputClass} /></Field>
+              <Field label="Greeting headline"><input spellCheck value={draft.leadform.greetingHeadline} disabled={!editable} onChange={(e) => setLeadform({ greetingHeadline: e.target.value })} className={inputClass} /></Field>
+              <Field label="Greeting description"><textarea rows={3} spellCheck value={draft.leadform.greetingDescription} disabled={!editable} onChange={(e) => setLeadform({ greetingDescription: e.target.value })} className={inputClass} /></Field>
               <Questions value={draft.leadform.questions} editable={editable} onChange={(questions) => setLeadform({ questions })} />
               <Field label="Privacy policy URL"><input value={draft.leadform.privacyPolicyUrl} disabled={!editable} onChange={(e) => setLeadform({ privacyPolicyUrl: e.target.value })} className={inputClass} /></Field>
               <div className="grid gap-3 sm:grid-cols-2">
-                <Field label="Thank-you headline"><input value={draft.leadform.thankYouHeadline} disabled={!editable} onChange={(e) => setLeadform({ thankYouHeadline: e.target.value })} className={inputClass} /></Field>
+                <Field label="Thank-you headline"><input spellCheck value={draft.leadform.thankYouHeadline} disabled={!editable} onChange={(e) => setLeadform({ thankYouHeadline: e.target.value })} className={inputClass} /></Field>
                 <Field label="Thank-you button"><input value={draft.leadform.thankYouCallToAction} disabled={!editable} onChange={(e) => setLeadform({ thankYouCallToAction: e.target.value })} className={inputClass} /></Field>
               </div>
-              <Field label="Thank-you description"><textarea rows={2} value={draft.leadform.thankYouDescription} disabled={!editable} onChange={(e) => setLeadform({ thankYouDescription: e.target.value })} className={inputClass} /></Field>
+              <Field label="Thank-you description"><textarea rows={2} spellCheck value={draft.leadform.thankYouDescription} disabled={!editable} onChange={(e) => setLeadform({ thankYouDescription: e.target.value })} className={inputClass} /></Field>
               <Field label="Thank-you link"><input value={draft.leadform.thankYouUrl} disabled={!editable} onChange={(e) => setLeadform({ thankYouUrl: e.target.value })} className={inputClass} /></Field>
             </div>
-          </Section>
+          </Fold>
 
           <Section title="Notes for the reviewer">
             <textarea rows={3} value={draft.notes} disabled={!editable} onChange={(e) => set({ notes: e.target.value })} className={inputClass} placeholder="Anything the reviewer should know" />
@@ -263,7 +355,7 @@ export function ReviewPage() {
         </div>
 
         <div className="min-w-0 space-y-4">
-          {!d.legacy && <CheckPanel d={d} busy={busy === 'check'} onCheck={check} onFinding={(f, s) => run('finding', () => ds.approvals.setFinding(f.id, s))} />}
+          {!d.legacy && <CheckPanel d={d} live={live} busy={busy === 'check'} onCheck={check} onFinding={setFindingStatus} />}
           <BriefPanel brief={brief.data ?? null} loading={brief.loading} />
           {(d.status !== 'draft' || d.legacy) && (
             <Section title="Reviewer checklist" right={<span className="text-xs text-muted">{d.checklist.filter((c) => c.checked).length} of {d.checklist.length}</span>}>
@@ -302,8 +394,8 @@ export function ReviewPage() {
       </div>
 
       {move && (
-        <MoveModal d={d} move={move} employees={employees.data ?? []} defaultReviewer={d.reviewerId ?? brief.data?.adsManagerId ?? null}
-          meId={me?.id ?? null} onClose={() => setMove(null)} onCheck={() => { setMove(null); void check() }}
+        <MoveModal d={d} move={move} issues={moveIssues?.issues ?? []} warning={moveIssues?.warning ?? null} employees={employees.data ?? []}
+          defaultReviewer={d.reviewerId ?? brief.data?.adsManagerId ?? null} meId={me?.id ?? null} onClose={() => setMove(null)}
           onDone={(text) => { setMove(null); setNotice({ ok: true, text }); reload() }} />
       )}
     </div>
@@ -317,6 +409,38 @@ const verb = (to: ReviewStatus) => ({
 
 const withCurrent = (list: string[] | undefined, ...current: string[]) =>
   [...new Set([...(list ?? []), ...current.filter(Boolean)])]
+
+/** Built-in issues shown right under a field as you type. */
+function Hints({ list }: { list: ReviewFinding[] }) {
+  if (!list.length) return null
+  return (
+    <ul className="mt-1 space-y-0.5">
+      {list.map((f) => (
+        <li key={f.id} className={`flex items-start gap-1 text-xs ${f.severity === 'error' ? 'text-bad' : 'text-amber-800'}`}>
+          <AlertTriangle size={12} className="mt-0.5 shrink-0" />
+          <span>{f.message}{showTry(f) && <> Try: <b>{f.suggestion}</b></>}</span>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+/** A part of the form that can be folded away. Starts open or closed; then the person decides. */
+function Fold({ title, note, open, boxed, children }: { title: string; note?: string; open: boolean; boxed?: boolean; children: ReactNode }) {
+  const [startOpen] = useState(open)
+  return (
+    <details open={startOpen} className={`group ${boxed ? 'rounded-xl border border-line bg-surface' : 'rounded-lg border border-line'}`}>
+      <summary className={`flex cursor-pointer list-none items-center justify-between gap-2 font-semibold [&::-webkit-details-marker]:hidden ${boxed ? 'p-4 text-sm' : 'px-3 py-2 text-xs text-soft'}`}>
+        <span>{title}</span>
+        <span className="flex items-center gap-1 text-xs font-normal text-muted">
+          <span className="hidden sm:inline">{note}</span>
+          <ChevronDown size={14} className="transition group-open:rotate-180" />
+        </span>
+      </summary>
+      <div className={boxed ? 'px-4 pb-4' : 'px-3 pb-3'}>{children}</div>
+    </details>
+  )
+}
 
 function Unfilled({ draft }: { draft: Draft }) {
   const text = JSON.stringify([draft.creative, draft.leadform])
@@ -471,23 +595,27 @@ function MediaSection({ d, editable, onChanged, onNotice }: {
   )
 }
 
-function CheckPanel({ d, busy, onCheck, onFinding }: {
-  d: ReviewDetail; busy: boolean; onCheck: () => void; onFinding: (f: ReviewFinding, s: ReviewFinding['status']) => void
+function CheckPanel({ d, live, busy, onCheck, onFinding }: {
+  d: ReviewDetail; live: ReviewFinding[] | null; busy: boolean; onCheck: () => void; onFinding: (f: ReviewFinding, s: ReviewFinding['status']) => void
 }) {
-  const open = d.findings.filter((f) => f.status === 'open')
-  const done = d.findings.filter((f) => f.status !== 'open')
+  // While the ad can be edited, the built-in issues come live from the form; the Claude ones from the last check.
+  const all = live ? [...live, ...d.findings.filter((f) => f.ai)] : d.findings
+  const open = all.filter((f) => f.status === 'open')
+  const done = all.filter((f) => f.status !== 'open')
   const assetNo = (id: string | null) => (id ? d.assets.findIndex((a) => a.id === id) + 1 : 0)
   const canAct = !d.legacy && d.status !== 'completed'
   return (
     <Section title="Mistake check" right={canAct && (
-      <Button kind="primary" onClick={onCheck} disabled={busy}><Sparkles size={14} /> {busy ? 'Checking...' : d.lastCheck ? 'Check again' : 'Check for mistakes'}</Button>
+      <Button onClick={onCheck} disabled={busy}><Sparkles size={14} /> {busy ? 'Checking...' : d.lastCheck ? 'Check again' : 'Full check'}</Button>
     )}>
       <p className="mb-2 text-xs text-muted">
-        Reads the copy, lead form, text in images and subtitles in videos (no audio) for spelling, grammar, things that don't make sense, and details that don't match the client.
-        {d.lastCheck && ` Last checked ${ago(d.lastCheck.at)}.`}
+        {live
+          ? 'Checked as you type: spelling, the wrong discipline (like Muay Thai in a jiu jitsu ad), phone and street numbers, dates, and other locations\' names. Submit runs the full check again before it goes to the reviewer.'
+          : 'Spelling, grammar, things that don\'t make sense, and details that don\'t match the client.'}
+        {d.lastCheck && ` Last full check ${ago(d.lastCheck.at)}.`}
       </p>
       {d.lastCheck?.status === 'error' && <p className="mb-2 text-sm text-bad">Last check failed: {d.lastCheck.error}</p>}
-      {d.lastCheck && open.length === 0 && d.lastCheck.status === 'ok' && <p className="flex items-center gap-1.5 text-sm text-good"><Check size={14} /> Nothing left to fix.</p>}
+      {open.length === 0 && (live || d.lastCheck?.status === 'ok') && <p className="flex items-center gap-1.5 text-sm text-good"><Check size={14} /> {live ? 'Nothing spotted.' : 'Nothing left to fix.'}</p>}
       <ul className="space-y-2">
         {open.map((f) => <FindingItem key={f.id} f={f} assetNo={assetNo(f.assetId)} canAct={canAct} onSet={(s) => onFinding(f, s)} />)}
       </ul>
@@ -508,31 +636,28 @@ function CheckPanel({ d, busy, onCheck, onFinding }: {
 
 function FindingItem({ f, assetNo, canAct, onSet }: { f: ReviewFinding; assetNo: number; canAct: boolean; onSet: (s: ReviewFinding['status']) => void }) {
   const where = f.assetId || f.field === 'asset' ? (f.location ?? (assetNo ? `File ${assetNo}` : 'Image or video')) : fieldLabel(f.field)
+  const live = f.id.startsWith('live-')
+  const action = (label: string, to: ReviewFinding['status']) => (
+    <button onClick={() => onSet(to)} className="font-medium text-muted hover:text-ink">{label}</button>
+  )
   return (
-    <li className="rounded-lg border border-line p-2.5 text-sm">
+    <li className="rounded-lg border border-line px-2.5 py-2 text-sm">
       <div className="mb-0.5 flex items-center gap-1.5 text-xs">
         <span className={`font-semibold ${f.severity === 'error' ? 'text-bad' : 'text-amber-800'}`}>{CATEGORY_LABEL[f.category]}</span>
-        <span className="text-muted">· {where}</span>
-        {f.status !== 'open' && <span className="ml-auto text-muted">{f.status === 'fixed' ? 'Fixed' : 'Ignored'}</span>}
+        <span className="min-w-0 flex-1 truncate text-muted">· {where}</span>
+        {canAct && (f.status === 'open'
+          ? <span className="flex gap-2">{!live && action('Fixed', 'fixed')}{action('Ignore', 'ignored')}</span>
+          : <span className="flex gap-2 text-muted">{f.status === 'fixed' ? 'Fixed' : 'Ignored'} {action('Undo', 'open')}</span>)}
+        {!canAct && f.status !== 'open' && <span className="text-muted">{f.status === 'fixed' ? 'Fixed' : 'Ignored'}</span>}
       </div>
-      {f.excerpt && <p className="text-soft">"{f.excerpt}"</p>}
-      <p>{f.message}</p>
-      {f.suggestion && <p className="text-soft">Try: <span className="font-medium text-ink">{f.suggestion}</span></p>}
-      {canAct && (
-        <div className="mt-1.5 flex gap-1.5">
-          {f.status === 'open' ? (
-            <>
-              <Button onClick={() => onSet('fixed')}>Fixed</Button>
-              <Button kind="quiet" onClick={() => onSet('ignored')}>Ignore</Button>
-            </>
-          ) : (
-            <Button kind="quiet" onClick={() => onSet('open')}>Undo</Button>
-          )}
-        </div>
-      )}
+      {f.excerpt && !f.message.toLowerCase().includes(f.excerpt.toLowerCase()) && <p className="text-soft">"{f.excerpt}"</p>}
+      <p>{f.message}{showTry(f) && <span className="text-soft"> Try: <span className="font-medium text-ink">{f.suggestion}</span></span>}</p>
     </li>
   )
 }
+
+/** "Try: ..." only when it adds something the message doesn't already say. */
+const showTry = (f: { message: string; suggestion: string | null }) => !!f.suggestion && !f.message.includes(f.suggestion)
 
 function BriefPanel({ brief, loading }: { brief: ClientBrief | null; loading: boolean }) {
   if (!brief) return loading ? null : <Section title="Client info"><p className="text-sm text-muted">No client info.</p></Section>
@@ -618,16 +743,17 @@ function LegacyBanner({ d }: { d: ReviewDetail }) {
 }
 
 /** Confirm a status move. Submitting with open findings shows "Hey, just double checking". */
-function MoveModal({ d, move, employees, defaultReviewer, meId, onClose, onDone, onCheck }: {
-  d: ReviewDetail; move: StatusMove; employees: { id: string; firstName: string; lastName: string; isAdManager: boolean }[]
-  defaultReviewer: string | null; meId: string | null; onClose: () => void; onDone: (text: string) => void; onCheck: () => void
+function MoveModal({ d, move, issues, warning, employees, defaultReviewer, meId, onClose, onDone }: {
+  d: ReviewDetail; move: StatusMove; issues: ReviewFinding[]; warning: string | null
+  employees: { id: string; firstName: string; lastName: string; isAdManager: boolean }[]
+  defaultReviewer: string | null; meId: string | null; onClose: () => void; onDone: (text: string) => void
 }) {
   const ds = useData()
   const [note, setNote] = useState('')
   const [reviewer, setReviewer] = useState(defaultReviewer ?? '')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const open = d.findings.filter((f) => f.status === 'open')
+  const open = issues
   const submitting = move.to === 'review_pending'
   const unticked = d.checklist.filter((c) => !c.checked).length
   const needsNote = move.to === 'request_changes'
@@ -639,7 +765,7 @@ function MoveModal({ d, move, employees, defaultReviewer, meId, onClose, onDone,
     try {
       await ds.approvals.move(d.id, move.to, {
         note: note.trim() || undefined, reviewerId: submitting ? reviewer || null : undefined,
-        acknowledged: submitting ? open.map((f) => f.id) : undefined,
+        acknowledged: submitting ? open.map((f) => f.id).filter((id) => !id.startsWith('live-')) : undefined,
       })
       onDone({
         review_pending: 'Submitted. The reviewer will see it at the top of their Approvals list.',
@@ -658,6 +784,7 @@ function MoveModal({ d, move, employees, defaultReviewer, meId, onClose, onDone,
   return (
     <Modal open onClose={onClose} title={title}>
       <div className="space-y-3 text-sm">
+        {submitting && warning && <p className="rounded-lg bg-subtle px-3 py-2">{warning}</p>}
         {submitting && open.length > 0 && (
           <>
             <p>We spotted {open.length} possible issue{open.length === 1 ? '' : 's'}:</p>
@@ -665,7 +792,7 @@ function MoveModal({ d, move, employees, defaultReviewer, meId, onClose, onDone,
               {open.slice(0, 12).map((f) => (
                 <li key={f.id}>
                   <span className="font-semibold">{f.assetId || f.field === 'asset' ? f.location ?? 'Image or video' : fieldLabel(f.field)}:</span> {f.message}
-                  {f.suggestion && <span className="text-amber-800"> Try: {f.suggestion}</span>}
+                  {showTry(f) && <span className="text-amber-800"> Try: {f.suggestion}</span>}
                 </li>
               ))}
               {open.length > 12 && <li>...and {open.length - 12} more.</li>}
@@ -673,9 +800,7 @@ function MoveModal({ d, move, employees, defaultReviewer, meId, onClose, onDone,
             <p className="text-muted">You can still submit. It will be noted that these were open.</p>
           </>
         )}
-        {submitting && open.length === 0 && !d.lastCheck && (
-          <p className="rounded-lg bg-subtle px-3 py-2">The mistake check hasn't been run on this ad yet. <button className="font-semibold text-brand" onClick={onCheck}>Run it first</button></p>
-        )}
+        {submitting && open.length === 0 && <p className="flex items-center gap-1.5 text-good"><Check size={14} /> No mistakes found.</p>}
         {submitting && (
           <Field label="Reviewer">
             <select value={reviewer} onChange={(e) => setReviewer(e.target.value)} className={inputClass}>

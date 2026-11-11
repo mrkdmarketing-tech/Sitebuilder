@@ -61,6 +61,8 @@ export interface ReviewFinding {
   message: string
   suggestion: string | null
   status: FindingStatus
+  /** Found by the Claude check (vs the built-in checks, which run as you type). */
+  ai: boolean
 }
 
 export interface ReviewComment {
@@ -135,6 +137,7 @@ export interface ClientOption {
   name: string
   managerId: string | null
   status: string | null
+  city?: string | null
 }
 
 export interface ClientBrief {

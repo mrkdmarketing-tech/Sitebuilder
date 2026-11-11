@@ -201,9 +201,13 @@ export function fillTemplate<T>(body: T, values: Record<string, string>): T {
   return walk(body) as T
 }
 
+/** Meta's own URL tags ({{campaign.name}}, {{ad.id}}, {{placement}}...), filled in by Meta, so not a mistake. */
+export const isMetaMacro = (name: string) =>
+  /^(ad|adset|campaign)\.(name|id)$|^(site_source_name|placement)$/i.test(name.replace(/\s+/g, ''))
+
 /** Placeholders left unfilled ("{{ offer }}"), so the editor can point them out. */
 export function unfilledPlaceholders(text: string): string[] {
-  return [...new Set([...text.matchAll(/\{\{\s*([^}]+?)\s*\}\}/g)].map((m) => m[1].trim()))]
+  return [...new Set([...text.matchAll(/\{\{\s*([^}]+?)\s*\}\}/g)].map((m) => m[1].trim()))].filter((k) => !isMetaMacro(k))
 }
 
 // ---------------------------------------------------------------------------

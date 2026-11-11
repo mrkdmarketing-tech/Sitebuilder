@@ -21,16 +21,36 @@ Not built yet: Slack and ClickUp notifications (below), and choosing an existing
 
 ## Flow
 
-1. **Create**: pick the client, name the ad, choose the ad type and booking type, and start from an ad creative template and a lead form template (or an existing Meta lead form). The client's onboarding info and campaign specifics show alongside.
-2. **Upload**: employees **upload images and/or videos manually** (or paste a Canva link) and write the copy: primary text, headline, description, CTA, tracking, URL parameters, plus the lead form (type, greeting, questions, privacy policy, thank-you message).
-3. **AI quality check**: the person clicks **Check for mistakes** (it isn't run on every keystroke, to keep cost down and avoid flagging half-written text). See below.
-4. **Submit for approval** ("publish"): if any findings are still open, a prompt appears: *"Hey, just double checking. We spotted 3 possible issues: …"* with **Go back and fix** or **Submit anyway**. Submitting anyway is **allowed** and recorded (who, which warnings).
+1. **Create**: pick the client (location) and name the ad. The client's onboarding info and campaign specifics show alongside.
+2. **Fill in**, in the same order as Retool: **images and videos** (upload, or paste a Canva link), then the **copy**: primary text and headline up top (or start from a creative template), with call to action, description, tracking and URL parameters under **More**. Then the **ad type** and booking type, and the **lead form** (folded away; optional, with its own template).
+3. **Built-in checks, as you type**: spelling, the wrong discipline, phone and address, dates, other locations' names (see [Built-in checks](#built-in-checks)). Issues show in red or amber under the field and in the **Mistake check** panel. Instant and free; no AI.
+4. **Submit for approval** ("publish"): saves the ad, runs the **full check** (`ad-check`: the built-in checks again on the server, plus Claude once the key is added), then, if anything is still open, shows *"Hey, just double checking. We spotted 3 possible issues: …"* with **Go back and fix** or **Submit anyway**. Submitting anyway is **allowed** and recorded (who, which warnings). If the full check can't run, the box says so and lists what the browser found.
 5. **Review**: the reviewer (chosen on submit; the client's ads manager by default) sees it in **Needs me**, works through the 11-point checklist, comments, and either **Requests changes** (a comment is required) or **Approves**. Slack and ClickUp notifications are planned (below).
 6. **Live**: once it's built in Meta, someone clicks **Mark as live**. The app doesn't create the ad in Meta; that stays manual.
 
 Who can do what: any active employee can create, edit (while Draft or Changes requested), check, submit, review and comment, the same as Retool. Status changes only go through `set_review_status()`, which enforces the allowed moves (`MOVES` in `shared/domain/approvals.ts`); comments are always posted as yourself; only admins can delete an ad.
 
 Statuses: `draft → review_pending ⇄ request_changes → approved → completed`, shown as Draft, Waiting for review, Changes requested, Approved, Live (stored in `ad_reviews.status`; every change logged in `ad_review_events`, including which open findings were acknowledged on "Submit anyway"). Approved can also go back to Changes requested.
+
+## Built-in checks
+
+`shared/domain/adChecks.ts` (tests: `adChecks.test.ts`). The same code runs in the browser as people type and in `ad-check` on Submit, where the results are saved as findings with no check run (`check_run_id` null). Claude's findings are saved separately, so one never overwrites the other.
+
+| Check | Example | Shown as |
+|---|---|---|
+| Wrong discipline | "Muay Thai" in a jiu jitsu ad, "jiu jitsu" in a kickboxing ad. Allowed: the ad type's discipline plus whatever the client teaches (from its name, programs and onboarding). Wrestling and judo are fine in jiu jitsu ads. For gyms that teach several things (MMA, martial arts) it's only a warning. | Error |
+| Another client's name | "Gracie Barra Tacoma" in a Gracie Barra Renton ad | Error |
+| Another client's city | "Tacoma" in a Renton ad (common words like Sterling or Victoria are skipped) | Warning |
+| Phone number | A number that isn't one on file for the client (GHL business phone, contact phones) | Warning |
+| Street address | A street number that isn't in the client's address on file | Warning |
+| Dates | "Monday, November 12" when the 12th is a Thursday; "February 30" | Error |
+| Placeholders left in | `{{ offer }}`. Meta's own URL tags (`{{campaign.name}}`, `{{ad.id}}`...) are fine. | Error |
+| Spelling | A list of common misspellings with fixes: "begginers", "free trail", "jui jitsu", "limted", "Muy Thai"... | Error (a few, like "jujitsu", are warnings) |
+| Repeated words | "the the" | Warning |
+
+Links (thank-you link, privacy policy, URL parameters) are only checked for placeholders. Phone and address are warnings because the details on file are sometimes out of date: the message says to update GHL if the client moved or changed number.
+
+Tested against all 597 ads imported from Retool (11 Nov 2026): 132 had something flagged. Most were the same few clients whose ads use a different address or phone than the one on file (New Level Grappling Academy, Wolverine Jiu Jitsu, Bataille Jiu Jitsu Academy, Infinite Hitting West Palm Beach, DeSantos Martial Arts, AFFINITY ACADEMY OF MARTIAL ARTS, Don't Survive Thrive Academy, Flux MMA), 43 had `{{ contact.privacy_policy }}` left in, and a few were real copy-paste slips (a Couchon ad naming Flux MMA, a Clearwater ad naming Houston).
 
 ## AI quality check (Claude)
 
@@ -47,7 +67,7 @@ The AI also **pre-fills** the checklist items it can judge (logo, address/phone,
 ### How the check works (built 10 Nov 2026)
 
 1. **At upload**, the browser turns each image into one JPEG preview (longest side 1568 px) and each video into up to 8 stills spread across it (`web/src/lib/media.ts`). They are stored next to the original in the private bucket (`ad-assets/<ad>/<file>/preview-N.jpg`) and listed in `ad_review_assets.frames`. Files the browser can't read (often iPhone HEVC `.mov`) get no previews and are skipped by the check, with a note on screen.
-2. **"Check for mistakes"** saves the ad, then calls `ad-check` with the person's login. The function checks they're an active employee who can see the ad, then sends Claude (`claude-opus-5-5`, effort medium) the copy and lead form with stable field names, the client's details from `client_brief()` (business name, address, city, phone, website, offer, programs, pricing, booking link, CTA, onboarding answers; billing ids and internal links are left out), and the previews, numbered File 1, 2...
+2. **Submit** (or **Full check** in the Mistake check panel) saves the ad, then calls `ad-check` with the person's login. The function checks they're an active employee who can see the ad, then sends Claude (`claude-opus-5-5`, effort medium) the copy and lead form with stable field names, the client's details from `client_brief()` (business name, address, city, phone, website, offer, programs, pricing, booking link, CTA, onboarding answers; billing ids and internal links are left out), and the previews, numbered File 1, 2...
 3. Claude answers as **strict JSON** (structured outputs): findings (field, file number, location, category, severity, exact text, explanation, corrected text) and pass / fail / unsure for the AI-checkable checklist items. The prompt tells it not to flag normal ad style (emojis, caps, fragments, Canadian vs US spelling). If Claude declines, the request falls back to another model on Anthropic's side (`fallbacks: "default"`); if that also declines, the check says to check by hand.
 4. The answer is validated (`parseCheckResult` in `shared/domain/approvals.ts`), then replaces the ad's findings. Issues the person marked **Ignore** stay ignored if found again (matched on field, text and category). The checklist's AI column is filled; ticks are never changed.
 5. Each run is recorded in `ad_review_check_runs` with the model and **cost in USD**. If the copy, files and client details haven't changed since the last good run, it answers "Nothing changed since the last check" without calling Claude (`input_hash`).

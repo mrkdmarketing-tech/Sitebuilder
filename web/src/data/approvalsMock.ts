@@ -1,9 +1,9 @@
 /**
  * Sample-mode ad approval: kept in memory (gone on reload), nothing uploaded.
- * The "AI check" here is a tiny stand-in that spots repeated words, double
- * spaces and a few common misspellings, so the screens can be tried without
- * the real check (supabase/functions/ad-check).
+ * "Check for mistakes" runs the same built-in checks as the live app
+ * (shared/domain/adChecks.ts) but not the Claude check.
  */
+import { checkClient, quickChecks } from '@shared/domain/adChecks.ts'
 import {
   MOVES, checkableText, emptyCreative, emptyLeadForm, findingKey, type ReviewStatus,
 } from '@shared/domain/approvals.ts'
@@ -20,10 +20,6 @@ const CHECKLIST: [string, string, boolean][] = [
   ['new_leadform', 'Trent informed of any new campaign lead forms', false],
 ]
 
-const MISSPELLED: Record<string, string> = {
-  'jiu jitsue': 'jiu jitsu', recieve: 'receive', seperate: 'separate', definately: 'definitely',
-  begginer: 'beginner', begginers: 'beginners', excercise: 'exercise', freind: 'friend', schedual: 'schedule',
-}
 
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms))
 const now = () => new Date().toISOString()
@@ -142,31 +138,27 @@ export function createMockApprovals(opts: { employees: Employee[]; clients: Mock
       }
     },
     async runCheck(id) {
-      await wait(700)
+      // Same built-in checks as the live app (shared/domain/adChecks.ts); no AI in sample mode.
+      await wait(400)
       const r = get(id)
       const ignored = new Set(r.findings.filter((f) => f.status === 'ignored').map(findingKey))
-      const found: ReviewFinding[] = []
-      for (const t of checkableText(r.creative, r.leadform)) {
-        const add = (category: ReviewFinding['category'], excerpt: string, message: string, suggestion: string | null) => {
-          const f: ReviewFinding = { id: crypto.randomUUID(), assetId: null, field: t.field, location: null, category, severity: 'warning', excerpt, message, suggestion, status: 'open' }
-          if (ignored.has(findingKey(f))) f.status = 'ignored'
-          found.push(f)
-        }
-        for (const [bad, good] of Object.entries(MISSPELLED)) {
-          const m = t.text.match(new RegExp(`\\b${bad}\\b`, 'i'))
-          if (m) add('spelling', m[0], `"${m[0]}" looks misspelled.`, good)
-        }
-        const rep = t.text.match(/\b(\w+)\s+\1\b/i)
-        if (rep) add('grammar', rep[0], `"${rep[1]}" is repeated.`, rep[1])
-        if (/ {2,}/.test(t.text)) add('grammar', '  ', 'Double space.', ' ')
-      }
-      r.findings = found
+      r.findings = quickChecks({
+        texts: checkableText(r.creative, r.leadform),
+        client: checkClient(r.clientId == null ? null : await this.brief(r.clientId)),
+        adType: r.adType,
+        otherClients: opts.clients.filter((x) => x.id !== r.clientId).map((x) => ({ name: x.name, city: x.city })),
+      }).map((f) => {
+        const finding: ReviewFinding = { id: crypto.randomUUID(), assetId: null, ...f, excerpt: f.excerpt || null, status: 'open', ai: false }
+        if (ignored.has(findingKey(finding))) finding.status = 'ignored'
+        return finding
+      })
       r.lastCheck = { status: 'ok', at: now(), error: null }
       touch(r)
-      return { status: 'ok', message: found.length ? `Sample check: ${found.length} possible issue${found.length === 1 ? '' : 's'}. (The real AI check runs on the live app.)` : 'Sample check: nothing spotted. (The real AI check runs on the live app.)' }
+      const open = r.findings.filter((f) => f.status === 'open').length
+      return { status: 'ok', message: open ? `Found ${open} possible issue${open === 1 ? '' : 's'}. (Sample data: built-in checks only.)` : 'No mistakes found. (Sample data: built-in checks only.)' }
     },
     async clients() {
-      return live.map((c) => ({ id: c.id, name: c.name, managerId: c.managerId, status: c.status }))
+      return live.map((c) => ({ id: c.id, name: c.name, managerId: c.managerId, status: c.status, city: c.city }))
     },
     async brief(clientId) {
       const c = opts.clients.find((x) => x.id === clientId)

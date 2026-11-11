@@ -13,7 +13,13 @@
  *  5. Replaces the ad's findings (keeping "Ignore" on issues found again),
  *     pre-fills the checklist's AI column, and records the run and its cost.
  *
- * Secret: ANTHROPIC_API_KEY. Without it, answers "not_configured" and changes nothing.
+ * Built-in checks (shared/domain/adChecks.ts) always run first and need no key:
+ * wrong discipline, phone/address that isn't the client's, another client's
+ * name or city, weekday/date mistakes, placeholders, common misspellings. They
+ * are saved as findings with no check run. The Claude part (images, video
+ * subtitles, subtler mistakes) runs only when ANTHROPIC_API_KEY is set.
+ *
+ * Secret: ANTHROPIC_API_KEY (optional).
  * Provided: SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY.
  */
 import Anthropic from 'npm:@anthropic-ai/sdk@1.7.0'
@@ -22,6 +28,7 @@ import { serviceClient, userClient } from '../_shared/supabase.ts'
 import {
   checkableText, findingKey, parseCheckResult, toCreative, toLeadForm,
 } from '../../../shared/domain/approvals.ts'
+import { checkClient, quickChecks } from '../../../shared/domain/adChecks.ts'
 
 const MODEL = 'claude-opus-5-5'
 const PRICE_IN = 4 / 1e6 // $ per input token (Claude Opus 5.5)
@@ -82,14 +89,6 @@ Deno.serve(async (req) => {
   if (!review) return json({ status: 'error', message: 'Ad not found.' }, 404)
   if (review.legacy_id) return json({ status: 'error', message: 'Ads imported from Retool are read-only.' }, 400)
 
-  const apiKey = Deno.env.get('ANTHROPIC_API_KEY')
-  if (!apiKey) {
-    return json({
-      status: 'not_configured',
-      message: "The AI check isn't set up yet: an owner needs to add the Claude key (docs/sop/tokens-and-secrets.md). Everything else works.",
-    })
-  }
-
   // 2. Gather what to check.
   const creative = toCreative(review.creative)
   const leadform = toLeadForm(review.leadform)
@@ -108,11 +107,53 @@ Deno.serve(async (req) => {
     return json({ status: 'error', message: 'Nothing to check yet: add copy or upload an image or video first.' }, 400)
   }
 
+  // Previous findings: issues ignored before stay ignored if found again.
+  const { data: previous } = await db.from('ad_review_findings').select('field, excerpt, category, status').eq('review_id', reviewId)
+  const ignored = new Set(((previous ?? []) as { field: string | null; excerpt: string | null; category: string; status: string }[])
+    .filter((f) => f.status === 'ignored').map(findingKey))
+  const openCount = async () => {
+    const { count } = await db.from('ad_review_findings').select('id', { count: 'exact', head: true }).eq('review_id', reviewId).eq('status', 'open')
+    return count ?? 0
+  }
+  const summary = (n: number, extra = '') =>
+    (n ? `Found ${n} possible issue${n === 1 ? '' : 's'}. Fix them, or mark them Fixed or Ignore.` : 'No mistakes found.') + extra
+
+  // 2b. Built-in checks (no AI): always run, saved with no check run.
+  {
+    const { data: others } = await db.from('clients').select('business_name, city').in('active_status', ['Active', 'New']).neq('id', review.client_id)
+    const quick = quickChecks({
+      texts,
+      client: checkClient(brief),
+      adType: review.ad_type,
+      otherClients: ((others ?? []) as { business_name: string | null; city: string | null }[]).map((o) => ({ name: o.business_name, city: o.city })),
+    })
+    await db.from('ad_review_findings').delete().eq('review_id', reviewId).is('check_run_id', null)
+    if (quick.length) {
+      const { error } = await db.from('ad_review_findings').insert(quick.map((f) => {
+        const key = findingKey({ field: f.field, excerpt: f.excerpt, category: f.category })
+        return {
+          review_id: reviewId, check_run_id: null, asset_id: null, field: f.field, location: null,
+          category: f.category, severity: f.severity, excerpt: f.excerpt || null, message: f.message,
+          suggestion: f.suggestion, status: ignored.has(key) ? 'ignored' : 'open', finding_key: key,
+        }
+      }))
+      if (error) return json({ status: 'error', message: `Couldn't save the findings: ${error.message}` }, 500)
+    }
+  }
+
+  const apiKey = Deno.env.get('ANTHROPIC_API_KEY')
+  if (!apiKey) {
+    return json({
+      status: 'ok',
+      message: summary(await openCount(), ' (Spelling and detail checks done. Reading text in images and videos starts once the Claude key is added.)'),
+    })
+  }
+
   // 3. Unchanged since the last good check?
   const facts = brief ? { business: brief.businessName, details: brief.placeholders, onboarding: brief.onboarding, campaign: brief.campaign } : null
   const hash = await sha256(JSON.stringify({ texts, files: files.map((f) => [f.id, f.frames]), facts, adType: review.ad_type, bookingType: review.booking_type, MODEL }))
   if ((lastRun as { input_hash: string }[] | null)?.[0]?.input_hash === hash) {
-    return json({ status: 'unchanged', message: 'Nothing changed since the last check.' })
+    return json({ status: 'ok', message: summary(await openCount()) })
   }
 
   const { data: run, error: runError } = await db.from('ad_review_check_runs').insert({ review_id: reviewId, status: 'running', model: MODEL, input_hash: hash }).select('id').single()
@@ -225,10 +266,7 @@ Deno.serve(async (req) => {
     }
     const result = parseCheckResult(raw, checklistKeys)
 
-    // 5. Save. Issues ignored before stay ignored if found again.
-    const { data: previous } = await db.from('ad_review_findings').select('field, excerpt, category, status').eq('review_id', reviewId)
-    const ignored = new Set(((previous ?? []) as { field: string | null; excerpt: string | null; category: string; status: string }[])
-      .filter((f) => f.status === 'ignored').map(findingKey))
+    // 5. Save (replaces the previous AI findings; built-in ones were saved above).
     const rows = result.findings.map((f) => {
       const assetId = f.assetNumber ? numberOf.get(f.assetNumber) ?? null : null
       const field = assetId ? 'asset' : f.field
@@ -239,7 +277,7 @@ Deno.serve(async (req) => {
         suggestion: f.suggestion, status: ignored.has(key) ? 'ignored' : 'open', finding_key: key,
       }
     })
-    await db.from('ad_review_findings').delete().eq('review_id', reviewId)
+    await db.from('ad_review_findings').delete().eq('review_id', reviewId).not('check_run_id', 'is', null)
     if (rows.length) {
       const { error } = await db.from('ad_review_findings').insert(rows)
       if (error) return await fail(`Couldn't save the findings: ${error.message}`, 500)
@@ -256,12 +294,10 @@ Deno.serve(async (req) => {
       status: 'ok', cost_usd: Math.round(cost * 10000) / 10000, finished_at: new Date().toISOString(), model: msg.model,
     }).eq('id', run.id)
 
-    const open = rows.filter((r) => r.status === 'open').length
     const skipped = (assets ?? []).length - files.length
     return json({
       status: 'ok',
-      message: (open ? `Found ${open} possible issue${open === 1 ? '' : 's'}. Fix them, or mark them Fixed or Ignore.` : 'No mistakes found.')
-        + (skipped > 0 ? ` ${skipped} file${skipped === 1 ? " wasn't" : "s weren't"} checked (Canva links and files the browser couldn't read).` : ''),
+      message: summary(await openCount(), skipped > 0 ? ` ${skipped} file${skipped === 1 ? " wasn't" : "s weren't"} read (Canva links and files the browser couldn't open).` : ''),
     })
   } catch (err) {
     return await fail(`The check failed: ${err instanceof Error ? err.message : String(err)}`, 500)

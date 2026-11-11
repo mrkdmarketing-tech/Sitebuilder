@@ -2,6 +2,13 @@
 
 What changed, newest first. Every change to the platform adds a line here.
 
+## 2026-11-11: Ad approval: mistakes flagged as you type, checked again on Submit
+- New built-in checks (no AI, free, instant): the wrong discipline (Muay Thai in a jiu jitsu ad, or the other way round), a phone number or street address that isn't the client's, another location's name or city, a weekday that doesn't match the date, placeholders left in, common misspellings and repeated words. They show under each field as you type ([docs/ad-approval.md#built-in-checks](docs/ad-approval.md#built-in-checks)).
+- **Submit** now saves, runs the full check, then shows "Hey, just double checking" if anything is open. No separate step to remember.
+- Simpler form in Retool's order: images and videos, then primary text and headline, with the rest under **More**; ad type and booking after; lead form folded away.
+- Tested against all 597 ads imported from Retool and on the real site build. Found a few clients whose address or phone on file doesn't match their ads (listed in the doc).
+- `ad-check` updated and deployed: it runs the built-in checks on the server too, and they work without the Claude key.
+
 ## 2026-11-11: Today grouped by location
 - Today now shows one block per location (client) with its items underneath, instead of one long mixed list. Locations with urgent items and the most money at stake come first. Each row shows what's wrong and, underneath, which ad.
 
