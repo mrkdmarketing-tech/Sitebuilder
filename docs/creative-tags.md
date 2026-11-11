@@ -30,7 +30,15 @@ Jev is priced at about $0.042 per million input tokens, with output free (Nov 20
 
 One secret, `TYPESAFE_API_KEY`: steps in [sop/tokens-and-secrets.md](sop/tokens-and-secrets.md#add-the-typesafe-key-jev-ad-tagging). Until it's added, the Sync screen shows the job as skipped and What's working shows only image vs video.
 
-The backlog clears over about 15 hours (400 an hour). To do it at once, run `select private.call_function('tag-creatives', '?limit=2000')` three times in the Supabase SQL editor.
+**Done 11 Nov 2026:** the key was added and all 5,811 creatives with copy were tagged in about 4 minutes (batches of up to 1,000, the most one run can take; about 400 every 17 seconds), none failed. To force a run: `select private.call_function('tag-creatives', '?limit=1000')`.
+
+## First results (last 30 days, 11 Nov 2026)
+
+- **Seasonal offers** (mostly Black Friday): 47 ads, 4 accounts, $1,787 for 10 leads, **$179 a lead** vs about $28 overall. Many were just launched, so check again in a week.
+- **Video** $39.83 a lead vs **image** $27.18.
+- **Opening hook:** calling out the place or group ("HOWARD COUNTY PARENTS") $27.55, benefit-led $31.70, urgency-led $36.13.
+- **Kids and adults** cost the same (about $28). The women-only ads ($318 a lead) are one account, so that's about that client, not women's ads in general.
+- 64 ads have no copy Meta shares (some dynamic creatives), so they show as not tagged.
 
 ## Reading the numbers
 
