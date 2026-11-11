@@ -8,6 +8,7 @@ import { Layout } from './Layout'
 import { SessionProvider } from './session'
 import { AuthGate } from './AuthGate'
 import { MfaGate } from './MfaGate'
+import { ErrorBoundary } from './ErrorBoundary'
 import { InsightsPage } from '../features/insights/InsightsPage'
 import { TodayPage } from '../features/today/TodayPage'
 import { SearchPage } from '../features/search/SearchPage'
@@ -34,6 +35,7 @@ import { ClientsPage } from '../features/clients/ClientsPage'
 export function App() {
   const source: DataSource = useMemo(() => (supabase ? createSupabaseSource(supabase) : createMockSource()), [])
   return (
+    <ErrorBoundary>
     <DataContext.Provider value={source}>
       <AuthGate>
       <SessionProvider>
@@ -57,5 +59,6 @@ export function App() {
       </SessionProvider>
       </AuthGate>
     </DataContext.Provider>
+    </ErrorBoundary>
   )
 }

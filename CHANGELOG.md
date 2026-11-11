@@ -2,6 +2,10 @@
 
 What changed, newest first. Every change to the platform adds a line here.
 
+## 2026-11-11: Fix: blank page after the Today update
+- The Today page and its sidebar badge both opened a live-update connection with the same name; Supabase threw an error and the whole app stopped drawing (live site only, not sample data). Each connection now gets its own name, and a live-update failure can no longer break a page (`web/src/lib/useLiveRefresh.ts`).
+- New safety net (`web/src/app/ErrorBoundary.tsx`): if a screen ever crashes, it shows "Something went wrong" with **Reload** instead of a blank page.
+
 ## 2026-11-11: Today
 - New home page **Today**, replacing Suggestions: "6 things need you today. Your other 34 accounts are fine." then one quiet list, one row per item with one plain sentence and one button, most urgent and most money first. Tap a row for the numbers and other options. Count badge in the sidebar. Owners/admins switch between Everyone, Mine and each ads manager.
 - **Turn off now works from any ad's row** (including low-click ones, from the row's details), and **Undo** turns an ad back on within 24 hours (from the message or the Recently turned off list). `meta-action` updated and deployed.
