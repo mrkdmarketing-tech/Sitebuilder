@@ -24,7 +24,7 @@ import { SAMPLE_MODE } from '../../lib/config'
 import { useSession } from '../../app/session'
 
 type Item = Suggestion & { id?: string }
-type Notice = { ok: boolean; text: string; undoId?: string; link?: string }
+type Notice = { ok: boolean; text: string; undoId?: string; link?: string; restore?: Item }
 
 const adsManager = (s: Item) =>
   s.level === 'ad'
@@ -78,12 +78,31 @@ export function TodayPage() {
   const snooze = async (s: Item, state: 'snoozed' | 'dismissed') => {
     hide(s)
     setOpen(null)
+    const where = s.clientName ?? s.accountName
+    setNotice({
+      ok: true,
+      text: state === 'dismissed' ? `Dismissed ${where}. It won't come back for 7 days.` : `Hidden ${where} until tomorrow.`,
+      restore: s,
+    })
     if (!s.id) return
     try {
       await ds.updateSuggestion(s.id, state)
     } catch (e) {
       unhide(s)
       setNotice({ ok: false, text: `Couldn't save that: ${(e as Error).message}` })
+    }
+  }
+
+  /** Undo a Dismiss or Not now: back on the list. */
+  const restore = async (s: Item) => {
+    unhide(s)
+    setNotice(null)
+    if (!s.id) return
+    try {
+      await ds.updateSuggestion(s.id, 'open')
+    } catch (e) {
+      hide(s)
+      setNotice({ ok: false, text: `Couldn't undo that: ${(e as Error).message}` })
     }
   }
 
@@ -152,6 +171,7 @@ export function TodayPage() {
           <span className="min-w-0">
             {notice.text}{' '}
             {notice.undoId && <button disabled={busy} onClick={() => undo(notice.undoId!)} className="font-semibold text-brand">Undo</button>}
+            {notice.restore && <button onClick={() => restore(notice.restore!)} className="font-semibold text-brand">Undo</button>}
             {notice.undoId && notice.link && <span className="text-muted"> · </span>}
             {notice.link && <a href={notice.link} target="_blank" rel="noreferrer" className="font-semibold text-brand">{notice.ok ? 'Check in Ads Manager' : 'Open in Ads Manager'}</a>}
           </span>
@@ -237,6 +257,10 @@ function Row({ s, open, onToggle, managerName, onTurnOff, onSnooze }: {
           </span>
         </button>
         {primaryEl}
+        <button onClick={() => onSnooze('dismissed')} aria-label="Dismiss" title="Dismiss: hide for 7 days"
+          className="rounded-lg p-1.5 text-muted hover:bg-subtle hover:text-ink">
+          <X size={16} />
+        </button>
         <button onClick={onToggle} aria-label={open ? 'Hide details' : 'Show details'} className="hidden text-muted sm:block">
           {open ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
         </button>
@@ -262,7 +286,7 @@ function Row({ s, open, onToggle, managerName, onTurnOff, onSnooze }: {
             <button onClick={() => onSnooze('snoozed')} className={outline}>Not now</button>
             <button onClick={() => onSnooze('dismissed')} className={`${btn} text-muted hover:bg-subtle`}>Dismiss</button>
           </div>
-          <p className="mt-2 text-xs text-muted">Not now hides it for a day. Dismiss hides it for 7 days.</p>
+          <p className="mt-2 text-xs text-muted">Not now hides it for a day. Dismiss (also the X on the row) hides it for 7 days. Both can be undone.</p>
         </div>
       )}
     </li>

@@ -41,6 +41,7 @@ Since 11 Nov 2026 suggestions are shown on **Today**, The Lab's home page (it re
 
 - A greeting and one sentence: "**6 things** need you today. Your other 34 accounts are fine."
 - **One list, one row per item**: account, one plain sentence (`todayLine` in `shared/domain/today.ts`, e.g. "An ad spent $240 with no leads"), and **one button** (`primaryButton`: Turn off for the pause rules, Open billing for account problems, Open in Ads Manager for the rest). Most urgent first, then most money spent (`todayOrder`).
+- An **X** on every row dismisses it in one tap (hidden for 7 days), with **Undo** in the message (sets it back to open).
 - **Tap a row** for the numbers and the other options: Turn off (any ad's row), Open in Ads Manager, Not now, Dismiss.
 - **Undo** for 24 hours after a Turn off (message, and the "Recently turned off" list).
 - Sidebar badge with the number waiting. Owners/admins choose Everyone, Mine or one ads manager.

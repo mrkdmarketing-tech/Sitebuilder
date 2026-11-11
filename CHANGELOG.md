@@ -2,6 +2,10 @@
 
 What changed, newest first. Every change to the platform adds a line here.
 
+## 2026-11-11: One-tap Dismiss on Today
+- Every row on Today has an **X**: dismiss it without opening it (hidden for 7 days). The message that appears has **Undo**, which puts it straight back. Not now also has Undo.
+- Tested on the real site build with real (exported) data before pushing.
+
 ## 2026-11-11: Fix: blank page after the Today update
 - The Today page and its sidebar badge both opened a live-update connection with the same name; Supabase threw an error and the whole app stopped drawing (live site only, not sample data). Each connection now gets its own name, and a live-update failure can no longer break a page (`web/src/lib/useLiveRefresh.ts`).
 - New safety net (`web/src/app/ErrorBoundary.tsx`): if a screen ever crashes, it shows "Something went wrong" with **Reload** instead of a blank page.

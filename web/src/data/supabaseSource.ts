@@ -155,7 +155,9 @@ export function createSupabaseSource(db: SupabaseClient): DataSource {
     async updateSuggestion(id, status) {
       const patch = status === 'snoozed'
         ? { status, snoozed_until: new Date(Date.now() + 24 * 3_600_000).toISOString() }
-        : { status }
+        : status === 'open'
+          ? { status, snoozed_until: null }
+          : { status }
       check(await db.from('suggestions').update(patch).eq('id', id).select('id'))
     },
     async turnOffAd(suggestionId): Promise<TurnOffResult> {

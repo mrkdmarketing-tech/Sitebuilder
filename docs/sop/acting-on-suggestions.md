@@ -8,17 +8,20 @@ Today is The Lab's home page. It lists only what needs doing on your accounts, o
 
 1. Open The Lab. **Today** opens first; the number next to it in the sidebar is how many things are waiting.
 2. Read the top line: "**6 things** need you today. Your other 34 accounts are fine."
-3. For each row: the account, one plain sentence ("An ad spent $240 with no leads"), and one button.
+3. For each row: the account, one plain sentence ("An ad spent $240 with no leads"), one button, and an **X**.
+   - **X (Dismiss)**: you don't want to act on it. It disappears and won't come back for 7 days (sooner never; after 7 days only if the problem is still there). The message that appears has **Undo**.
    - **Turn off**: pauses that ad in Meta after one confirmation.
    - **Open billing**: the account's billing page in Meta (payment or account problems).
    - **Open**: the ad or account in Ads Manager, for things a person needs to look at (few clicks, no recent leads).
 4. **Tap the row** for the numbers (spent, leads, cost per lead, click rates, the other ads in the ad set) and the other options:
    - **Turn off**, on any ad's row, even when it isn't the main button.
    - **Not now**: hidden for a day, comes back if the problem is still there.
-   - **Dismiss**: hidden for 7 days (e.g. a deliberate test, or the client wants it running).
+   - **Dismiss**: same as the X, hidden for 7 days (e.g. a deliberate test, or the client wants it running).
 5. When the list is empty, you're done. **See all accounts** goes to Insights for the full numbers.
 
 ## Undo
+
+Dismissed or hid something by mistake? Click **Undo** in the message straight away and it's back on the list.
 
 Turned off the wrong ad? Click **Undo** in the message that appears, or open **Recently turned off** at the bottom of Today and click **Undo** next to it. Undo works for 24 hours after a Turn off made in The Lab, and only if the ad is still paused. The ad is then not suggested again for 7 days. After 24 hours, turn it back on in Ads Manager.
 

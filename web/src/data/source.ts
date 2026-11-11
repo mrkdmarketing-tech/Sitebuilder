@@ -127,8 +127,8 @@ export interface DataSource {
   syncRuns(): Promise<SyncRun[]>
   /** Saved suggestions the signed-in person may see (null = compute them in the browser, sample mode). */
   storedSuggestions(): Promise<StoredSuggestion[] | null>
-  /** "Not now" (back in 24 h) or "Dismiss" (not suggested again for 7 days). */
-  updateSuggestion(id: string, status: 'snoozed' | 'dismissed'): Promise<void>
+  /** "Not now" (back in 24 h), "Dismiss" (not suggested again for 7 days), or "open" to undo either. */
+  updateSuggestion(id: string, status: 'snoozed' | 'dismissed' | 'open'): Promise<void>
   /** "Turn off": pauses the ad in Meta through the meta-action function. */
   turnOffAd(suggestionId: string): Promise<TurnOffResult>
   /** "Undo": turns it back on (within 24 hours of a Turn off made here). */
