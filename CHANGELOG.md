@@ -2,6 +2,10 @@
 
 What changed, newest first. Every change to the platform adds a line here.
 
+## 2026-11-11: Ad approval: Slack messages
+- Submitting an ad now posts in **#mrkd-internal-app**, like Retool did: "Ad for Review (NEW)" tagging the reviewer, with an **Open in The Lab** link. Sent back and approved ads tag whoever made them. Starts once the Slack webhook is added ([setup](docs/sop/tokens-and-secrets.md#connect-slack-ad-approval-messages)).
+- **Jordan is the default reviewer** for submitted ads (pre-selected in the Submit box; can be changed per ad). Migration 2700, function `approval-notify` (deployed).
+
 ## 2026-11-11: Ad approval: mistakes flagged as you type, checked again on Submit
 - New built-in checks (no AI, free, instant): the wrong discipline (Muay Thai in a jiu jitsu ad, or the other way round), a phone number or street address that isn't the client's, another location's name or city, a weekday that doesn't match the date, placeholders left in, common misspellings and repeated words. They show under each field as you type ([docs/ad-approval.md#built-in-checks](docs/ad-approval.md#built-in-checks)).
 - **Submit** now saves, runs the full check, then shows "Hey, just double checking" if anything is open. No separate step to remember.

@@ -159,6 +159,10 @@ Adds `sync_runs` to Supabase Realtime so open screens reload when a job finishes
 
 `mfa_ok()` (session confirmed with an authenticator code, `aal2`); `is_admin()` now requires it, so every admin-only policy and function does. `set_employee_role` / `set_employee_active` check it with a clear message. `two_step_on()` and a new `staff_overview().twoStep` show who has it on; `reset_two_step()` lets an owner/admin clear someone else's (lost phone), logged. Tested in `zz_staff.test.sql`.
 
+## 2700 Ad approval Slack messages
+
+`app_settings` key `approvals.default_reviewer` (Jordan): who reviews a submitted ad when nobody is picked. `set_review_status()` now falls back to: the ad's reviewer so far, then the default reviewer if still active, then the client's ads manager. Trigger `ad_review_events_notify` calls the `approval-notify` function (through `private.call_function`, pg_net, so it never slows or fails the click) for every status change of an ad made in The Lab; Retool imports never post.
+
 ## Changing the schema
 
 Add a **new** migration file (never edit one that has been applied to Supabase), with policies for any new table, then update this page and run `npm run db:test`.

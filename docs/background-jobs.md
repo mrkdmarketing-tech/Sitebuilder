@@ -23,6 +23,7 @@ Set in Supabase → Project Settings → Edge Functions → Secrets. **Never in 
 | `RETOOL_DB_URL` | retool-bridge | Jordan/Trent (Retool Database connection string) |
 | `ANTHROPIC_API_KEY` | ad-check | MRKD's Anthropic account (Phase 2) |
 | `CRON_SECRET` | all scheduled jobs | Any long random string; also used in the schedule below |
+| `SLACK_APPROVALS_WEBHOOK_URL` | approval-notify | Slack incoming webhook for #mrkd-internal-app ([sop/tokens-and-secrets.md](sop/tokens-and-secrets.md#connect-slack-ad-approval-messages)) |
 
 `SUPABASE_URL`, `SUPABASE_ANON_KEY` and `SUPABASE_SERVICE_ROLE_KEY` are provided automatically.
 

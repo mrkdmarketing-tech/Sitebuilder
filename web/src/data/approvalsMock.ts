@@ -181,6 +181,7 @@ export function createMockApprovals(opts: { employees: Employee[]; clients: Mock
         adTypes: ['jiu jitsu beginners program', 'jiu jitsu kids program', 'kickboxing', 'yoga studio'],
         bookingTypes: ['Booking Link', 'Landing Page', 'No Link'],
         ctaOptions: ['Book now', 'Learn more', 'Sign up', 'Get offer'],
+        defaultReviewerId: 'emp_olive',
       }
     },
   }

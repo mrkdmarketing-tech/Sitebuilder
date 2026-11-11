@@ -12,6 +12,7 @@ All secrets live in **Supabase → Edge Functions → Secrets** (supabase.com/da
 | `RETOOL_DB_URL` | Retool Database connection string | When Retool's DB password is reset | Copying from Retool |
 | `ANTHROPIC_API_KEY` | Claude API key (not added yet) | When revoked | AI ad check |
 | `CRON_SECRET` | Random string that lets the schedule start jobs | Never | Scheduled jobs (also stored in Supabase Vault) |
+| `SLACK_APPROVALS_WEBHOOK_URL` | Slack incoming webhook for #mrkd-internal-app | When the Slack app is removed | Ad approval messages |
 | Supabase access token `mrkd-sitebuilder-claude-3` | Lets Claude deploy changes | **16 Nov 2026**, renew before | Claude's cloud environment only |
 
 ## Replace the Meta token
@@ -24,6 +25,19 @@ All secrets live in **Supabase → Edge Functions → Secrets** (supabase.com/da
 ## Retool connection changed
 
 If someone clicked **Reset password** on Retool's Database Connection screen, the copy from Retool stops ("Retool copy failed" on Sync status). Copy the new **Postgres connection URL** (Retool → Database → Settings → Connection) into the `RETOOL_DB_URL` secret.
+
+## Connect Slack (ad approval messages)
+
+The Lab posts in **#mrkd-internal-app** when an ad is submitted (tags the reviewer), sent back or approved (tags whoever made it). It needs one Slack link:
+
+1. Go to **api.slack.com/apps** (signed in to MRKD's Slack) → **Create New App** → **From scratch**. Name it **The Lab**, pick the MRKD workspace, **Create App**.
+2. Left menu → **Incoming Webhooks** → switch **Activate Incoming Webhooks** on.
+3. **Add New Webhook** (bottom of the page) → choose **#mrkd-internal-app** → **Allow**.
+4. Click **Copy** next to the new Webhook URL (starts with `https://hooks.slack.com/services/`). Treat it like a password: anyone with it can post in the channel.
+5. In Supabase Secrets, **Add new secret**: name `SLACK_APPROVALS_WEBHOOK_URL`, paste the URL, **Save**.
+6. Submit a test ad in The Lab. The message should appear within a few seconds.
+
+To stop the messages, delete the secret (or remove the app in Slack). If the link leaks: in the Slack app's Incoming Webhooks page, remove that webhook, add a new one, and replace the secret.
 
 ## Add the Claude key (AI ad check)
 

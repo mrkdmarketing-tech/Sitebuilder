@@ -395,7 +395,8 @@ export function ReviewPage() {
 
       {move && (
         <MoveModal d={d} move={move} issues={moveIssues?.issues ?? []} warning={moveIssues?.warning ?? null} employees={employees.data ?? []}
-          defaultReviewer={d.reviewerId ?? brief.data?.adsManagerId ?? null} meId={me?.id ?? null} onClose={() => setMove(null)}
+          defaultReviewer={d.reviewerId ?? lookups.data?.defaultReviewerId ?? brief.data?.adsManagerId ?? null}
+          adsManagerId={brief.data?.adsManagerId ?? null} meId={me?.id ?? null} onClose={() => setMove(null)}
           onDone={(text) => { setMove(null); setNotice({ ok: true, text }); reload() }} />
       )}
     </div>
@@ -743,10 +744,10 @@ function LegacyBanner({ d }: { d: ReviewDetail }) {
 }
 
 /** Confirm a status move. Submitting with open findings shows "Hey, just double checking". */
-function MoveModal({ d, move, issues, warning, employees, defaultReviewer, meId, onClose, onDone }: {
+function MoveModal({ d, move, issues, warning, employees, defaultReviewer, adsManagerId, meId, onClose, onDone }: {
   d: ReviewDetail; move: StatusMove; issues: ReviewFinding[]; warning: string | null
   employees: { id: string; firstName: string; lastName: string; isAdManager: boolean }[]
-  defaultReviewer: string | null; meId: string | null; onClose: () => void; onDone: (text: string) => void
+  defaultReviewer: string | null; adsManagerId: string | null; meId: string | null; onClose: () => void; onDone: (text: string) => void
 }) {
   const ds = useData()
   const [note, setNote] = useState('')
@@ -768,7 +769,7 @@ function MoveModal({ d, move, issues, warning, employees, defaultReviewer, meId,
         acknowledged: submitting ? open.map((f) => f.id).filter((id) => !id.startsWith('live-')) : undefined,
       })
       onDone({
-        review_pending: 'Submitted. The reviewer will see it at the top of their Approvals list.',
+        review_pending: 'Submitted. The reviewer is tagged in #mrkd-internal-app on Slack and sees it under Needs me.',
         request_changes: 'Sent back with your comment.',
         approved: 'Approved. Build it in Meta, then click Mark as live.',
         completed: 'Marked as live.',
@@ -804,8 +805,8 @@ function MoveModal({ d, move, issues, warning, employees, defaultReviewer, meId,
         {submitting && (
           <Field label="Reviewer">
             <select value={reviewer} onChange={(e) => setReviewer(e.target.value)} className={inputClass}>
-              <option value="">Client's ads manager</option>
-              {reviewers.map((e) => <option key={e.id} value={e.id}>{e.firstName} {e.lastName}{e.id === meId ? ' (you)' : ''}{e.id === defaultReviewer ? " (client's ads manager)" : ''}</option>)}
+              <option value="">Default reviewer</option>
+              {reviewers.map((e) => <option key={e.id} value={e.id}>{e.firstName} {e.lastName}{e.id === meId ? ' (you)' : ''}{e.id === adsManagerId ? " (client's ads manager)" : ''}</option>)}
             </select>
           </Field>
         )}

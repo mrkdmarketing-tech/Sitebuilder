@@ -18,7 +18,8 @@ How it works behind the scenes: [../ad-approval.md](../ad-approval.md).
 
 ## After submitting
 
-- Status goes to **Waiting for review**. The reviewer sees it in their **Needs me** view.
+- Status goes to **Waiting for review**. The reviewer (Jordan unless you picked someone else) is tagged in **#mrkd-internal-app** on Slack and sees it in their **Needs me** view.
+- You're tagged in Slack when it's sent back or approved.
 - If the reviewer clicks **Request changes**, it comes back to you with their comments. Fix, then **Submit again**.
 - Once **Approved**, build or update the ad in Meta by hand, then click **Mark as live** (status **Live**).
 

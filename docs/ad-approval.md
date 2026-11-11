@@ -25,7 +25,7 @@ Not built yet: Slack and ClickUp notifications (below), and choosing an existing
 2. **Fill in**, in the same order as Retool: **images and videos** (upload, or paste a Canva link), then the **copy**: primary text and headline up top (or start from a creative template), with call to action, description, tracking and URL parameters under **More**. Then the **ad type** and booking type, and the **lead form** (folded away; optional, with its own template).
 3. **Built-in checks, as you type**: spelling, the wrong discipline, phone and address, dates, other locations' names (see [Built-in checks](#built-in-checks)). Issues show in red or amber under the field and in the **Mistake check** panel. Instant and free; no AI.
 4. **Submit for approval** ("publish"): saves the ad, runs the **full check** (`ad-check`: the built-in checks again on the server, plus Claude once the key is added), then, if anything is still open, shows *"Hey, just double checking. We spotted 3 possible issues: …"* with **Go back and fix** or **Submit anyway**. Submitting anyway is **allowed** and recorded (who, which warnings). If the full check can't run, the box says so and lists what the browser found.
-5. **Review**: the reviewer (chosen on submit; the client's ads manager by default) sees it in **Needs me**, works through the 11-point checklist, comments, and either **Requests changes** (a comment is required) or **Approves**. Slack and ClickUp notifications are planned (below).
+5. **Review**: the reviewer (chosen on submit; Jordan by default) is tagged in **#mrkd-internal-app** on Slack and sees it in **Needs me**, works through the 11-point checklist, comments, and either **Requests changes** (a comment is required) or **Approves**. Whoever made the ad is tagged in Slack either way. See [Slack messages](#slack-messages).
 6. **Live**: once it's built in Meta, someone clicks **Mark as live**. The app doesn't create the ad in Meta; that stays manual.
 
 Who can do what: any active employee can create, edit (while Draft or Changes requested), check, submit, review and comment, the same as Retool. Status changes only go through `set_review_status()`, which enforces the allowed moves (`MOVES` in `shared/domain/approvals.ts`); comments are always posted as yourself; only admins can delete an ad.
@@ -90,9 +90,24 @@ The AI also **pre-fills** the checklist items it can judge (logo, address/phone,
 
 Editable by admins (`review_checklist_items`).
 
-## Notifications (not built yet)
+## Slack messages
 
-Planned: Slack, as today, at: first review requested, review again, changes requested, review completed, and a ClickUp task on approval (replacing the Zapier webhook). Until then, the reviewer sees new ads in their **Needs me** view. (Suggestions don't use Slack; ad approval will.)
+Posted in **#mrkd-internal-app**, laid out like Retool's Ad Preview messages, with an **Open in The Lab** link:
+
+| When | Title | Tags |
+|---|---|---|
+| Submitted | Ad for Review (NEW) | The reviewer |
+| Submitted again after changes | Ad for Review (AGAIN) | The reviewer |
+| Changes requested | Ad - Changes Requested (with the comment) | Whoever made the ad |
+| Approved | Ad - Review Completed (approved) | Whoever made the ad |
+
+"Mark as live" doesn't post. If the ad was submitted with possible issues still open, the message says how many.
+
+How: a database trigger on `ad_review_events` calls the `approval-notify` function, which builds the text (`shared/domain/approvalSlack.ts`, tested) and posts it through a Slack incoming webhook (`SLACK_APPROVALS_WEBHOOK_URL`; setup in [sop/tokens-and-secrets.md](sop/tokens-and-secrets.md#connect-slack-ad-approval-messages)). People are tagged by `employees.slack_id`. Without the secret nothing is posted and everything else works. Responses are kept for a few hours in `net._http_response` if a message goes missing.
+
+**Default reviewer:** Jordan (`app_settings` `approvals.default_reviewer`), pre-selected in the Submit box. Pick someone else there for one ad.
+
+Not built: a ClickUp task on approval (Retool used a Zapier webhook for this).
 
 ## History from Retool
 

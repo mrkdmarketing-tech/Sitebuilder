@@ -192,10 +192,11 @@ export interface ApprovalsApi {
   comment(id: string, body: string): Promise<void>
   tick(id: string, key: string, checked: boolean): Promise<void>
   setFinding(findingId: string, status: FindingStatus): Promise<void>
-  /** Runs the AI mistake check (ad-check function). */
+  /** Runs the full mistake check (ad-check function: built-in checks, plus Claude when set up). */
   runCheck(id: string): Promise<CheckResult>
   clients(): Promise<ClientOption[]>
   brief(clientId: number): Promise<ClientBrief | null>
   templates(): Promise<{ creative: Template[]; leadform: Template[] }>
-  lookups(): Promise<{ adTypes: string[]; bookingTypes: string[]; ctaOptions: string[] }>
+  /** Lists for the form, and who reviews when nobody is picked (app_settings approvals.default_reviewer). */
+  lookups(): Promise<{ adTypes: string[]; bookingTypes: string[]; ctaOptions: string[]; defaultReviewerId: string | null }>
 }

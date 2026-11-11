@@ -249,13 +249,18 @@ export function createSupabaseApprovals(db: SupabaseClient): ApprovalsApi {
     },
 
     async lookups() {
-      const [a, b, c] = await Promise.all([
+      const [a, b, c, d] = await Promise.all([
         db.from('ad_types').select('name').order('name'),
         db.from('booking_types').select('name').order('name'),
         db.from('cta_options').select('name').order('name'),
+        db.from('app_settings').select('value').eq('key', 'approvals.default_reviewer').maybeSingle(),
       ])
       const names = (x: { name: string }[]) => x.map((r) => r.name)
-      return { adTypes: names(check(a)), bookingTypes: names(check(b)), ctaOptions: names(check(c)) }
+      const reviewer = (d.data as { value: unknown } | null)?.value
+      return {
+        adTypes: names(check(a)), bookingTypes: names(check(b)), ctaOptions: names(check(c)),
+        defaultReviewerId: typeof reviewer === 'string' ? reviewer : null,
+      }
     },
   }
 }
