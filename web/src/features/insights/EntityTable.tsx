@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { ArrowDown, ArrowUp, ExternalLink, FileSpreadsheet } from 'lucide-react'
 import type { Level, ReportRow } from '@shared/domain/types.ts'
 import { adsManagerUrl } from '../../lib/links'
@@ -7,22 +7,47 @@ import { columnsFor, metricsOf, type Column } from './columns'
 
 export type SortState = { key: string; dir: 'asc' | 'desc' }
 
+/** Cost metrics: spend with nothing to show for it counts as the most expensive, not blank. */
+const COST_KEYS = new Set(['cpl', 'cpr', 'cplc', 'cpm'])
+
+/** The Sort menu (phone and desktop). Column headings on desktop sort too. */
+export const SORT_OPTIONS: { label: string; sort: SortState }[] = [
+  { label: 'Spend: high to low', sort: { key: 'spend', dir: 'desc' } },
+  { label: 'Spend: low to high', sort: { key: 'spend', dir: 'asc' } },
+  { label: 'CPL: low to high', sort: { key: 'cpl', dir: 'asc' } },
+  { label: 'CPL: high to low', sort: { key: 'cpl', dir: 'desc' } },
+  { label: 'Leads: high to low', sort: { key: 'leads', dir: 'desc' } },
+  { label: 'Leads: low to high', sort: { key: 'leads', dir: 'asc' } },
+  { label: 'CR: high to low', sort: { key: 'cr', dir: 'desc' } },
+  { label: 'CR: low to high', sort: { key: 'cr', dir: 'asc' } },
+  { label: 'CPLC: low to high', sort: { key: 'cplc', dir: 'asc' } },
+  { label: 'Name: A to Z', sort: { key: 'name', dir: 'asc' } },
+]
+
 export function sortRows(rows: ReportRow[], columns: Column[], sort: SortState): ReportRow[] {
-  const col = columns.find((c) => c.key === sort.key)
+  const col = sort.key === 'name'
+    ? { value: (r: ReportRow) => r.name }
+    : columns.find((c) => c.key === sort.key)
   if (!col) return rows
   const sign = sort.dir === 'asc' ? 1 : -1
+  const valueOf = (r: ReportRow) => {
+    const v = col.value(r, metricsOf(r))
+    if ((v === null || v === undefined) && COST_KEYS.has(sort.key) && r.spend > 0) return Number.POSITIVE_INFINITY
+    return v
+  }
   return [...rows].sort((a, b) => {
-    const va = col.value(a, metricsOf(a))
-    const vb = col.value(b, metricsOf(b))
-    if (va === null || va === undefined) return 1 // blanks last either way
+    const va = valueOf(a)
+    const vb = valueOf(b)
+    if (va === null || va === undefined) return vb === null || vb === undefined ? 0 : 1 // blanks last either way
     if (vb === null || vb === undefined) return -1
-    return (typeof va === 'number' && typeof vb === 'number' ? va - vb : String(va).localeCompare(String(vb))) * sign
+    if (va === vb) return 0
+    return (typeof va === 'number' && typeof vb === 'number' ? (va < vb ? -1 : 1) : String(va).localeCompare(String(vb))) * sign
   })
 }
 
 /** Desktop table for one level. Accounts can be selected (filters KPIs and the other tabs). */
 export function EntityTable({
-  level, rows, selected, onToggle, onToggleAll, onOpenCreative,
+  level, rows, selected, onToggle, onToggleAll, onOpenCreative, sort, onSort,
 }: {
   level: Level
   rows: ReportRow[]
@@ -30,9 +55,10 @@ export function EntityTable({
   onToggle?: (id: string) => void
   onToggleAll?: () => void
   onOpenCreative: (row: ReportRow) => void
+  sort: SortState
+  onSort: (s: SortState) => void
 }) {
   const columns = useMemo(() => columnsFor(level), [level])
-  const [sort, setSort] = useState<SortState>({ key: 'spend', dir: 'desc' })
   const sorted = useMemo(() => sortRows(rows, columns, sort), [rows, columns, sort])
   const selectable = level === 'account' && !!onToggle
   if (!rows.length) return <Empty>Nothing to show for these filters.</Empty>
@@ -40,7 +66,7 @@ export function EntityTable({
   const header = (c: Column) => (
     <th
       key={c.key}
-      onClick={() => setSort((s) => ({ key: c.key, dir: s.key === c.key && s.dir === 'desc' ? 'asc' : 'desc' }))}
+      onClick={() => onSort({ key: c.key, dir: sort.key === c.key && sort.dir === 'desc' ? 'asc' : 'desc' })}
       className={`cursor-pointer select-none whitespace-nowrap px-3 py-2 font-semibold ${c.numeric ? 'text-right' : 'text-left'} ${c.secondary ? 'hidden 2xl:table-cell' : ''}`}
     >
       <span className="inline-flex items-center gap-1">

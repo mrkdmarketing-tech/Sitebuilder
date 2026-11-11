@@ -23,7 +23,7 @@ Spend · Leads · CPL · CPM · CPR · CPLC · CR % · Impressions · Reach · L
 | Ads | Creative thumbnail (click for the creative popup), CTR, link CTR, comments, page likes, messages |
 | Leads | Name, email (mailto), phone, created, form, ad |
 
-Click any column header to sort. Less important columns (CPR, impressions, reach, clicks, settings) appear on wide screens (≥ 1536px) and are always in the CSV and the phone "More" view.
+Sort with the **Sort** menu above the list (spend, CPL, leads, CR, CPLC, either direction, or name; phone and desktop, remembered per browser) or by clicking a column header. Spend with no leads sorts as the most expensive. Less important columns (CPR, impressions, reach, clicks, settings) appear on wide screens (≥ 1536px) and are always in the CSV and the phone "More" view.
 
 **Selecting accounts** (checkboxes) recalculates the KPI tiles for those accounts (as in Retool) **and** filters the Campaigns, Ad sets, Ads and Leads tabs to them. A chip row shows the selection, with a Clear button.
 

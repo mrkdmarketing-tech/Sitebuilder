@@ -16,7 +16,7 @@ import { useSession } from '../../app/session'
 import { SAMPLE_MODE } from '../../lib/config'
 import { KpiTiles } from './KpiTiles'
 import { DateRangeFilter, ManagerFilter } from './Filters'
-import { EntityTable } from './EntityTable'
+import { EntityTable, SORT_OPTIONS, type SortState } from './EntityTable'
 import { EntityCards } from './EntityCards'
 import { LeadsList } from './LeadsList'
 import { CreativeModal } from './CreativeModal'
@@ -35,16 +35,16 @@ const TABS: { key: Tab; label: string }[] = [
 
 // Remembered per browser (a convenience only; safe if storage is unavailable).
 const STORE_KEY = 'mrkd.insights.v1'
-function loadPrefs(): { preset?: PresetKey; managers?: string[] } {
+function loadPrefs(): { preset?: PresetKey; managers?: string[]; sort?: SortState } {
   try {
     return JSON.parse(localStorage.getItem(STORE_KEY) ?? '{}')
   } catch {
     return {}
   }
 }
-function savePrefs(p: { preset: PresetKey | 'custom'; managers: string[] }) {
+function savePrefs(p: { preset: PresetKey | 'custom'; managers: string[]; sort: SortState }) {
   try {
-    localStorage.setItem(STORE_KEY, JSON.stringify({ preset: p.preset === 'custom' ? undefined : p.preset, managers: p.managers }))
+    localStorage.setItem(STORE_KEY, JSON.stringify({ preset: p.preset === 'custom' ? undefined : p.preset, managers: p.managers, sort: p.sort }))
   } catch {
     /* ignore */
   }
@@ -68,8 +68,9 @@ export function InsightsPage() {
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [query, setQuery] = useState('')
   const [creativeRow, setCreativeRow] = useState<ReportRow | null>(null)
+  const [sort, setSort] = useState<SortState>(prefs.sort ?? { key: 'spend', dir: 'desc' })
 
-  useEffect(() => savePrefs({ preset, managers }), [preset, managers])
+  useEffect(() => savePrefs({ preset, managers, sort }), [preset, managers, sort])
 
   // First visit: an ads manager starts on their own accounts (assigned in GHL);
   // owners/admins start on everyone. After that, their own choice is remembered.
@@ -195,7 +196,17 @@ export function InsightsPage() {
               )
             })}
           </div>
-          <div className="flex w-full items-center gap-2 pb-2 sm:w-auto">
+          <div className="flex w-full flex-wrap items-center gap-2 pb-2 sm:w-auto sm:flex-nowrap">
+            {tab !== 'leads' && tab !== 'working' && (
+              <select aria-label="Sort" value={`${sort.key}:${sort.dir}`}
+                onChange={(e) => { const [key, dir] = e.target.value.split(':'); setSort({ key, dir: dir as SortState['dir'] }) }}
+                className="h-8 w-full rounded-lg border border-line bg-surface px-2 text-sm font-medium sm:w-auto">
+                {!SORT_OPTIONS.some((o) => o.sort.key === sort.key && o.sort.dir === sort.dir) && (
+                  <option value={`${sort.key}:${sort.dir}`}>Sorted by column</option>
+                )}
+                {SORT_OPTIONS.map((o) => <option key={o.label} value={`${o.sort.key}:${o.sort.dir}`}>Sort: {o.label}</option>)}
+              </select>
+            )}
             <label className="flex h-8 flex-1 items-center gap-1.5 rounded-lg border border-line px-2 sm:w-56 sm:flex-none">
               <Search size={14} className="text-muted" />
               <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search" className="w-full bg-transparent text-sm outline-none" />
@@ -213,10 +224,10 @@ export function InsightsPage() {
         {filtered && tab !== 'leads' && tab !== 'working' && (
           <>
             <div className="hidden md:block">
-              <EntityTable level={tab} rows={rows} selected={selected} onToggle={toggle} onToggleAll={toggleAll} onOpenCreative={setCreativeRow} />
+              <EntityTable level={tab} rows={rows} selected={selected} onToggle={toggle} onToggleAll={toggleAll} onOpenCreative={setCreativeRow} sort={sort} onSort={setSort} />
             </div>
             <div className="md:hidden">
-              <EntityCards level={tab} rows={rows} selected={selected} onToggle={toggle} onOpenCreative={setCreativeRow} />
+              <EntityCards level={tab} rows={rows} selected={selected} onToggle={toggle} onOpenCreative={setCreativeRow} sort={sort} />
             </div>
           </>
         )}

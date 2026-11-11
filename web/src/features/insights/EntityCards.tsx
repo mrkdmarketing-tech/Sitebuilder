@@ -1,27 +1,30 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { ChevronDown, ExternalLink } from 'lucide-react'
 import type { Level, ReportRow } from '@shared/domain/types.ts'
 import { adsManagerUrl } from '../../lib/links'
 import { count, money, percent } from '../../lib/format'
 import { ClientBadge, Empty, ManagerChip, StatusBadge } from '../../components/ui'
 import { columnsFor, metricsOf } from './columns'
+import { sortRows, type SortState } from './EntityTable'
 
 /** Phone layout: one card per row with the headline numbers; tap for everything else. */
 export function EntityCards({
-  level, rows, selected, onToggle, onOpenCreative,
+  level, rows, selected, onToggle, onOpenCreative, sort,
 }: {
   level: Level
   rows: ReportRow[]
   selected: Set<string>
   onToggle?: (id: string) => void
   onOpenCreative: (row: ReportRow) => void
+  sort: SortState
 }) {
   const [expanded, setExpanded] = useState<string | null>(null)
+  const columns = useMemo(() => columnsFor(level), [level])
+  const sorted = useMemo(() => sortRows(rows, columns, sort), [rows, columns, sort])
   if (!rows.length) return <Empty>Nothing to show for these filters.</Empty>
-  const columns = columnsFor(level)
   return (
     <ul className="divide-y divide-line">
-      {rows.map((r) => {
+      {sorted.map((r) => {
         const m = metricsOf(r)
         const open = expanded === r.id
         return (

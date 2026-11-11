@@ -2,6 +2,10 @@
 
 What changed, newest first. Every change to the platform adds a line here.
 
+## 2026-11-11: Sort Insights on the phone
+- New **Sort** menu above the list on Insights (accounts, campaigns, ad sets, ads): spend, CPL, leads, CR or CPLC, low to high or high to low, or name. Works on the phone and desktop, stays in step with clicking a column heading, and is remembered.
+- Cost sorts treat spend with no leads as the most expensive, so "CPL: high to low" puts those at the top instead of the bottom.
+
 ## 2026-11-11: What's working counts lead campaigns only
 - Sales campaigns were mixed in, so "Seasonal" offers showed $179 a lead. That was almost all Jiu Jitsu FLO's Black Friday product sale (a Sales campaign aiming for purchases). The report now counts lead campaigns only (96% of spend). Migration 3000.
 
