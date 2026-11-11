@@ -12,7 +12,7 @@ import { DEFAULT_RULE_SETTINGS, type RuleSettings } from '@shared/domain/rules.t
 import { addDays, todayInZone } from '@shared/domain/dates.ts'
 import type { DateRange, DeliveryStatus, Level, ReportRow, Totals } from '@shared/domain/types.ts'
 import { generateMockData, type MockAccount, type MockClient, type MockDataset, type MockDay } from './mock/generate'
-import type { DataSource, SyncRun } from './source'
+import type { CreativeTagRow, DataSource, SyncRun } from './source'
 import { createMockApprovals } from './approvalsMock'
 
 /** localStorage key for the sample-mode "Viewing as" switch. */
@@ -297,6 +297,19 @@ export function createMockSource(data: MockDataset = generateMockData()): DataSo
         { job: 'rules.run', startedAt: ago(11), finishedAt: ago(11), status: 'ok', rows: 9, error: null },
         { job: 'retool_bridge', startedAt: ago(4), finishedAt: ago(4), status: 'ok', rows: 6612, error: null },
         { job: 'meta.sync', startedAt: ago(42), finishedAt: ago(41), status: 'partial', rows: 1198, error: '1 account failed: token missing permission' },
+      ]
+    },
+    async creativeTagReport() {
+      await wait(150)
+      // Made-up numbers so the screen can be tried.
+      const row = (dimension: CreativeTagRow['dimension'], value: string | null, ads: number, accounts: number, spend: number, leads: number) => ({ dimension, value, ads, accounts, spend, leads })
+      return [
+        row('offer', 'free_trial', 40, 9, 5200, 180), row('offer', 'free_week', 22, 6, 3100, 140), row('offer', 'seasonal', 12, 5, 1900, 41),
+        row('offer', 'paid_intro', 6, 2, 800, 15), row('offer', null, 9, 3, 600, 12),
+        row('audience', 'kids', 38, 9, 5100, 205), row('audience', 'adults', 35, 8, 4700, 150), row('audience', 'women', 4, 2, 500, 9), row('audience', null, 9, 3, 600, 12),
+        row('hook', 'local_callout', 30, 8, 4200, 190), row('hook', 'pain_point', 18, 6, 2600, 80), row('hook', 'benefit', 20, 7, 2500, 70),
+        row('hook', 'urgency', 7, 3, 1100, 30), row('hook', null, 9, 3, 600, 12),
+        row('format', 'image', 70, 10, 8800, 330), row('format', 'video', 19, 6, 2800, 58),
       ]
     },
     async storedSuggestions() {

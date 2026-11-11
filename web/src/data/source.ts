@@ -33,6 +33,15 @@ export interface StoredSuggestion extends Suggestion {
   lastSeenAt: string
 }
 
+export interface CreativeTagRow {
+  dimension: 'offer' | 'audience' | 'hook' | 'format'
+  value: string | null
+  ads: number
+  accounts: number
+  spend: number
+  leads: number
+}
+
 export interface TurnOffResult {
   ok: boolean
   message: string
@@ -133,6 +142,8 @@ export interface DataSource {
   syncRuns(): Promise<SyncRun[]>
   /** Saved suggestions the signed-in person may see (null = compute them in the browser, sample mode). */
   storedSuggestions(): Promise<StoredSuggestion[] | null>
+  /** Insights -> What's working: spend and leads by creative tag across all accounts (migration 2800). */
+  creativeTagReport(range: DateRange): Promise<CreativeTagRow[]>
   /** "Not now" (back in 24 h), "Dismiss" (not suggested again for 7 days), or "open" to undo either. */
   updateSuggestion(id: string, status: 'snoozed' | 'dismissed' | 'open'): Promise<void>
   /** "Turn off": pauses the ad in Meta through the meta-action function. */

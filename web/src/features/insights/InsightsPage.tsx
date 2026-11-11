@@ -20,15 +20,17 @@ import { EntityTable } from './EntityTable'
 import { EntityCards } from './EntityCards'
 import { LeadsList } from './LeadsList'
 import { CreativeModal } from './CreativeModal'
+import { WhatsWorking } from './WhatsWorking'
 import { columnsFor, metricsOf } from './columns'
 
-type Tab = Level | 'leads'
+type Tab = Level | 'leads' | 'working'
 const TABS: { key: Tab; label: string }[] = [
   { key: 'account', label: 'Ad accounts' },
   { key: 'campaign', label: 'Campaigns' },
   { key: 'adset', label: 'Ad sets' },
   { key: 'ad', label: 'Ads' },
   { key: 'leads', label: 'Leads' },
+  { key: 'working', label: "What's working" },
 ]
 
 // Remembered per browser (a convenience only; safe if storage is unavailable).
@@ -131,7 +133,7 @@ export function InsightsPage() {
     setSelected((s) => (s.size === (filtered?.account.length ?? 0) ? new Set() : new Set(filtered?.account.map((r) => r.id))))
 
   const exportCsv = () => {
-    if (!filtered) return
+    if (!filtered || tab === 'working') return
     const stamp = `${range.from}_${range.to}`
     if (tab === 'leads') {
       downloadCsv(`leads_${stamp}.csv`, toCsv(['Created', 'Name', 'Email', 'Phone', 'Form', 'Ad'],
@@ -147,7 +149,7 @@ export function InsightsPage() {
   }
 
   const selectedNames = current.data?.account.filter((r) => selected.has(r.id)).map((r) => r.name) ?? []
-  const rows = tab !== 'leads' && filtered ? filtered[tab] : []
+  const rows = tab !== 'leads' && tab !== 'working' && filtered ? filtered[tab] : []
 
   return (
     <div>
@@ -181,7 +183,7 @@ export function InsightsPage() {
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line px-2 pt-2">
           <div className="-mb-px flex overflow-x-auto">
             {TABS.map((t) => {
-              const n = filtered ? (t.key === 'leads' ? filtered.leads.length : filtered[t.key].length) : null
+              const n = filtered && t.key !== 'working' ? (t.key === 'leads' ? filtered.leads.length : filtered[t.key].length) : null
               return (
                 <button
                   key={t.key}
@@ -207,7 +209,8 @@ export function InsightsPage() {
         {current.error && <p className="p-4 text-sm text-bad">Couldn't load data: {current.error.message}</p>}
         {current.loading && !current.data && <p className="p-6 text-center text-sm text-muted">Loading…</p>}
         {filtered && tab === 'leads' && <LeadsList leads={filtered.leads} />}
-        {filtered && tab !== 'leads' && (
+        {tab === 'working' && <WhatsWorking range={range} />}
+        {filtered && tab !== 'leads' && tab !== 'working' && (
           <>
             <div className="hidden md:block">
               <EntityTable level={tab} rows={rows} selected={selected} onToggle={toggle} onToggleAll={toggleAll} onOpenCreative={setCreativeRow} />

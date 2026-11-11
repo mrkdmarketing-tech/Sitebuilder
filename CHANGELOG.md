@@ -2,6 +2,12 @@
 
 What changed, newest first. Every change to the platform adds a line here.
 
+## 2026-11-11: What's working (Jev ad tagging)
+- New tab **Insights → What's working**: cost per lead by offer (free trial, free week, seasonal...), audience (kids, adults, women...), opening hook (calls out a place, problem, benefit...) and image vs video, across every Active and New client. Green is cheaper than average, red dearer.
+- Tags come from TypeSafe AI's **Jev** model, which reads each ad's headline and primary text (`tag-creatives`, hourly; migration 2800). Image vs video works already; the rest starts once the `TYPESAFE_API_KEY` secret is added ([steps](docs/sop/tokens-and-secrets.md#add-the-typesafe-key-jev-ad-tagging)). About 10 cents to tag all ~5,800 ads.
+- Already visible without Jev: last 7 days, image ads $26.78 a lead vs video $39.11.
+- Docs: [docs/creative-tags.md](docs/creative-tags.md).
+
 ## 2026-11-11: Why Turn off failed, and clearer messages
 - Jordan's Turn offs this morning were refused by Meta. Checked all 28 suggested ads (validate only, nothing paused): 9 can be turned off, 11 are on view-only ad accounts, 7 are lead ads on Pages The Lab can't see (Meta calls this "Missing Lead Form"), 1 account isn't writable. Details and fixes: [docs/setup/meta.md](docs/setup/meta.md#checked-11-nov-2026-why-turn-off-failed).
 - The failure message now says which access is missing and to turn it off in Ads Manager meanwhile. The log keeps Meta's full answer.

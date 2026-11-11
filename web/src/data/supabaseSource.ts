@@ -7,7 +7,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Creative, Employee, MetaLead, ReportRow } from '@shared/domain/types.ts'
 import type { RuleSettings } from '@shared/domain/rules.ts'
-import type { ActionRecord, ClientRow, DataSource, StaffMember, LeadFormResult, StoredSuggestion, SyncRun, TurnOffResult } from './source'
+import type { ActionRecord, ClientRow, CreativeTagRow, DataSource, StaffMember, LeadFormResult, StoredSuggestion, SyncRun, TurnOffResult } from './source'
 import type { Suggestion } from '@shared/domain/rules.ts'
 import { createSupabaseApprovals } from './approvalsSupabase'
 
@@ -134,6 +134,11 @@ export function createSupabaseSource(db: SupabaseClient): DataSource {
         job: string; started_at: string; finished_at: string | null; status: SyncRun['status']; rows: number | null; error: string | null
       }[]
       return rows.map((r) => ({ job: r.job, startedAt: r.started_at, finishedAt: r.finished_at, status: r.status, rows: r.rows, error: r.error }))
+    },
+    async creativeTagReport(range) {
+      const rows = check(await db.rpc('creative_tag_report', { p_from: range.from, p_to: range.to })) as
+        { dimension: CreativeTagRow['dimension']; value: string | null; ads: number; accounts: number; spend: number | string; leads: number }[]
+      return rows.map((r) => ({ ...r, ads: Number(r.ads), accounts: Number(r.accounts), spend: Number(r.spend), leads: Number(r.leads) }))
     },
     async storedSuggestions() {
       // Row-level security limits this to the person's own accounts (owners/admins: all).

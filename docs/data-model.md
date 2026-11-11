@@ -163,6 +163,10 @@ Adds `sync_runs` to Supabase Realtime so open screens reload when a job finishes
 
 `app_settings` key `approvals.default_reviewer` (Jordan): who reviews a submitted ad when nobody is picked. `set_review_status()` now falls back to: the ad's reviewer so far, then the default reviewer if still active, then the client's ads manager. Trigger `ad_review_events_notify` calls the `approval-notify` function (through `private.call_function`, pg_net, so it never slows or fails the click) for every status change of an ad made in The Lab; Retool imports never post.
 
+## 2800 Creative tags
+
+`creative_tags` (one row per ad creative: offer, audience, hook, Jev's confidence, model, input hash), written only by the `tag-creatives` function. `creatives_to_tag(limit)` (service role only) lists untagged creatives with copy, biggest recent spenders first. `creative_tag_report(from, to)` sums spend and leads by tag (and image/video) for Active/New clients' ads that spent in the period. Hourly schedule `tag-creatives` at :50. See [creative-tags.md](creative-tags.md).
+
 ## Changing the schema
 
 Add a **new** migration file (never edit one that has been applied to Supabase), with policies for any new table, then update this page and run `npm run db:test`.

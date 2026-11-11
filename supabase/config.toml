@@ -27,3 +27,6 @@ verify_jwt = false
 # Called by the database (trigger on ad_review_events) with the cron secret.
 [functions.approval-notify]
 verify_jwt = false
+
+[functions.tag-creatives]
+verify_jwt = false
