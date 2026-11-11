@@ -20,7 +20,7 @@ To change a list, edit `TAG_QUESTIONS`. Changed options apply to newly tagged ad
 - **`tag-creatives`** (Edge Function, hourly at :50, migration 2800): takes up to 400 ad creatives with copy and no tags yet, biggest spenders of the last 90 days first, and asks Jev three choice questions about each (one request per creative, 6 at a time). Answers are saved in `creative_tags` with Jev's confidence. Meta creatives can't be edited, so each is tagged once.
 - **API:** `POST https://api.typesafe.ai/v1/systemone` with `model`, `state` (the headline and primary text) and `questions`. Model `jev-latest` (override with the `JEV_MODEL` secret).
 - **Safety:** an answer Jev doesn't give, or gives outside the list, is saved as nothing rather than guessed. If no answer in a run can be read, the run fails on the **Sync** screen ("Ad tagging (Jev)") with an example of what came back. A rejected key stops the run.
-- **Report:** `creative_tag_report(from, to)` adds up spend and leads by tag for ads that spent in the period. Any staff member can see it.
+- **Report:** `creative_tag_report(from, to)` adds up spend and leads by tag for lead-campaign ads that spent in the period (sales campaigns left out). Any staff member can see it.
 
 ## Cost
 
@@ -32,13 +32,15 @@ One secret, `TYPESAFE_API_KEY`: steps in [sop/tokens-and-secrets.md](sop/tokens-
 
 **Done 11 Nov 2026:** the key was added and all 5,811 creatives with copy were tagged in about 4 minutes (batches of up to 1,000, the most one run can take; about 400 every 17 seconds), none failed. To force a run: `select private.call_function('tag-creatives', '?limit=1000')`.
 
-## First results (last 30 days, 11 Nov 2026)
+## First results (last 30 days, 11 Nov 2026, lead campaigns only)
 
-- **Seasonal offers** (mostly Black Friday): 47 ads, 4 accounts, $1,787 for 10 leads, **$179 a lead** vs about $28 overall. Many were just launched, so check again in a week.
-- **Video** $39.83 a lead vs **image** $27.18.
-- **Opening hook:** calling out the place or group ("HOWARD COUNTY PARENTS") $27.55, benefit-led $31.70, urgency-led $36.13.
-- **Kids and adults** cost the same (about $28). The women-only ads ($318 a lead) are one account, so that's about that client, not women's ads in general.
+- **Video** $36.56 a lead vs **image** $26.33 (13 accounts run video). The clearest difference.
+- **Opening hook:** calling out the place or group $27.29, benefit-led $28.60, urgency-led $30.21. Small differences; not enough to act on yet.
+- **Kids** $27.91 vs **adults** $25.54. The women-only ads ($318 a lead) are one account, so that's about that client.
+- **Seasonal / Black Friday** offers: only 10 ads, $157 so far. Too early to judge.
 - 64 ads have no copy Meta shares (some dynamic creatives), so they show as not tagged.
+
+**Correction:** the first version of this report also counted sales campaigns, which made seasonal offers look like $179 a lead. Almost all of that was Jiu Jitsu FLO's Black Friday product sale (a Sales campaign: 37 ads, $1,630, 6 leads), which aims for purchases, not leads. Since migration 3000 the report counts lead campaigns only (`OUTCOME_LEADS`), which is 96% of spend.
 
 ## Reading the numbers
 

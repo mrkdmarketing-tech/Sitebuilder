@@ -2,6 +2,9 @@
 
 What changed, newest first. Every change to the platform adds a line here.
 
+## 2026-11-11: What's working counts lead campaigns only
+- Sales campaigns were mixed in, so "Seasonal" offers showed $179 a lead. That was almost all Jiu Jitsu FLO's Black Friday product sale (a Sales campaign aiming for purchases). The report now counts lead campaigns only (96% of spend). Migration 3000.
+
 ## 2026-11-11: What's working (Jev ad tagging)
 - New tab **Insights → What's working**: cost per lead by offer (free trial, free week, seasonal...), audience (kids, adults, women...), opening hook (calls out a place, problem, benefit...) and image vs video, across every Active and New client. Green is cheaper than average, red dearer.
 - Tags come from TypeSafe AI's **Jev** model, which reads each ad's headline and primary text (`tag-creatives`, hourly; migration 2800). Image vs video works already; the rest starts once the `TYPESAFE_API_KEY` secret is added ([steps](docs/sop/tokens-and-secrets.md#add-the-typesafe-key-jev-ad-tagging)). About 10 cents to tag all ~5,800 ads.

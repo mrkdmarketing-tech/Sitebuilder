@@ -30,7 +30,7 @@ export function WhatsWorking({ range }: { range: DateRange }) {
   return (
     <div className="space-y-5 p-4">
       <p className="text-sm text-muted">
-        Every Active and New client's ads that spent in this period, grouped by what the ad says. Average cost per lead: <b className="text-ink">{money(avg)}</b>.
+        Every Active and New client's lead-campaign ads that spent in this period (sales campaigns are left out), grouped by what the ad says. Average cost per lead: <b className="text-ink">{money(avg)}</b>.
         {taggedShare === 0
           ? ' Offer, audience and opening hook appear once the hourly tagging has run (it needs the TypeSafe key).'
           : taggedShare < 0.95 && ` ${Math.round(taggedShare * 100)}% of spend is on tagged ads so far; the rest are tagged hour by hour.`}
