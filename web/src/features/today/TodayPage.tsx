@@ -11,11 +11,11 @@
  */
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ChevronDown, ChevronRight, X } from 'lucide-react'
+import { AlertTriangle, Check, ChevronDown, ChevronRight, X } from 'lucide-react'
 import { evaluateRules, type Suggestion } from '@shared/domain/rules.ts'
 import { canTurnOff, greeting, groupToday, primaryButton, todayLine, todayOrder } from '@shared/domain/today.ts'
 import { presetRange } from '@shared/domain/dates.ts'
-import { useData, type ActionRecord } from '../../data/source'
+import { useData, type ActionRecord, type TurnOffResult } from '../../data/source'
 import { useAsync } from '../../lib/useAsync'
 import { useLiveRefresh } from '../../lib/useLiveRefresh'
 import { Modal } from '../../components/ui'
@@ -25,6 +25,8 @@ import { useSession } from '../../app/session'
 
 type Item = Suggestion & { id?: string }
 type Notice = { ok: boolean; text: string; undoId?: string; link?: string; restore?: Item }
+/** An ad turned off from this page: its row stays, marked done, until the page reloads. */
+type Done = { at: string; verified: boolean; undoId?: string }
 
 const adsManager = (s: Item) =>
   s.level === 'ad'
@@ -58,6 +60,9 @@ export function TodayPage() {
   const [confirm, setConfirm] = useState<Item | null>(null)
   const [busy, setBusy] = useState(false)
   const [notice, setNotice] = useState<Notice | null>(null)
+  // The Turn off box shows the outcome after the click (done and confirmed, or what went wrong).
+  const [outcome, setOutcome] = useState<{ item: Item; res: TurnOffResult } | null>(null)
+  const [turnedOff, setTurnedOff] = useState<Map<string, Done>>(new Map())
 
   const items = useMemo(
     () => todayOrder((data?.items ?? []).filter((s) => !handled.has(s.key) && inScope(s.managerId))),
@@ -69,7 +74,8 @@ export function TodayPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [data, scope, isAdmin, me],
   )
-  const fine = Math.max(0, accountsInScope.length - new Set(items.map((s) => s.accountId)).size)
+  const pending = items.filter((s) => !turnedOff.has(s.key))
+  const fine = Math.max(0, accountsInScope.length - new Set(pending.map((s) => s.accountId)).size)
   const managerName = useMemo(() => new Map((employees ?? []).map((e) => [e.id, `${e.firstName} ${e.lastName}`])), [employees])
 
   const hide = (s: Item) => setHandled((h) => new Set(h).add(s.key))
@@ -112,20 +118,28 @@ export function TodayPage() {
     setBusy(false)
     setConfirm(null)
     setActionsVersion((v) => v + 1)
+    setOutcome({ item: s, res })
     if (res.ok) {
-      hide(s)
       setOpen(null)
-      setNotice({ ok: true, text: `Turned off "${s.entityName}" in ${s.clientName ?? s.accountName}.`, undoId: s.id ?? (SAMPLE_MODE ? s.key : undefined), link: adsManager(s) })
-    } else {
-      setNotice({ ok: false, text: res.message, link: adsManager(s) })
+      setNotice(null)
+      setTurnedOff((m) => new Map(m).set(s.key, {
+        at: res.at ?? new Date().toISOString(), verified: !!res.verified,
+        undoId: res.alreadyOff ? undefined : s.id ?? (SAMPLE_MODE ? s.key : undefined),
+      }))
     }
   }
 
-  const undo = async (suggestionId: string) => {
+  const undo = async (suggestionId: string, s?: Item) => {
     setBusy(true)
     const res = await ds.undoTurnOff(suggestionId)
     setBusy(false)
+    setOutcome(null)
     setActionsVersion((v) => v + 1)
+    if (res.ok && s) {
+      // Turned back on and not suggested for 7 days, so it leaves the list.
+      setTurnedOff((m) => { const n = new Map(m); n.delete(s.key); return n })
+      hide(s)
+    }
     setNotice({ ok: res.ok, text: res.ok ? `${res.message} It won't be suggested again for 7 days.` : res.message })
   }
 
@@ -147,12 +161,12 @@ export function TodayPage() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">{greeting()}{first ? `, ${first}` : ''}</h1>
           <p className="mt-1 text-[15px] text-muted">
-            {summary ?? (
+            {summary ?? (pending.length === 0 ? `All done. Every account is fine.` : (
               <>
-                <b className="text-ink">{items.length} thing{items.length === 1 ? '' : 's'}</b> need{items.length === 1 ? 's' : ''} {subject} today.{' '}
+                <b className="text-ink">{pending.length} thing{pending.length === 1 ? '' : 's'}</b> need{pending.length === 1 ? 's' : ''} {subject} today.{' '}
                 {fine > 0 && `${rest} ${fine} account${fine === 1 ? ' is' : 's are'} fine.`}
               </>
-            )}
+            ))}
           </p>
         </div>
         {isAdmin && (
@@ -185,18 +199,21 @@ export function TodayPage() {
       <div className="space-y-3">
         {groupToday(items).map((g) => {
           const manager = isAdmin && scope === 'all' ? managerName.get(g.items[0].managerId ?? '') ?? null : null
+          const left = g.items.filter((s) => !turnedOff.has(s.key)).length
           return (
             <section key={g.accountId} className="overflow-hidden rounded-2xl border border-line bg-surface">
               <header className="flex items-baseline justify-between gap-3 px-4 pt-3 pb-1">
                 <h2 className="min-w-0 truncate font-semibold">{g.name}</h2>
                 <span className="shrink-0 text-xs text-muted">
-                  {manager && `${manager} · `}{g.items.length} thing{g.items.length === 1 ? '' : 's'}
+                  {manager && `${manager} · `}{left ? `${left} thing${left === 1 ? '' : 's'}` : 'Done'}
                 </span>
               </header>
               <ul>
                 {g.items.map((s) => (
-                  <Row key={s.key} s={s} open={open === s.key} onToggle={() => setOpen(open === s.key ? null : s.key)}
-                    managerName={manager} onTurnOff={() => setConfirm(s)} onSnooze={(st) => snooze(s, st)} />
+                  turnedOff.has(s.key)
+                    ? <DoneRow key={s.key} s={s} done={turnedOff.get(s.key)!} busy={busy} onUndo={(id) => undo(id, s)} />
+                    : <Row key={s.key} s={s} open={open === s.key} onToggle={() => setOpen(open === s.key ? null : s.key)}
+                        managerName={manager} onTurnOff={() => { setOutcome(null); setConfirm(s) }} onSnooze={(st) => snooze(s, st)} />
                 ))}
               </ul>
             </section>
@@ -209,9 +226,9 @@ export function TodayPage() {
         <Link to="/insights" className="font-semibold text-brand">See all {accountsInScope.length} accounts</Link>
       </div>
 
-      <Recent actions={actions ?? []} busy={busy} onUndo={undo} />
+      <Recent actions={actions ?? []} busy={busy} onUndo={(id) => undo(id, items.find((s) => s.id === id))} />
 
-      <Modal open={!!confirm} onClose={() => setConfirm(null)} title="Turn off this ad?">
+      <Modal open={!!confirm} onClose={() => !busy && setConfirm(null)} title="Turn off this ad?">
         {confirm && (
           <>
             <p className="text-sm">
@@ -221,11 +238,16 @@ export function TodayPage() {
             <div className="mt-4 flex justify-end gap-2">
               <button onClick={() => setConfirm(null)} disabled={busy} className="rounded-lg border border-line px-3 py-1.5 text-sm">Cancel</button>
               <button onClick={() => turnOff(confirm)} disabled={busy} className="rounded-lg bg-primary px-3 py-1.5 text-sm font-semibold text-on-primary disabled:opacity-60">
-                {busy ? 'Turning off...' : 'Turn off'}
+                {busy ? 'Turning off and checking with Meta...' : 'Turn off'}
               </button>
             </div>
           </>
         )}
+      </Modal>
+
+      <Modal open={!!outcome} onClose={() => setOutcome(null)}
+        title={!outcome ? '' : !outcome.res.ok ? "Couldn't turn it off" : outcome.res.alreadyOff ? 'Already off' : outcome.res.verified ? 'Done: the ad is off' : 'Sent to Meta, not confirmed yet'}>
+        {outcome && <Outcome o={outcome} busy={busy} onUndo={(id) => undo(id, outcome.item)} onClose={() => setOutcome(null)} />}
       </Modal>
     </div>
   )
@@ -302,6 +324,50 @@ function Row({ s, open, onToggle, managerName, onTurnOff, onSnooze }: {
           <p className="mt-2 text-xs text-muted">Not now hides it for a day. Dismiss (also the X on the row) hides it for 7 days. Both can be undone.</p>
         </div>
       )}
+    </li>
+  )
+}
+
+/** What happened after Turn off: done and confirmed by Meta, already off, not confirmed, or failed. */
+function Outcome({ o, busy, onUndo, onClose }: { o: { item: Item; res: TurnOffResult }; busy: boolean; onUndo: (id: string) => void; onClose: () => void }) {
+  const { item: s, res } = o
+  const good = res.ok && (res.verified || res.alreadyOff)
+  const undoId = res.ok && !res.alreadyOff ? s.id ?? (SAMPLE_MODE ? s.key : undefined) : undefined
+  const btn = 'rounded-lg px-3 py-1.5 text-sm font-semibold'
+  return (
+    <>
+      <div className="flex items-start gap-3">
+        <span className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${good ? 'bg-good/15 text-good' : 'bg-alert-high text-bad'}`}>
+          {good ? <Check size={18} strokeWidth={2.5} /> : <AlertTriangle size={16} />}
+        </span>
+        <div className="min-w-0 text-sm">
+          <p className="font-medium">{s.entityName}</p>
+          <p className="text-muted">{s.clientName ?? s.accountName}{res.ok && res.at ? ` · ${dateTime(res.at)}` : ''}</p>
+          <p className="mt-2">{res.message}</p>
+          {res.ok && !res.alreadyOff && <p className="mt-1 text-muted">Undo is available here and under Recently turned off for 24 hours.</p>}
+        </div>
+      </div>
+      <div className="mt-4 flex flex-wrap justify-end gap-2">
+        <a href={adsManager(s)} target="_blank" rel="noreferrer" className={`${btn} border border-line`}>{res.ok ? 'Check in Ads Manager' : 'Open in Ads Manager'}</a>
+        {undoId && <button disabled={busy} onClick={() => onUndo(undoId)} className={`${btn} border border-line`}>{busy ? 'Turning back on...' : 'Undo'}</button>}
+        <button onClick={onClose} className={`${btn} bg-primary text-on-primary`}>{res.ok ? 'Done' : 'Close'}</button>
+      </div>
+    </>
+  )
+}
+
+/** A row that was turned off from this page: stays in place, marked done, with Undo. */
+function DoneRow({ s, done, busy, onUndo }: { s: Item; done: Done; busy: boolean; onUndo: (id: string) => void }) {
+  return (
+    <li className="border-t border-line first:border-t-0">
+      <div className="flex items-center gap-3 px-4 py-2.5">
+        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-good/15 text-good"><Check size={13} strokeWidth={3} /></span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-soft">Turned off{done.verified ? ', confirmed in Meta' : ''} · {dateTime(done.at)}</span>
+          <span className="block truncate text-xs text-muted">{s.entityName}</span>
+        </span>
+        {done.undoId && <button disabled={busy} onClick={() => onUndo(done.undoId!)} className="whitespace-nowrap rounded-lg border border-line bg-surface px-3 py-1.5 text-[13px] font-semibold">Undo</button>}
+      </div>
     </li>
   )
 }

@@ -307,11 +307,11 @@ export function createMockSource(data: MockDataset = generateMockData()): DataSo
     },
     async turnOffAd() {
       await wait(400)
-      return { ok: true, message: 'Sample data: nothing was changed in Meta.' }
+      return { ok: true, verified: true, at: new Date().toISOString(), message: 'Sample data: nothing was changed in Meta.' }
     },
     async undoTurnOff() {
       await wait(300)
-      return { ok: true, message: 'Sample data: nothing was changed in Meta.' }
+      return { ok: true, verified: true, at: new Date().toISOString(), message: 'Sample data: nothing was changed in Meta.' }
     },
     async recentActions() {
       return []

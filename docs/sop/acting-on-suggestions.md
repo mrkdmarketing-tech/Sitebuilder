@@ -10,7 +10,7 @@ Today is The Lab's home page. It lists only what needs doing on your accounts, o
 2. Read the top line: "**6 things** need you today. Your other 34 accounts are fine."
 3. Items are **grouped by location**: one block per client, the most urgent and costly first. In each block, every row has one plain sentence ("An ad spent $240 with no leads") with the ad's name underneath, one button, and an **X**.
    - **X (Dismiss)**: you don't want to act on it. It disappears for 7 days, and after that comes back only if the problem is still there. The message that appears has **Undo**.
-   - **Turn off**: pauses that ad in Meta after one confirmation.
+   - **Turn off**: pauses that ad in Meta after one confirmation. The Lab then asks Meta again and shows **"Done: the ad is off"** with "Meta confirms it's paused" and the time. The row stays on the list with a green tick, "Turned off, confirmed in Meta", and an **Undo** button. If Meta took the change but doesn't show it as paused yet, it says "Sent to Meta, not confirmed yet": click **Check in Ads Manager**.
    - **Open billing**: the account's billing page in Meta (payment or account problems).
    - **Open**: the ad or account in Ads Manager, for things a person needs to look at (few clicks, no recent leads).
 4. **Tap the row** for the numbers (spent, leads, cost per lead, click rates, the other ads in the ad set) and the other options:
@@ -23,7 +23,7 @@ Today is The Lab's home page. It lists only what needs doing on your accounts, o
 
 Dismissed or hid something by mistake? Click **Undo** in the message straight away and it's back on the list.
 
-Turned off the wrong ad? Click **Undo** in the message that appears, or open **Recently turned off** at the bottom of Today and click **Undo** next to it. Undo works for 24 hours after a Turn off made in The Lab, and only if the ad is still paused. The ad is then not suggested again for 7 days. After 24 hours, turn it back on in Ads Manager.
+Turned off the wrong ad? Click **Undo** in the "Done" box, on the ticked row, or open **Recently turned off** at the bottom of Today and click **Undo** next to it. Undo works for 24 hours after a Turn off made in The Lab, and only if the ad is still paused. The ad is then not suggested again for 7 days. After 24 hours, turn it back on in Ads Manager.
 
 ## When Turn off doesn't work
 

@@ -2,6 +2,10 @@
 
 What changed, newest first. Every change to the platform adds a line here.
 
+## 2026-11-11: Turn off shows that it worked
+- After **Turn off**, The Lab asks Meta for the ad's status again and shows a clear box: "Done: the ad is off. Meta confirms it's paused", with the time, **Undo**, **Check in Ads Manager** and **Done**. If it failed, the same box says why.
+- The row stays on Today with a green tick ("Turned off, confirmed in Meta", time, Undo) instead of disappearing, and the count at the top goes down. `meta-action` updated and deployed (Undo is confirmed the same way).
+
 ## 2026-11-11: Ad approval: Slack messages
 - Submitting an ad now posts in **#mrkd-internal-app**, like Retool did: "Ad for Review (NEW)" tagging the reviewer, with an **Open in The Lab** link. Sent back and approved ads tag whoever made them. Starts once the Slack webhook is added ([setup](docs/sop/tokens-and-secrets.md#connect-slack-ad-approval-messages)).
 - **Jordan is the default reviewer** for submitted ads (pre-selected in the Submit box; can be changed per ad). Migration 2700, function `approval-notify` (deployed).

@@ -31,7 +31,10 @@ export function createSupabaseSource(db: SupabaseClient): DataSource {
   /** Calls the meta-action function (Turn off / Undo) and reads its own error text on failure. */
   async function callMetaAction(body: Record<string, unknown>, fallback: string): Promise<TurnOffResult> {
     const { data, error } = await db.functions.invoke('meta-action', { body })
-    if (!error) return { ok: true, message: (data as { message?: string })?.message ?? fallback }
+    if (!error) {
+      const d = (data ?? {}) as { message?: string; verified?: boolean; alreadyOff?: boolean; at?: string }
+      return { ok: true, message: d.message ?? fallback, verified: d.verified, alreadyOff: d.alreadyOff, at: d.at ?? new Date().toISOString() }
+    }
     let b: { error?: string; needsManageCampaigns?: boolean } = {}
     try {
       b = await (error as { context?: Response }).context?.json()

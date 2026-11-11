@@ -38,6 +38,12 @@ export interface TurnOffResult {
   message: string
   /** The account only allows viewing; MRKDPlatformTools needs "Manage campaigns". */
   needsManageCampaigns?: boolean
+  /** Meta was asked again afterwards and shows the new status. */
+  verified?: boolean
+  /** It was already off; nothing changed. */
+  alreadyOff?: boolean
+  /** When it was done. */
+  at?: string
 }
 
 /** One "Turn off" (or "Undo") attempt from the audit log. */

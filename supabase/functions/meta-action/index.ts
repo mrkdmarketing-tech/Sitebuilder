@@ -12,7 +12,9 @@
  *     accounts, or everyone's for owners/admins) and it must still be open.
  *  3. Re-read the ad from Meta. Already paused → mark done, change nothing.
  *  4. Pause it with the system user token.
- *  5. Record it in actions_log (who, before/after, result) and mark the
+ *  5. Read the ad back from Meta to confirm it really is paused (the answer
+ *     says "confirmed" only then).
+ *  6. Record it in actions_log (who, before/after, result) and mark the
  *     suggestion done. Failures are logged too.
  *
  * Secrets: META_SYSTEM_USER_TOKEN. Provided: SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY.
@@ -21,6 +23,13 @@ import { corsHeaders, json } from '../_shared/http.ts'
 import { serviceClient, userClient } from '../_shared/supabase.ts'
 
 const GRAPH = 'https://graph.facebook.com/v23.0'
+
+/** Ask Meta for the ad's status right after a change, to confirm it took. */
+async function confirmStatus(adId: string, want: 'PAUSED' | 'ACTIVE') {
+  const r = await meta(`${adId}?fields=status,effective_status`)
+  const status = r.ok ? String(r.body.status ?? '') : null
+  return { verified: status === want, metaStatus: status, effectiveStatus: r.ok ? (r.body.effective_status ?? null) : null }
+}
 
 async function meta(path: string, init: RequestInit = {}) {
   const token = Deno.env.get('META_SYSTEM_USER_TOKEN')
@@ -85,11 +94,17 @@ Deno.serve(async (req) => {
       await log('error', { status: 'PAUSED' }, null, msg)
       return json({ error: `Meta refused: ${msg}` }, 502)
     }
+    const check = await confirmStatus(adId, 'ACTIVE')
     await db.from('meta_ads').update({ status: 'ACTIVE' }).eq('id', adId)
     // Undone on purpose: don't suggest it again for 7 days (same as Dismiss).
     await db.from('suggestions').update({ status: 'dismissed', acted_by: me.id, acted_at: new Date().toISOString() }).eq('id', sug.id)
-    await log('ok', { status: 'PAUSED' }, { status: 'ACTIVE' })
-    return json({ ok: true, message: `${sug.entity_name ?? 'The ad'} is back on in Meta.` })
+    await log('ok', { status: 'PAUSED' }, { status: 'ACTIVE', confirmed: check.verified })
+    return json({
+      ok: true, verified: check.verified, metaStatus: check.metaStatus, at: new Date().toISOString(),
+      message: check.verified
+        ? `${sug.entity_name ?? 'The ad'} is back on. Meta confirms it's active.`
+        : `Meta accepted the change, but still shows ${sug.entity_name ?? 'the ad'} as ${String(check.metaStatus ?? 'unknown').toLowerCase()}. Check in Ads Manager.`,
+    })
   }
   const markDone = () =>
     db.from('suggestions').update({ status: 'done', acted_by: me.id, acted_at: new Date().toISOString() }).eq('id', sug.id)
@@ -105,7 +120,8 @@ Deno.serve(async (req) => {
   if (current.body.status !== 'ACTIVE') {
     await markDone()
     await log('ok', before, before, 'already not active; nothing changed')
-    return json({ ok: true, alreadyOff: true, message: `${sug.entity_name ?? 'The ad'} was already off.` })
+    return json({ ok: true, alreadyOff: true, verified: true, metaStatus: current.body.status, at: new Date().toISOString(),
+      message: `${sug.entity_name ?? 'The ad'} was already off in Meta (${String(current.body.status).toLowerCase()}). Nothing was changed.` })
   }
 
   // 4. Pause it.
@@ -124,9 +140,15 @@ Deno.serve(async (req) => {
     return json({ error: msg, needsManageCampaigns: permission }, permission ? 403 : 502)
   }
 
-  // 5. Record it.
+  // 5. Confirm with Meta, then record it.
+  const check = await confirmStatus(adId, 'PAUSED')
   await db.from('meta_ads').update({ status: 'PAUSED', effective_status: 'PAUSED' }).eq('id', adId)
   await markDone()
-  await log('ok', before, { status: 'PAUSED' })
-  return json({ ok: true, message: `${sug.entity_name ?? 'The ad'} is now off in Meta.` })
+  await log('ok', before, { status: 'PAUSED', confirmed: check.verified })
+  return json({
+    ok: true, verified: check.verified, metaStatus: check.metaStatus, at: new Date().toISOString(),
+    message: check.verified
+      ? `${sug.entity_name ?? 'The ad'} is off. Meta confirms it's paused.`
+      : `Meta accepted the change, but still shows ${sug.entity_name ?? 'the ad'} as ${String(check.metaStatus ?? 'unknown').toLowerCase()}. Check in Ads Manager.`,
+  })
 })
