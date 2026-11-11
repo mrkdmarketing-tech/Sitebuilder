@@ -21,6 +21,7 @@
  */
 import { corsHeaders, json } from '../_shared/http.ts'
 import { serviceClient, userClient } from '../_shared/supabase.ts'
+import { explainMetaError, metaErrorDetail } from '../../../shared/domain/metaErrors.ts'
 
 const GRAPH = 'https://graph.facebook.com/v23.0'
 
@@ -29,25 +30,6 @@ async function confirmStatus(adId: string, want: 'PAUSED' | 'ACTIVE') {
   const r = await meta(`${adId}?fields=status,effective_status`)
   const status = r.ok ? String(r.body.status ?? '') : null
   return { verified: status === want, metaStatus: status, effectiveStatus: r.ok ? (r.body.effective_status ?? null) : null }
-}
-
-type MetaError = { message?: string; code?: number; error_subcode?: number; error_user_title?: string; error_user_msg?: string; fbtrace_id?: string }
-
-/** Everything Meta said, for the log (so the next problem is easy to diagnose). */
-const metaErrorDetail = (e: MetaError) =>
-  [e.error_user_title, e.error_user_msg, e.message, `code ${e.code ?? '?'}/${e.error_subcode ?? '-'}`, e.fbtrace_id && `trace ${e.fbtrace_id}`].filter(Boolean).join(' | ')
-
-/** Plain-English reason, and what kind of access is missing. */
-function explainMetaError(e: MetaError): { kind: 'account' | 'page' | null; message: string } {
-  // Lead ads: Meta re-checks the whole ad on any change; if The Lab can't see the client's Page,
-  // it can't see the instant form and says the form is missing (code 100 / 3390001).
-  if (e.error_subcode === 3390001 || /lead form/i.test(e.error_user_title ?? '')) {
-    return { kind: 'page', message: "Meta won't let The Lab change this lead ad: The Lab can't see this client's Facebook Page, so Meta thinks the instant form is missing. Turn it off in Ads Manager for now. To fix it for good, give MRKDPlatformTools access to the client's Page (docs/setup/meta.md, Pages)." }
-  }
-  if ([10, 200, 294].includes(e.code ?? 0) || /permission/i.test(e.message ?? '')) {
-    return { kind: 'account', message: 'This ad account only lets The Lab view, not change ads. In Business settings, give MRKDPlatformTools "Manage campaigns" on this account, then try again. Until then, turn it off in Ads Manager.' }
-  }
-  return { kind: null, message: `Meta refused: ${e.error_user_msg ?? e.message ?? 'unknown error'}${e.error_user_title ? ` (${e.error_user_title})` : ''}. Turn it off in Ads Manager.` }
 }
 
 async function meta(path: string, init: RequestInit = {}) {
@@ -153,7 +135,9 @@ Deno.serve(async (req) => {
     const e = paused.body?.error ?? {}
     const why = explainMetaError(e)
     await log('error', before, null, metaErrorDetail(e))
-    return json({ error: why.message, needsManageCampaigns: why.kind === 'account', needsPageAccess: why.kind === 'page' }, why.kind ? 403 : 502)
+    // Remember it, so Today shows "Turn off in Ads Manager" for this ad from now on.
+    await db.from('suggestions').update({ turn_off_check: { ok: false, kind: why.kind, short: why.short, checkedAt: new Date().toISOString() } }).eq('id', sug.id)
+    return json({ error: why.message, needsManageCampaigns: why.kind === 'account', needsPageAccess: why.kind === 'page' }, why.kind === 'other' ? 502 : 403)
   }
 
   // 5. Confirm with Meta, then record it.

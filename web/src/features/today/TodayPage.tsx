@@ -15,7 +15,7 @@ import { AlertTriangle, Check, ChevronDown, ChevronRight, X } from 'lucide-react
 import { evaluateRules, type Suggestion } from '@shared/domain/rules.ts'
 import { canTurnOff, greeting, groupToday, primaryButton, todayLine, todayOrder } from '@shared/domain/today.ts'
 import { presetRange } from '@shared/domain/dates.ts'
-import { useData, type ActionRecord, type TurnOffResult } from '../../data/source'
+import { useData, type ActionRecord, type StoredSuggestion, type TurnOffResult } from '../../data/source'
 import { useAsync } from '../../lib/useAsync'
 import { useLiveRefresh } from '../../lib/useLiveRefresh'
 import { Modal } from '../../components/ui'
@@ -23,7 +23,7 @@ import { dateTime, money } from '../../lib/format'
 import { SAMPLE_MODE } from '../../lib/config'
 import { useSession } from '../../app/session'
 
-type Item = Suggestion & { id?: string }
+type Item = Suggestion & { id?: string; turnOffCheck?: StoredSuggestion['turnOffCheck'] }
 type Notice = { ok: boolean; text: string; undoId?: string; link?: string; restore?: Item }
 /** An ad turned off from this page: its row stays, marked done, until the page reloads. */
 type Done = { at: string; verified: boolean; undoId?: string }
@@ -63,6 +63,9 @@ export function TodayPage() {
   // The Turn off box shows the outcome after the click (done and confirmed, or what went wrong).
   const [outcome, setOutcome] = useState<{ item: Item; res: TurnOffResult } | null>(null)
   const [turnedOff, setTurnedOff] = useState<Map<string, Done>>(new Map())
+  // Rows where Meta refused a Turn off just now (the stored check covers the rest).
+  const [blocked, setBlocked] = useState<Map<string, string>>(new Map())
+  const whyBlocked = (s: Item) => blocked.get(s.key) ?? (s.turnOffCheck && !s.turnOffCheck.ok ? s.turnOffCheck.short ?? "Meta won't let The Lab change this ad" : null)
 
   const items = useMemo(
     () => todayOrder((data?.items ?? []).filter((s) => !handled.has(s.key) && inScope(s.managerId))),
@@ -119,6 +122,10 @@ export function TodayPage() {
     setConfirm(null)
     setActionsVersion((v) => v + 1)
     setOutcome({ item: s, res })
+    if (!res.ok && (res.needsManageCampaigns || res.needsPageAccess)) {
+      // Meta refused for lack of access: show "Turn off in Ads Manager" on this row from now on.
+      setBlocked((m) => new Map(m).set(s.key, res.needsPageAccess ? "The Lab can't see this client's Facebook Page" : 'This ad account is view-only for The Lab'))
+    }
     if (res.ok) {
       setOpen(null)
       setNotice(null)
@@ -212,7 +219,7 @@ export function TodayPage() {
                 {g.items.map((s) => (
                   turnedOff.has(s.key)
                     ? <DoneRow key={s.key} s={s} done={turnedOff.get(s.key)!} busy={busy} onUndo={(id) => undo(id, s)} />
-                    : <Row key={s.key} s={s} open={open === s.key} onToggle={() => setOpen(open === s.key ? null : s.key)}
+                    : <Row key={s.key} s={s} open={open === s.key} onToggle={() => setOpen(open === s.key ? null : s.key)} blockedWhy={whyBlocked(s)}
                         managerName={manager} onTurnOff={() => { setOutcome(null); setConfirm(s) }} onSnooze={(st) => snooze(s, st)} />
                 ))}
               </ul>
@@ -253,9 +260,11 @@ export function TodayPage() {
   )
 }
 
-function Row({ s, open, onToggle, managerName, onTurnOff, onSnooze }: {
+function Row({ s, open, onToggle, managerName, onTurnOff, onSnooze, blockedWhy }: {
   s: Item; open: boolean; onToggle: () => void; managerName: string | null
   onTurnOff: () => void; onSnooze: (state: 'snoozed' | 'dismissed') => void
+  /** Why Turn off can't work here (checked with Meta in advance), or null. */
+  blockedWhy: string | null
 }) {
   const primary = primaryButton(s)
   const btn = 'whitespace-nowrap rounded-lg px-3 py-1.5 text-[13px] font-semibold'
@@ -264,7 +273,9 @@ function Row({ s, open, onToggle, managerName, onTurnOff, onSnooze }: {
   const dot = s.rule === 'low_ctr' || s.rule === 'low_link_ctr' || s.severity === 'medium' ? 'bg-warn' : 'bg-bad'
 
   const primaryEl =
-    primary === 'turn_off' ? <button onClick={onTurnOff} className={solid}>Turn off</button>
+    primary === 'turn_off' && blockedWhy
+      ? <a href={adsManager(s)} target="_blank" rel="noreferrer" className={outline} title={`Can't turn off from The Lab: ${blockedWhy}`}>Turn off in Ads Manager</a>
+      : primary === 'turn_off' ? <button onClick={onTurnOff} className={solid}>Turn off</button>
       : primary === 'open_billing' ? <a href={billing(s)} target="_blank" rel="noreferrer" className={outline}>Open billing</a>
       : <a href={adsManager(s)} target="_blank" rel="noreferrer" className={outline}>Open</a>
 
@@ -289,6 +300,7 @@ function Row({ s, open, onToggle, managerName, onTurnOff, onSnooze }: {
           <span className="min-w-0">
             <span className="block">{todayLine(s)}</span>
             {s.level === 'ad' && <span className="block truncate text-xs text-muted">{s.entityName}</span>}
+            {blockedWhy && canTurnOff(s) && <span className="block text-xs text-warn">Can't turn off from The Lab: {blockedWhy}</span>}
           </span>
         </button>
         {primaryEl}
@@ -314,7 +326,7 @@ function Row({ s, open, onToggle, managerName, onTurnOff, onSnooze }: {
             </p>
           )}
           <div className="mt-3 flex flex-wrap gap-2">
-            {primary !== 'turn_off' && canTurnOff(s) && <button onClick={onTurnOff} className={outline}>Turn off</button>}
+            {primary !== 'turn_off' && canTurnOff(s) && !blockedWhy && <button onClick={onTurnOff} className={outline}>Turn off</button>}
             {primary !== 'open_ad' && primary !== 'open_account' && (
               <a href={adsManager(s)} target="_blank" rel="noreferrer" className={outline}>Open in Ads Manager</a>
             )}

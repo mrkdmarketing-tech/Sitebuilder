@@ -27,6 +27,9 @@ Turned off the wrong ad? Click **Undo** in the "Done" box, on the ticked row, or
 
 ## When Turn off doesn't work
 
+If a row says **"Can't turn off from The Lab"** with a reason and a **Turn off in Ads Manager** button, The Lab already checked with Meta and knows Turn off would fail. Click the button and pause the ad there. The reasons and fixes are below; once an owner fixes the access, the row goes back to a normal Turn off button within 6 hours.
+
+
 | Message | Meaning | Do this |
 |---|---|---|
 | "Meta won't let The Lab change this lead ad... can't see this client's Facebook Page" | The Lab's Meta login has no access to that client's Page, so Meta thinks the lead form is missing. | Turn it off in Ads Manager. Owners: give MRKDPlatformTools access to the Page ([../setup/meta.md](../setup/meta.md#checked-11-nov-2026-why-turn-off-failed)). |

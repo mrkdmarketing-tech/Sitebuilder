@@ -73,6 +73,8 @@ Handled by the `meta-action` function, not the browser:
 5. Reads the ad back from Meta and answers `verified: true` only if Meta now shows it paused. The screen shows "Done: the ad is off. Meta confirms it's paused" or "Sent to Meta, not confirmed yet".
 6. Writes `actions_log` (who, before/after including `confirmed`, result).
 
+**Checked in advance:** every 30 minutes `run-rules` asks Meta whether each suggested ad *could* be paused (`execution_options=validate_only`, nothing changes), at most every 6 hours per suggestion, and saves the answer in `suggestions.turn_off_check`. A failed Turn off saves it too. Where Meta won't allow it, Today shows **Turn off in Ads Manager** and a one-line reason (view-only account, Page not visible to The Lab, account can't be changed) instead of a Turn off button that would fail. Reasons: `shared/domain/metaErrors.ts`.
+
 Every "Turn off" asks for one confirmation first. In sample-data mode nothing is sent to Meta.
 
 **Undo** (`{ suggestionId, undo: true }`): only within 24 hours of a Turn off made from The Lab, only if the ad is still paused; sets it back to active, logs `meta.resume_ad`, and marks the suggestion dismissed (not suggested again for 7 days). Each log entry stores the suggestion id so Undo can find it.

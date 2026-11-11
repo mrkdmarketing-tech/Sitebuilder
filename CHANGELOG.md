@@ -2,6 +2,10 @@
 
 What changed, newest first. Every change to the platform adds a line here.
 
+## 2026-11-11: Today knows in advance when Turn off can't work
+- `run-rules` now asks Meta every 30 minutes whether each suggested ad could be paused (validate only, nothing changes). Where Meta won't allow it, the row shows **Turn off in Ads Manager** and why ("This ad account is view-only for The Lab", "The Lab can't see this client's Facebook Page", "Meta says this ad account can't be changed") instead of a button that fails. Migration 3100; reasons in `shared/domain/metaErrors.ts` (tested).
+- Today: 7 of 19 suggested ads can be turned off from The Lab. The rest need Meta access (docs/setup/meta.md).
+
 ## 2026-11-11: Sort Insights on the phone
 - New **Sort** menu above the list on Insights (accounts, campaigns, ad sets, ads): spend, CPL, leads, CR or CPLC, low to high or high to low, or name. Works on the phone and desktop, stays in step with clicking a column heading, and is remembered.
 - Cost sorts treat spend with no leads as the most expensive, so "CPL: high to low" puts those at the top instead of the bottom.

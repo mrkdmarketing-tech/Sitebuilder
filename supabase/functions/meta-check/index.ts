@@ -30,6 +30,22 @@ Deno.serve(async (req) => {
     return json({ results, pages: (pages.data ?? []).map((p: { id: string; name: string; tasks?: string[] }) => ({ id: p.id, name: p.name, tasks: p.tasks ?? [] })), pagesError: pages.error?.message ?? null })
   }
 
+  // ?adsets=<id>,<id>...: can these ad sets be paused? (validate only)
+  const adsetsParam = new URL(req.url).searchParams.get('adsets')
+  if (adsetsParam) {
+    const auth = { Authorization: `Bearer ${token}` }
+    const results = []
+    for (const id of adsetsParam.split(',').filter((x) => /^\d+$/.test(x)).slice(0, 50)) {
+      const r = await fetch(`https://graph.facebook.com/v23.0/${id}`, {
+        method: 'POST', headers: { ...auth, 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ status: 'PAUSED', execution_options: '["validate_only"]' }),
+      })
+      const b = await r.json().catch(() => ({}))
+      results.push({ id, ok: r.ok, subcode: b.error?.error_subcode ?? null, title: b.error?.error_user_title ?? b.error?.message ?? null })
+    }
+    return json({ results })
+  }
+
   // ?ad=<id>: why can't this ad be paused? Reads the ad and asks Meta to *validate* a pause
   // (execution_options=validate_only: Meta checks it and changes nothing).
   const adParam = new URL(req.url).searchParams.get('ad')

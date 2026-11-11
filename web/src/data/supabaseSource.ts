@@ -35,13 +35,13 @@ export function createSupabaseSource(db: SupabaseClient): DataSource {
       const d = (data ?? {}) as { message?: string; verified?: boolean; alreadyOff?: boolean; at?: string }
       return { ok: true, message: d.message ?? fallback, verified: d.verified, alreadyOff: d.alreadyOff, at: d.at ?? new Date().toISOString() }
     }
-    let b: { error?: string; needsManageCampaigns?: boolean } = {}
+    let b: { error?: string; needsManageCampaigns?: boolean; needsPageAccess?: boolean } = {}
     try {
       b = await (error as { context?: Response }).context?.json()
     } catch {
       /* keep default */
     }
-    return { ok: false, message: b.error ?? error.message, needsManageCampaigns: b.needsManageCampaigns }
+    return { ok: false, message: b.error ?? error.message, needsManageCampaigns: b.needsManageCampaigns, needsPageAccess: b.needsPageAccess }
   }
 
   return {
@@ -144,13 +144,14 @@ export function createSupabaseSource(db: SupabaseClient): DataSource {
       // Row-level security limits this to the person's own accounts (owners/admins: all).
       const rows = check(
         await db.from('suggestions')
-          .select('id, key, rule, severity, account_id, client_id, manager_id, level, entity_id, entity_name, message, question, action, evidence, siblings, last_seen_at, meta_ad_accounts(name), clients(business_name)')
+          .select('id, key, rule, severity, account_id, client_id, manager_id, level, entity_id, entity_name, message, question, action, evidence, siblings, last_seen_at, turn_off_check, meta_ad_accounts(name), clients(business_name)')
           .eq('status', 'open')
           .order('last_seen_at', { ascending: false }),
       ) as unknown as {
         id: string; key: string; rule: Suggestion['rule']; severity: Suggestion['severity']; account_id: string; client_id: number | null
         manager_id: string | null; level: Suggestion['level']; entity_id: string; entity_name: string | null; message: string; question: string
         action: Suggestion['action']; evidence: Suggestion['evidence']; siblings: Suggestion['siblings'] | null; last_seen_at: string
+        turn_off_check: StoredSuggestion['turnOffCheck']
         meta_ad_accounts: { name: string | null } | null; clients: { business_name: string | null } | null
       }[]
       return rows.map((r): StoredSuggestion => ({
@@ -158,6 +159,7 @@ export function createSupabaseSource(db: SupabaseClient): DataSource {
         accountName: r.meta_ad_accounts?.name ?? r.account_id, clientId: r.client_id, clientName: r.clients?.business_name ?? null,
         managerId: r.manager_id, level: r.level, entityId: r.entity_id, entityName: r.entity_name ?? '', message: r.message,
         question: r.question, action: r.action, evidence: r.evidence ?? {}, siblings: r.siblings ?? undefined, lastSeenAt: r.last_seen_at,
+        turnOffCheck: r.turn_off_check ?? null,
       }))
     },
     async updateSuggestion(id, status) {

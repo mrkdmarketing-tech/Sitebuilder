@@ -31,6 +31,8 @@ export interface SyncRun {
 export interface StoredSuggestion extends Suggestion {
   id: string
   lastSeenAt: string
+  /** Checked in advance (run-rules): can The Lab pause this ad? Null = not checked yet. */
+  turnOffCheck?: { ok: boolean; kind?: 'page' | 'account' | 'unwritable' | 'other'; short?: string; checkedAt: string } | null
 }
 
 export interface CreativeTagRow {
@@ -47,6 +49,8 @@ export interface TurnOffResult {
   message: string
   /** The account only allows viewing; MRKDPlatformTools needs "Manage campaigns". */
   needsManageCampaigns?: boolean
+  /** The Lab can't see the client's Facebook Page, so Meta won't change this lead ad. */
+  needsPageAccess?: boolean
   /** Meta was asked again afterwards and shows the new status. */
   verified?: boolean
   /** It was already off; nothing changed. */

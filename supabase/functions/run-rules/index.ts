@@ -12,15 +12,34 @@
  *  5. Open/snoozed ones that no longer fire → 'resolved'.
  *  6. Snoozed ones past snoozed_until → 'open' again.
  *  A suggestion dismissed in the last 7 days is not re-created.
+ *  7. For ad suggestions not checked in the last 6 hours: asks Meta whether the
+ *     ad could be paused (validate only, nothing changes) and saves the answer in
+ *     turn_off_check, so Today shows "Turn off in Ads Manager" where Turn off can't work.
  */
 import { serviceClient } from '../_shared/supabase.ts'
 import { logRun } from '../_shared/sync-log.ts'
 import { isAuthorisedCron, json } from '../_shared/http.ts'
 import { evaluateRules, type RuleSettings } from '../../../shared/domain/rules.ts'
 import { presetRange } from '../../../shared/domain/dates.ts'
+import { explainMetaError } from '../../../shared/domain/metaErrors.ts'
 import type { ReportRow } from '../../../shared/domain/types.ts'
 
 const DISMISS_DAYS = 7
+const RECHECK_HOURS = 6
+
+/** Would Meta let The Lab pause this ad? Asks with validate_only, so nothing is changed. */
+async function canPause(adId: string, token: string) {
+  const res = await fetch(`https://graph.facebook.com/v23.0/${adId}`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({ status: 'PAUSED', execution_options: '["validate_only"]' }),
+  })
+  const body = await res.json().catch(() => ({}))
+  if (res.ok && body?.success !== false) return { ok: true, checkedAt: new Date().toISOString() }
+  if (res.status >= 500 || body?.error?.is_transient) return null // try again next run
+  const why = explainMetaError(body?.error ?? {})
+  return { ok: false, kind: why.kind, short: why.short, checkedAt: new Date().toISOString() }
+}
 
 Deno.serve(async (req) => {
   if (!isAuthorisedCron(req)) return json({ error: 'unauthorised' }, 401)
@@ -82,7 +101,26 @@ Deno.serve(async (req) => {
         if (error) throw new Error(error.message)
         resolved = gone.length
       }
-      return { rows: found.length, details: { found: found.length, created, refreshed, resolved, reopened } }
+
+      // 7. Can Turn off work? (ad suggestions, checked at most every 6 hours)
+      let checked = 0, blocked = 0
+      const token = Deno.env.get('META_SYSTEM_USER_TOKEN')
+      if (token) {
+        const { data: toCheck } = await db.from('suggestions').select('id, action, turn_off_check')
+          .in('status', ['open', 'snoozed']).eq('level', 'ad')
+        const stale = (toCheck ?? []).filter((r) => {
+          const at = (r.turn_off_check as { checkedAt?: string } | null)?.checkedAt
+          return (r.action as { adId?: string } | null)?.adId && (!at || now.getTime() - new Date(at).getTime() > RECHECK_HOURS * 3_600_000)
+        }).slice(0, 80)
+        for (const r of stale) {
+          const result = await canPause((r.action as { adId: string }).adId, token).catch(() => null)
+          if (!result) continue
+          await db.from('suggestions').update({ turn_off_check: result }).eq('id', r.id)
+          checked++
+          if (!result.ok) blocked++
+        }
+      }
+      return { rows: found.length, details: { found: found.length, created, refreshed, resolved, reopened, turnOffChecked: checked, turnOffBlocked: blocked } }
     })
     return json(result)
   } catch (err) {
