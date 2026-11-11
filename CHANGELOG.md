@@ -2,6 +2,9 @@
 
 What changed, newest first. Every change to the platform adds a line here.
 
+## 2026-11-11: Today grouped by location
+- Today now shows one block per location (client) with its items underneath, instead of one long mixed list. Locations with urgent items and the most money at stake come first. Each row shows what's wrong and, underneath, which ad.
+
 ## 2026-11-11: One-tap Dismiss on Today
 - Every row on Today has an **X**: dismiss it without opening it (hidden for 7 days). The message that appears has **Undo**, which puts it straight back. Not now also has Undo.
 - Tested on the real site build with real (exported) data before pushing.

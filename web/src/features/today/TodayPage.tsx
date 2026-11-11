@@ -13,7 +13,7 @@ import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ChevronDown, ChevronRight, X } from 'lucide-react'
 import { evaluateRules, type Suggestion } from '@shared/domain/rules.ts'
-import { canTurnOff, greeting, primaryButton, todayLine, todayOrder } from '@shared/domain/today.ts'
+import { canTurnOff, greeting, groupToday, primaryButton, todayLine, todayOrder } from '@shared/domain/today.ts'
 import { presetRange } from '@shared/domain/dates.ts'
 import { useData, type ActionRecord } from '../../data/source'
 import { useAsync } from '../../lib/useAsync'
@@ -181,15 +181,28 @@ export function TodayPage() {
 
       {error && <p className="text-sm text-bad">Couldn't load: {error.message}</p>}
 
-      {items.length > 0 && (
-        <ul className="overflow-hidden rounded-2xl border border-line bg-surface">
-          {items.map((s) => (
-            <Row key={s.key} s={s} open={open === s.key} onToggle={() => setOpen(open === s.key ? null : s.key)}
-              managerName={isAdmin && scope === 'all' ? managerName.get(s.managerId ?? '') ?? null : null}
-              onTurnOff={() => setConfirm(s)} onSnooze={(st) => snooze(s, st)} />
-          ))}
-        </ul>
-      )}
+      {/* One block per location, most urgent and most money first. */}
+      <div className="space-y-3">
+        {groupToday(items).map((g) => {
+          const manager = isAdmin && scope === 'all' ? managerName.get(g.items[0].managerId ?? '') ?? null : null
+          return (
+            <section key={g.accountId} className="overflow-hidden rounded-2xl border border-line bg-surface">
+              <header className="flex items-baseline justify-between gap-3 px-4 pt-3 pb-1">
+                <h2 className="min-w-0 truncate font-semibold">{g.name}</h2>
+                <span className="shrink-0 text-xs text-muted">
+                  {manager && `${manager} · `}{g.items.length} thing{g.items.length === 1 ? '' : 's'}
+                </span>
+              </header>
+              <ul>
+                {g.items.map((s) => (
+                  <Row key={s.key} s={s} open={open === s.key} onToggle={() => setOpen(open === s.key ? null : s.key)}
+                    managerName={manager} onTurnOff={() => setConfirm(s)} onSnooze={(st) => snooze(s, st)} />
+                ))}
+              </ul>
+            </section>
+          )
+        })}
+      </div>
 
       <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-sm text-muted">
         <span>{items.length > 0 ? 'Tap a row for the numbers and other options.' : ''}</span>
@@ -248,12 +261,12 @@ function Row({ s, open, onToggle, managerName, onTurnOff, onSnooze }: {
 
   return (
     <li className="border-t border-line first:border-t-0">
-      <div className="flex items-center gap-3 px-4 py-3.5">
+      <div className="flex items-center gap-3 px-4 py-2.5">
         <button onClick={onToggle} className="flex min-w-0 flex-1 items-center gap-3 text-left" aria-expanded={open}>
           <span className={`h-2 w-2 shrink-0 rounded-full ${dot}`} />
           <span className="min-w-0">
-            <span className="block truncate font-semibold">{s.clientName ?? s.accountName}</span>
-            <span className="block text-soft">{todayLine(s)}</span>
+            <span className="block">{todayLine(s)}</span>
+            {s.level === 'ad' && <span className="block truncate text-xs text-muted">{s.entityName}</span>}
           </span>
         </button>
         {primaryEl}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { greeting, primaryButton, todayLine, todayOrder } from './today.ts'
+import { greeting, groupToday, primaryButton, todayLine, todayOrder } from './today.ts'
 
 describe('todayLine', () => {
   it('writes one plain sentence per rule', () => {
@@ -42,5 +42,23 @@ describe('greeting', () => {
     expect(greeting(new Date('2026-11-11T13:00:00Z'))).toBe('Good morning') // 8am Toronto
     expect(greeting(new Date('2026-11-11T19:00:00Z'))).toBe('Good afternoon') // 2pm
     expect(greeting(new Date('2026-11-11T23:30:00Z'))).toBe('Good evening') // 6:30pm
+  })
+})
+
+describe('groupToday', () => {
+  const item = (accountId: string, name: string, severity: 'high' | 'medium', spend: number) =>
+    ({ accountId, accountName: `act ${name}`, clientName: name, severity, evidence: { spend } })
+  it('groups by location, urgent and costly first', () => {
+    const groups = groupToday([
+      item('1', 'Tacoma', 'medium', 900),
+      item('2', 'Renton', 'high', 50),
+      item('2', 'Renton', 'high', 120),
+      item('3', 'Columbia', 'high', 300),
+    ])
+    expect(groups.map((g) => g.name)).toEqual(['Columbia', 'Renton', 'Tacoma'])
+    expect(groups[1].items.map((s) => s.evidence.spend)).toEqual([120, 50])
+  })
+  it('falls back to the ad account name', () => {
+    expect(groupToday([{ accountId: '9', accountName: 'Old account', clientName: null, severity: 'high', evidence: {} }])[0].name).toBe('Old account')
   })
 })

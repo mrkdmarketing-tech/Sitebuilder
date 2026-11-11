@@ -72,3 +72,28 @@ export function greeting(now = new Date()): string {
   const h = Number(new Intl.DateTimeFormat('en-CA', { hour: 'numeric', hour12: false, timeZone: 'America/Toronto' }).format(now)) % 24
   return h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening'
 }
+
+export interface TodayGroup<T> {
+  accountId: string
+  /** Client (location) name, or the ad account name if no client is linked. */
+  name: string
+  items: T[]
+}
+
+/**
+ * One group per location (ad account), items inside in todayOrder. Groups with
+ * an urgent item first, then the most money spent across the group.
+ */
+export function groupToday<T extends Pick<Suggestion, 'accountId' | 'accountName' | 'clientName' | 'severity' | 'evidence'>>(list: T[]): TodayGroup<T>[] {
+  const by = new Map<string, TodayGroup<T>>()
+  for (const s of list) {
+    const g = by.get(s.accountId) ?? { accountId: s.accountId, name: s.clientName ?? s.accountName, items: [] }
+    g.items.push(s)
+    by.set(s.accountId, g)
+  }
+  const spend = (g: TodayGroup<T>) => g.items.reduce((n, s) => n + (num(s.evidence?.spend) ?? 0), 0)
+  const urgent = (g: TodayGroup<T>) => (g.items.some((s) => s.severity === 'high') ? 0 : 1)
+  return [...by.values()]
+    .map((g) => ({ ...g, items: todayOrder(g.items) }))
+    .sort((a, b) => urgent(a) - urgent(b) || spend(b) - spend(a) || a.name.localeCompare(b.name))
+}
