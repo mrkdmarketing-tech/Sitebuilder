@@ -28,6 +28,19 @@ const toCreative = (c: CreativeRow): Creative => ({
 })
 
 export function createSupabaseSource(db: SupabaseClient): DataSource {
+  /** Calls the meta-action function (Turn off / Undo) and reads its own error text on failure. */
+  async function callMetaAction(body: Record<string, unknown>, fallback: string): Promise<TurnOffResult> {
+    const { data, error } = await db.functions.invoke('meta-action', { body })
+    if (!error) return { ok: true, message: (data as { message?: string })?.message ?? fallback }
+    let b: { error?: string; needsManageCampaigns?: boolean } = {}
+    try {
+      b = await (error as { context?: Response }).context?.json()
+    } catch {
+      /* keep default */
+    }
+    return { ok: false, message: b.error ?? error.message, needsManageCampaigns: b.needsManageCampaigns }
+  }
+
   return {
     kind: 'supabase',
     approvals: createSupabaseApprovals(db),
@@ -146,28 +159,23 @@ export function createSupabaseSource(db: SupabaseClient): DataSource {
       check(await db.from('suggestions').update(patch).eq('id', id).select('id'))
     },
     async turnOffAd(suggestionId): Promise<TurnOffResult> {
-      const { data, error } = await db.functions.invoke('meta-action', { body: { suggestionId } })
-      if (!error) return { ok: true, message: (data as { message?: string })?.message ?? 'The ad is now off in Meta.' }
-      // Non-2xx: read the function's own explanation.
-      let body: { error?: string; needsManageCampaigns?: boolean } = {}
-      try {
-        body = await (error as { context?: Response }).context?.json()
-      } catch {
-        /* keep default */
-      }
-      return { ok: false, message: body.error ?? error.message, needsManageCampaigns: body.needsManageCampaigns }
+      return callMetaAction({ suggestionId }, 'The ad is now off in Meta.')
+    },
+    async undoTurnOff(suggestionId): Promise<TurnOffResult> {
+      return callMetaAction({ suggestionId, undo: true }, 'The ad is back on in Meta.')
     },
     async recentActions(limit = 10) {
       const rows = check(
         await db.from('actions_log')
-          .select('created_at, result, error, actor:employees(first_name, last_name), ad:meta_ads!actions_log_ad_fk(name, account:meta_ad_accounts(name))')
-          .eq('action', 'meta.pause_ad').order('created_at', { ascending: false }).limit(limit),
+          .select('action, created_at, result, error, after, actor:employees(first_name, last_name), ad:meta_ads!actions_log_ad_fk(name, account:meta_ad_accounts(name))')
+          .in('action', ['meta.pause_ad', 'meta.resume_ad']).order('created_at', { ascending: false }).limit(limit),
       ) as unknown as {
-        created_at: string; result: 'ok' | 'error'; error: string | null
+        action: string; created_at: string; result: 'ok' | 'error'; error: string | null; after: { suggestionId?: string } | null
         actor: { first_name: string; last_name: string } | null
         ad: { name: string | null; account: { name: string | null } | null } | null
       }[]
       return rows.map((r): ActionRecord => ({
+        kind: r.action === 'meta.resume_ad' ? 'on' : 'off', suggestionId: r.after?.suggestionId ?? null,
         at: r.created_at, who: r.actor ? `${r.actor.first_name} ${r.actor.last_name}`.trim() : null,
         adName: r.ad?.name ?? null, accountName: r.ad?.account?.name ?? null, ok: r.result === 'ok', note: r.error,
       }))

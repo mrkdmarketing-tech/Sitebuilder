@@ -3,6 +3,9 @@
  * (docs/suggestions.md#turn-off-safety). Called from the app by a signed-in
  * employee with their login (Supabase checks the login before this runs).
  *
+ * Also "Undo" ({ suggestionId, undo: true }): turns the same ad back on within
+ * 24 hours of a Turn off made from The Lab, if it's still paused. Logged too.
+ *
  * Safety, in order:
  *  1. The caller must be an active employee (me()).
  *  2. They must be allowed to see the suggestion (row-level security: their own
@@ -38,22 +41,56 @@ Deno.serve(async (req) => {
   const { data: me } = await user.rpc('me')
   if (!me?.id) return json({ error: 'Not signed in as an MRKD employee.' }, 403)
 
-  const { suggestionId } = await req.json().catch(() => ({}))
+  const { suggestionId, undo } = await req.json().catch(() => ({}))
   if (!suggestionId) return json({ error: 'suggestionId is required.' }, 400)
 
-  // 2. Can they see it (RLS), and is it still open?
-  const { data: sug } = await user.from('suggestions').select('id, status, action, entity_id, entity_name, account_id').eq('id', suggestionId).maybeSingle()
+  // 2. Can they see it (RLS), and is it in the right state?
+  const { data: sug } = await user.from('suggestions').select('id, status, level, action, entity_id, entity_name, account_id').eq('id', suggestionId).maybeSingle()
   if (!sug) return json({ error: 'Suggestion not found, or it belongs to another ads manager.' }, 404)
-  if (!['open', 'snoozed'].includes(sug.status)) return json({ error: `This suggestion is already ${sug.status}.` }, 409)
+  // Any ad-level suggestion can be turned off (Today screen details), not only pause_ad ones.
   const action = sug.action as { type?: string; adId?: string }
-  if (action?.type !== 'pause_ad' || !action.adId) return json({ error: 'This suggestion has no ad to turn off.' }, 400)
-  const adId = action.adId
+  const adId = action?.adId
+  if (sug.level !== 'ad' || !adId) return json({ error: 'This suggestion has no ad to turn off.' }, 400)
+  if (undo) {
+    if (sug.status !== 'done') return json({ error: 'There is nothing to undo for this suggestion.' }, 409)
+  } else if (!['open', 'snoozed'].includes(sug.status)) {
+    return json({ error: `This suggestion is already ${sug.status}.` }, 409)
+  }
 
   const log = (result: 'ok' | 'error', before: unknown, after: unknown, error?: string) =>
     db.from('actions_log').insert({
-      actor_id: me.id, action: 'meta.pause_ad', target_type: 'meta_ad', target_id: adId, ad_id: adId,
-      before, after, result, error: error ?? null,
+      actor_id: me.id, action: undo ? 'meta.resume_ad' : 'meta.pause_ad', target_type: 'meta_ad', target_id: adId, ad_id: adId,
+      before, after: after && typeof after === 'object' ? { ...after, suggestionId: sug.id } : { suggestionId: sug.id },
+      result, error: error ?? null,
     })
+
+  if (undo) {
+    // Only a Turn off made from The Lab in the last 24 hours, and only if the ad is still paused.
+    const { data: last } = await db.from('actions_log').select('created_at, result, after')
+      .eq('action', 'meta.pause_ad').eq('ad_id', adId).eq('result', 'ok')
+      .order('created_at', { ascending: false }).limit(1).maybeSingle()
+    if (!last || Date.now() - new Date(last.created_at).getTime() > 24 * 3_600_000) {
+      return json({ error: 'Undo is only possible within 24 hours of turning it off here. Turn it back on in Ads Manager.' }, 409)
+    }
+    const now = await meta(`${adId}?fields=id,status,effective_status`)
+    if (!now.ok) return json({ error: `Couldn't read the ad from Meta: ${now.body?.error?.message ?? 'unknown error'}` }, 502)
+    if (now.body.status !== 'PAUSED') {
+      return json({ error: `The ad isn't paused any more (it's ${String(now.body.status).toLowerCase()}), so there's nothing to undo.` }, 409)
+    }
+    const on = await meta(adId, {
+      method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ status: 'ACTIVE' }),
+    })
+    if (!on.ok || on.body?.success === false) {
+      const msg = on.body?.error?.message ?? 'unknown error'
+      await log('error', { status: 'PAUSED' }, null, msg)
+      return json({ error: `Meta refused: ${msg}` }, 502)
+    }
+    await db.from('meta_ads').update({ status: 'ACTIVE' }).eq('id', adId)
+    // Undone on purpose: don't suggest it again for 7 days (same as Dismiss).
+    await db.from('suggestions').update({ status: 'dismissed', acted_by: me.id, acted_at: new Date().toISOString() }).eq('id', sug.id)
+    await log('ok', { status: 'PAUSED' }, { status: 'ACTIVE' })
+    return json({ ok: true, message: `${sug.entity_name ?? 'The ad'} is back on in Meta.` })
+  }
   const markDone = () =>
     db.from('suggestions').update({ status: 'done', acted_by: me.id, acted_at: new Date().toISOString() }).eq('id', sug.id)
 

@@ -2,6 +2,11 @@
 
 What changed, newest first. Every change to the platform adds a line here.
 
+## 2026-11-11: Today
+- New home page **Today**, replacing Suggestions: "6 things need you today. Your other 34 accounts are fine." then one quiet list, one row per item with one plain sentence and one button, most urgent and most money first. Tap a row for the numbers and other options. Count badge in the sidebar. Owners/admins switch between Everyone, Mine and each ads manager.
+- **Turn off now works from any ad's row** (including low-click ones, from the row's details), and **Undo** turns an ad back on within 24 hours (from the message or the Recently turned off list). `meta-action` updated and deployed.
+- SOP rewritten: [docs/sop/acting-on-suggestions.md](docs/sop/acting-on-suggestions.md).
+
 ## 2026-11-11: Fewer repeat sign-ins
 - Sign-in emails now have a **6-digit code** as well as the link, and the sign-in screen asks for it. Typing the code signs in the app you're actually using. The link could sign in a different browser (on iPhones the home-screen app and Safari don't share sign-ins), which is why people kept being asked to sign in again.
 - Clearer message when the email limit (2 per hour across MRKD, Supabase's built-in sender) is hit. Google sign-in removes that limit.

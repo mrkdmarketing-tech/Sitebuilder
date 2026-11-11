@@ -39,7 +39,7 @@ Everything about the MRKD platform is documented here. **Start with the row that
 | Screen | Doc | Replaces in Retool |
 |---|---|---|
 | Meta insights | [screens/insights.md](screens/insights.md) | Meta Ads Insights |
-| Suggestions | [suggestions.md](suggestions.md) | "Show alerts" |
+| Today (home: what needs doing, Turn off, Undo) | [suggestions.md](suggestions.md#today-screen) | "Show alerts" |
 | Ad approval | [ad-approval.md](ad-approval.md) | Ad Preview |
 | Search | [screens/insights.md#search](screens/insights.md#search) | Search Meta Lead Forms |
 | Sync status | [background-jobs.md#sync-status-screen](background-jobs.md#sync-status-screen) | – |
@@ -60,12 +60,13 @@ shared/                 Code used by BOTH the app and the background jobs
   domain/dates.ts         Date presets (Last 7 days…), Toronto time zone
   domain/rules.ts         Suggestion rules engine
   domain/approvals.ts     Ad approval: statuses, placeholders, AI finding format
+  domain/today.ts         Today screen wording, button and order
   meta/mapping.ts         Meta API → database row mapping
   **/*.test.ts            Unit tests
 web/                    The app (React + TypeScript + Tailwind, built with Vite)
   src/app/                Routes, app shell (top bar / sidebar / phone tab bar), session (who's signed in, design)
   src/features/insights/  Meta insights screen
-  src/features/suggestions/ Suggestions screen
+  src/features/today/     Today (home): suggestions as one quiet list
   src/features/approvals/ Ad approval: list, editor, mistake check, review
   src/features/search/    Lead form & ad copy search
   src/features/status/    Sync status

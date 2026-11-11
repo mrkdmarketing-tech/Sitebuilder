@@ -1,17 +1,33 @@
 import { NavLink, Outlet } from 'react-router-dom'
-import { BarChart3, CheckSquare, Lightbulb, Search, Activity, Settings, Moon, Sun, Users } from 'lucide-react'
+import { BarChart3, CheckSquare, ListChecks, Search, Activity, Settings, Moon, Sun, Users } from 'lucide-react'
 import { SAMPLE_MODE } from '../lib/config'
 import { supabase } from '../lib/supabase'
 import { useData } from '../data/source'
 import { useAsync } from '../lib/useAsync'
+import { useLiveRefresh } from '../lib/useLiveRefresh'
 import { useSession } from './session'
 import { UpdateBanner } from './UpdateBanner'
 import { LabLockup } from '../components/LabMark'
 
+/**
+ * Number on the Today item: things waiting for the signed-in person (their own
+ * accounts; for owners/admins who look after none, everyone's). Refreshes when
+ * run-rules finishes. Sample mode: no badge.
+ */
+function useTodayCount(): number {
+  const ds = useData()
+  const { me } = useSession()
+  const live = useLiveRefresh(['rules.run'])
+  const { data } = useAsync(() => ds.storedSuggestions(), [ds, live])
+  if (!data || !me) return 0
+  const own = data.filter((s) => s.managerId === me.id).length
+  return own || (me.role === 'owner' || me.role === 'admin' ? data.length : 0)
+}
+
 /** `phone: false` = left off the phone tab bar (5 slots); reachable from Settings. */
 const NAV = [
+  { to: '/today', label: 'Today', icon: ListChecks, phone: true },
   { to: '/insights', label: 'Insights', icon: BarChart3, phone: true },
-  { to: '/suggestions', label: 'Suggestions', icon: Lightbulb, phone: true },
   { to: '/approvals', label: 'Ad approval', icon: CheckSquare, phone: true },
   { to: '/search', label: 'Search', icon: Search, phone: true },
   { to: '/clients', label: 'Clients', icon: Users, phone: false },
@@ -24,12 +40,13 @@ const NAV = [
  * Phones: name and light/dark button on top, tab bar at the bottom.
  */
 export function Layout() {
+  const todayCount = useTodayCount()
   return (
     <div className="flex min-h-full flex-col">
       <UpdateBanner />
       {SAMPLE_MODE && <SampleBar />}
       <div className="flex flex-1">
-        <SideNav />
+        <SideNav todayCount={todayCount} />
         <main className="mx-auto w-full min-w-0 max-w-[1600px] flex-1 px-4 pb-24 pt-4 md:pb-8">
           <div className="mb-2 flex items-center justify-between md:hidden">
             <LabLockup size={32} />
@@ -40,9 +57,12 @@ export function Layout() {
       </div>
       <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-line bg-surface pb-[env(safe-area-inset-bottom)] md:hidden">
         {NAV.filter((n) => n.phone).map(({ to, label, icon: Icon }) => (
-          <NavLink key={to} to={to} className={({ isActive }) => `flex flex-col items-center gap-0.5 py-2 text-[11px] font-medium ${isActive ? 'text-brand' : 'text-muted'}`}>
+          <NavLink key={to} to={to} className={({ isActive }) => `relative flex flex-col items-center gap-0.5 py-2 text-[11px] font-medium ${isActive ? 'text-brand' : 'text-muted'}`}>
             <Icon size={20} />
             {label}
+            {to === '/today' && todayCount > 0 && (
+              <span className="absolute left-1/2 top-1 ml-2 rounded-full bg-bad px-1.5 text-[10px] font-bold leading-4 text-white">{todayCount}</span>
+            )}
           </NavLink>
         ))}
       </nav>
@@ -69,7 +89,7 @@ function UserBadge() {
   )
 }
 
-function SideNav() {
+function SideNav({ todayCount }: { todayCount: number }) {
   return (
     <aside className="sticky top-0 hidden h-screen w-56 shrink-0 flex-col bg-header px-3 py-5 text-header-ink md:flex">
       <span className="px-2"><LabLockup /></span>
@@ -78,6 +98,7 @@ function SideNav() {
           <NavLink key={to} to={to} className={({ isActive }) => `flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold transition ${isActive ? 'bg-primary text-on-primary' : 'text-header-ink/70 hover:bg-header-ink/10 hover:text-header-ink'}`}>
             <Icon size={17} />
             {label}
+            {to === '/today' && todayCount > 0 && <span className="ml-auto rounded-full bg-bad px-1.5 text-[11px] font-bold leading-5 text-white">{todayCount}</span>}
           </NavLink>
         ))}
       </nav>

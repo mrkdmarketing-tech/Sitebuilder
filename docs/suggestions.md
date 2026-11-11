@@ -4,7 +4,7 @@ Per-ad-account suggestions shown **in the app only** (no Slack), **to the employ
 
 > **Renzo Gracie Boca:** an ad has 1 lead at $120. Turn it off? **[Turn off] [Not now] [Dismiss]**
 
-Code: [`shared/domain/rules.ts`](../shared/domain/rules.ts) (tests: `rules.test.ts`). Screen: `web/src/features/suggestions/`. Jobs: `run-rules` (saves suggestions every 30 min, at :10 and :40) and `meta-action` (Turn off). **Live since 10 Nov 2026.** First run: 38 suggestions (Adam 16, Jordan 13, Zohirul 9).
+Code: [`shared/domain/rules.ts`](../shared/domain/rules.ts) (tests: `rules.test.ts`). Screen: **Today** (`web/src/features/today/`, wording in `shared/domain/today.ts`). Jobs: `run-rules` (saves suggestions every 30 min, at :10 and :40) and `meta-action` (Turn off). **Live since 10 Nov 2026.** First run: 38 suggestions (Adam 16, Jordan 13, Zohirul 9).
 
 ## Who sees which suggestions
 
@@ -35,7 +35,16 @@ Evaluated over the **last 7 days**, only for Active/New clients and only for ads
 
 **One suggestion per ad:** if an ad trips several rules, only the most important shows (order: account problem → budget hog → no leads → expensive → no recent leads → low link CTR → low CTR).
 
-**Cards:** grouped per ad account, accounts with the most high-severity items first.
+## Today screen
+
+Since 11 Nov 2026 suggestions are shown on **Today**, The Lab's home page (it replaced the Suggestions page; the old address redirects). Designed to be quiet so one ads manager can handle 40+ accounts:
+
+- A greeting and one sentence: "**6 things** need you today. Your other 34 accounts are fine."
+- **One list, one row per item**: account, one plain sentence (`todayLine` in `shared/domain/today.ts`, e.g. "An ad spent $240 with no leads"), and **one button** (`primaryButton`: Turn off for the pause rules, Open billing for account problems, Open in Ads Manager for the rest). Most urgent first, then most money spent (`todayOrder`).
+- **Tap a row** for the numbers and the other options: Turn off (any ad's row), Open in Ads Manager, Not now, Dismiss.
+- **Undo** for 24 hours after a Turn off (message, and the "Recently turned off" list).
+- Sidebar badge with the number waiting. Owners/admins choose Everyone, Mine or one ads manager.
+- How staff use it: [sop/acting-on-suggestions.md](sop/acting-on-suggestions.md).
 
 ## Thresholds
 
@@ -56,16 +65,18 @@ The `run-rules` job runs after every Meta sync: it creates new suggestions, refr
 
 Handled by the `meta-action` function, not the browser:
 1. Caller must be an active employee.
-2. The suggestion must still be open.
+2. The suggestion must still be open, and be about an ad (any ad-level rule, not only the pause rules).
 3. Re-reads the ad from Meta; if it's already off, just marks it done.
 4. Pauses the ad using the Meta System User token.
 5. Writes `actions_log` (who, before/after, result).
 
 Every "Turn off" asks for one confirmation first. In sample-data mode nothing is sent to Meta.
 
+**Undo** (`{ suggestionId, undo: true }`): only within 24 hours of a Turn off made from The Lab, only if the ad is still paused; sets it back to active, logs `meta.resume_ad`, and marks the suggestion dismissed (not suggested again for 7 days). Each log entry stores the suggestion id so Undo can find it.
+
 **Which accounts can be turned off:** the system user needs **Manage campaigns** on the ad account. On 10 Nov 2026, 32 of 54 accounts had it; the other 22 are view-only (list in [setup/meta.md](setup/meta.md)). On those, Turn off shows: "This ad account only lets The Lab view, not change ads…" with a link to Ads Manager.
 
-**Seeing what happened:** after Turn off, a message confirms it ("Done: … is now off in Meta") with a link to check in Ads Manager, and the **Recently turned off** list at the bottom of the page shows every attempt (ad, account, who, when, Turned off / Already off / Failed) from `actions_log`.
+**Seeing what happened:** after Turn off, a message confirms it with **Undo** and a link to check in Ads Manager, and **Recently turned off** at the bottom of Today shows every attempt (ad, account, who, when, Turned off / Already off / Turned back on / Failed) from `actions_log`.
 
 **Not now** hides it for 24 hours. **Dismiss** stops it being suggested again for 7 days (if the problem is still there after that, it comes back).
 

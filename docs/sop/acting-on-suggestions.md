@@ -1,34 +1,38 @@
-# SOP: Acting on suggestions
+# SOP: Working through Today
 
-**Who:** the ads manager the account is assigned to in GHL (owners and admins see everyone's). **When:** daily, after the account check. New suggestions appear every 30 minutes.
+**Who:** every ads manager (owners and admins can look at anyone's). **When:** every working day, first thing. New items appear every 30 minutes. **Time:** a few minutes once the list is short.
 
-What each rule means: [../suggestions.md](../suggestions.md#rules-agreed-with-jordan-nov-2026).
+Today is The Lab's home page. It lists only what needs doing on your accounts, one row each, most urgent and most money first. What each check means: [../suggestions.md](../suggestions.md#rules-agreed-with-jordan-nov-2026).
 
 ## Steps
 
-1. Open **Suggestions**. Cards are grouped by ad account, most urgent first.
-2. For each card, read the numbers on it (spend, leads, CPL, CTR, and for a budget hog, the other ads in the same ad set).
-3. Decide:
+1. Open The Lab. **Today** opens first; the number next to it in the sidebar is how many things are waiting.
+2. Read the top line: "**6 things** need you today. Your other 34 accounts are fine."
+3. For each row: the account, one plain sentence ("An ad spent $240 with no leads"), and one button.
+   - **Turn off**: pauses that ad in Meta after one confirmation.
+   - **Open billing**: the account's billing page in Meta (payment or account problems).
+   - **Open**: the ad or account in Ads Manager, for things a person needs to look at (few clicks, no recent leads).
+4. **Tap the row** for the numbers (spent, leads, cost per lead, click rates, the other ads in the ad set) and the other options:
+   - **Turn off**, on any ad's row, even when it isn't the main button.
+   - **Not now**: hidden for a day, comes back if the problem is still there.
+   - **Dismiss**: hidden for 7 days (e.g. a deliberate test, or the client wants it running).
+5. When the list is empty, you're done. **See all accounts** goes to Insights for the full numbers.
 
-| Button | Use when | What happens |
-|---|---|---|
-| **Turn off** | You agree the ad should stop. | Asks once to confirm, then pauses the ad in Meta. A message says "Done: ... is now off in Meta" with a link to check it in Ads Manager. The ad is added to **Recently turned off** at the bottom of the page. |
-| **Not now** | You want to give it another day. | Hidden for 24 hours, then comes back if the problem is still there. |
-| **Dismiss** | It's fine as it is (for example a deliberate test, or a client asked to keep it). | Hidden for 7 days. Comes back after that if the problem is still there. |
+## Undo
 
-4. Suggestions without a Turn off button (low CTR, low link CTR, account problems, no recent leads) need a person to fix something: refresh the creative, check billing, or look at the campaign. Fix it in Ads Manager, then Dismiss the card or let it clear on its own.
-5. If a suggestion has gone away by itself, the problem cleared on a later check. Nothing to do.
+Turned off the wrong ad? Click **Undo** in the message that appears, or open **Recently turned off** at the bottom of Today and click **Undo** next to it. Undo works for 24 hours after a Turn off made in The Lab, and only if the ad is still paused. The ad is then not suggested again for 7 days. After 24 hours, turn it back on in Ads Manager.
 
 ## When Turn off doesn't work
 
 | Message | Meaning | Do this |
 |---|---|---|
-| "This ad account only lets The Lab view, not change ads..." | The account wasn't shared with **Manage campaigns**. | Turn the ad off in Ads Manager by hand (the link is on the card), and ask an admin to follow [new-client-or-ad-account.md](new-client-or-ad-account.md#2-share-the-ad-account-with-the-lab). |
+| "This ad account only lets The Lab view, not change ads..." | The account wasn't shared with **Manage campaigns**. | Turn the ad off in Ads Manager by hand, and ask an admin to follow [new-client-or-ad-account.md](new-client-or-ad-account.md#2-share-the-ad-account-with-the-lab). |
 | "... was already off" | Someone already paused it. | Nothing. It's recorded. |
 | "Meta refused: ..." | Meta rejected the change. | Turn it off in Ads Manager and tell an admin the message. |
-| Nothing happens / the card just disappears | You're on an old version of the page. | Reload the page and check **Recently turned off**. |
+| Nothing happens | You're on an old version of the page. | Reload, then check **Recently turned off**. |
 
 ## Rules
 
-- Only you (and owners/admins) can act on your accounts' suggestions. Covering someone? An admin can do it, or the client can be reassigned in GHL.
-- Every Turn off is logged with your name and the time. Nobody can edit the log.
+- Ads managers see only their own accounts (assigned in GHL or on the Clients page). Owners and admins pick **Everyone**, **Mine** or one ads manager at the top right.
+- Every Turn off and Undo is logged with your name and the time. Nobody can edit the log.
+- The Lab never turns anything off by itself.

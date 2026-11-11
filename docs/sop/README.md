@@ -9,8 +9,8 @@ The other docs explain how The Lab is built. These explain how to **use and run*
 | SOP | When |
 |---|---|
 | [Signing in](signing-in.md) | First day, new phone, or "Not on the MRKD staff list" |
-| [Daily account check](daily-account-check.md) | Every working morning |
-| [Acting on suggestions (Turn off, Not now, Dismiss)](acting-on-suggestions.md) | Every working day, after the account check |
+| [Working through Today (Turn off, Undo, Not now, Dismiss)](acting-on-suggestions.md) | Every working morning, first thing |
+| [Deeper account check](daily-account-check.md) | When Today flags an account, or weekly |
 | [Submitting an ad for approval](ad-approval-submit.md) | Every new ad or ad change |
 | [Reviewing an ad](ad-approval-review.md) | When an ad is waiting for your review |
 

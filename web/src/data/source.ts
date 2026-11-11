@@ -40,8 +40,12 @@ export interface TurnOffResult {
   needsManageCampaigns?: boolean
 }
 
-/** One "Turn off" attempt from the audit log. */
+/** One "Turn off" (or "Undo") attempt from the audit log. */
 export interface ActionRecord {
+  /** off = Turn off, on = Undo (turned back on). */
+  kind: 'off' | 'on'
+  /** The suggestion it came from, for Undo. */
+  suggestionId: string | null
   at: string
   who: string | null
   adName: string | null
@@ -127,6 +131,8 @@ export interface DataSource {
   updateSuggestion(id: string, status: 'snoozed' | 'dismissed'): Promise<void>
   /** "Turn off": pauses the ad in Meta through the meta-action function. */
   turnOffAd(suggestionId: string): Promise<TurnOffResult>
+  /** "Undo": turns it back on (within 24 hours of a Turn off made here). */
+  undoTurnOff(suggestionId: string): Promise<TurnOffResult>
   /** Latest "Turn off" attempts (audit log), newest first. */
   recentActions(limit?: number): Promise<ActionRecord[]>
   /** When the data was last refreshed (for the "Updated 4 min ago" stamp). */

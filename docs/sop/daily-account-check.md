@@ -6,13 +6,15 @@ Replaces the daily look at Retool's Meta Ads Insights.
 
 ## Steps
 
+Start with **Today** (the home page): it lists only what needs doing. This check is for a deeper look.
+
 1. Open **Insights**. It starts on **your** accounts (from GHL "Assigned to") and **Last 7 days**. Data updates on its own every 30 minutes; there is no refresh button to press.
 2. Check the time under the title ("Data updated 12 min ago"). If it says more than 1 hour, see [troubleshooting.md](troubleshooting.md#data-looks-old).
 3. Read the **KPI tiles** at the top (active accounts, spend, leads, CPL, CPM, CR, CPR, CPLC, value generated). The small arrows compare with the previous period of the same length.
 4. On the **Accounts** table, sort by **CPL** (highest first) and then by **Spend** with 0 leads. These are the accounts to look at first.
 5. Tick any account that looks off. The **Campaigns**, **Ad sets**, **Ads** and **Leads** tabs then show only the ticked accounts. On the Ads tab, click an ad to see its creative and copy.
 6. Check account status: anything not **Active** (for example **Unsettled** or **Disabled**) means billing or a Meta problem. Tell the client or Jordan the same day.
-7. Go to **Suggestions** and work through them ([acting-on-suggestions.md](acting-on-suggestions.md)).
+7. Work through **Today** ([acting-on-suggestions.md](acting-on-suggestions.md)). Most days, Today alone is enough: open Insights only for accounts Today flags or when you want the full picture.
 
 ## Good to know
 

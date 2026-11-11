@@ -309,6 +309,10 @@ export function createMockSource(data: MockDataset = generateMockData()): DataSo
       await wait(400)
       return { ok: true, message: 'Sample data: nothing was changed in Meta.' }
     },
+    async undoTurnOff() {
+      await wait(300)
+      return { ok: true, message: 'Sample data: nothing was changed in Meta.' }
+    },
     async recentActions() {
       return []
     },

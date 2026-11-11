@@ -41,7 +41,7 @@ The sample data deliberately includes the situations suggestions look for: a bud
 
 ## Live updates
 
-Live since 10 Nov 2026 (migration 1800, `web/src/lib/useLiveRefresh.ts`). Open screens subscribe to `sync_runs` through Supabase Realtime and reload when a job finishes: Insights after a Meta sync or Retool copy, Suggestions after `run-rules`, Sync status after any job. Screens also reload when a tab comes back after being hidden for 5+ minutes. The table stays on screen while it reloads. Row-level security applies to the events too.
+Live since 10 Nov 2026 (migration 1800, `web/src/lib/useLiveRefresh.ts`). Open screens subscribe to `sync_runs` through Supabase Realtime and reload when a job finishes: Insights after a Meta sync or Retool copy, Today (and its sidebar badge) after `run-rules`, Sync status after any job. Screens also reload when a tab comes back after being hidden for 5+ minutes. The table stays on screen while it reloads. Row-level security applies to the events too.
 
 ## New versions
 
