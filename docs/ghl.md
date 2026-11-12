@@ -1,6 +1,6 @@
 # GHL (direct connection)
 
-**Status (12 Nov 2026):** built, read-only, waiting for the token. The Lab still uses the Retool copy of GHL data ([retool-bridge.md](retool-bridge.md)); the direct connection runs alongside it so we can compare before switching.
+**Status (12 Nov 2026):** live, read-only. First run: 221 client contacts and 7 users read, no errors, **no differences with the Retool copy**. The Lab still uses the Retool copy of GHL data ([retool-bridge.md](retool-bridge.md)); the direct connection runs alongside it so we can compare before switching.
 
 ## How MRKD uses GHL
 
@@ -26,6 +26,14 @@ API: `https://services.leadconnectorhq.com`, header `Version: 2021-07-28`, beare
 ## Setup
 
 One secret, `GHL_PRIVATE_TOKEN`: steps in [sop/tokens-and-secrets.md](sop/tokens-and-secrets.md#connect-ghl-read-only). A **private integration** token made inside a sub-account works on Starter and Unlimited plans; agency-level tokens need Agency Pro and aren't needed here. Retool has its own GHL token; The Lab never copies it, so each can be switched off on its own.
+
+## First run (12 Nov 2026)
+
+- GHL and the Retool copy agree on every client's status and ads manager.
+- **Different in The Lab only** (changed by Jordan in The Lab; GHL still has the old value until someone updates it there, or writing back is switched on): Apex Performance Center, Bulls Jiu Jitsu, Campeao Jiu-Jitsu Acworth, Infinite Hitting Deerfield Beach, Overcome Jiu Jitsu Pinnacle, Storage-Tech, The Foundry (Inactive in The Lab, Active in GHL); Swampfox (Paused in The Lab, Active in GHL).
+- **No Client Status in GHL:** the three Rising Tide clients (Active in The Lab), Elite Team Monterey and Cave Academy.
+- Client 41 is a contact called "Business Name" with no Client ID: probably a test contact.
+- GHL users not in The Lab: "Alex m", "MRKD Admin", "MRKD Marketing" (shared or old logins; left out on purpose).
 
 ## Next steps
 

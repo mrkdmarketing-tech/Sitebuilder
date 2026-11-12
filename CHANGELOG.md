@@ -2,6 +2,9 @@
 
 What changed, newest first. Every change to the platform adds a line here.
 
+## 2026-11-12: GHL connected
+- Token added; first direct read: 221 client contacts and 7 users, no errors, no differences with the Retool copy. Findings (clients changed only in The Lab, clients with no status in GHL) in [docs/ghl.md](docs/ghl.md#first-run-12-nov-2026).
+
 ## 2026-11-12: Direct GHL connection (read-only, waiting for the token)
 - New job `ghl-sync` reads MRKD's GHL sub-account directly: the team, and each client's contact (Client Status, Client ID, Assigned to). Hourly, view-only, never writes to GHL. Migration 3200.
 - Runs alongside the Retool copy; `ghl_compare()` lists any differences (and marks values changed in The Lab). Once they match for a week, The Lab switches to GHL directly.
