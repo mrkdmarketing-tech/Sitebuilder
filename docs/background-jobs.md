@@ -23,6 +23,7 @@ Set in Supabase → Project Settings → Edge Functions → Secrets. **Never in 
 | `RETOOL_DB_URL` | retool-bridge | Jordan/Trent (Retool Database connection string) |
 | `ANTHROPIC_API_KEY` | ad-check | MRKD's Anthropic account (Phase 2) |
 | `CRON_SECRET` | all scheduled jobs | Any long random string; also used in the schedule below |
+| `GHL_PRIVATE_TOKEN` | ghl-sync | GHL private integration in MRKD's sub-account, view-only ([sop/tokens-and-secrets.md](sop/tokens-and-secrets.md#connect-ghl-read-only)) |
 | `TYPESAFE_API_KEY` | tag-creatives | TypeSafe AI console ([sop/tokens-and-secrets.md](sop/tokens-and-secrets.md#add-the-typesafe-key-jev-ad-tagging)) |
 | `SLACK_APPROVALS_WEBHOOK_URL` | approval-notify | Slack incoming webhook for #mrkd-internal-app ([sop/tokens-and-secrets.md](sop/tokens-and-secrets.md#connect-slack-ad-approval-messages)) |
 

@@ -30,3 +30,6 @@ verify_jwt = false
 
 [functions.tag-creatives]
 verify_jwt = false
+
+[functions.ghl-sync]
+verify_jwt = false

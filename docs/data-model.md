@@ -167,6 +167,12 @@ Adds `sync_runs` to Supabase Realtime so open screens reload when a job finishes
 
 `creative_tags` (one row per ad creative: offer, audience, hook, Jev's confidence, model, input hash), written only by the `tag-creatives` function. `creatives_to_tag(limit)` (service role only) lists untagged creatives with copy, biggest recent spenders first. `creative_tag_report(from, to)` sums spend and leads by tag (and image/video) for Active/New clients' ads that spent in the period. Hourly schedule `tag-creatives` at :50. See [creative-tags.md](creative-tags.md).
 
+## 3000 to 3200
+
+- **3000** `creative_tag_report` counts lead campaigns only.
+- **3100** `suggestions.turn_off_check`: whether Meta would let The Lab pause the ad (run-rules, validate only).
+- **3200** Direct GHL, read-only: `ghl_contacts_live`, `ghl_users_live` (written by `ghl-sync`), `ghl_compare()` (differences with the Retool copy), hourly schedule `ghl-sync` at :25. See [ghl.md](ghl.md).
+
 ## Changing the schema
 
 Add a **new** migration file (never edit one that has been applied to Supabase), with policies for any new table, then update this page and run `npm run db:test`.

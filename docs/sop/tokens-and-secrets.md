@@ -14,6 +14,7 @@ All secrets live in **Supabase → Edge Functions → Secrets** (supabase.com/da
 | `CRON_SECRET` | Random string that lets the schedule start jobs | Never | Scheduled jobs (also stored in Supabase Vault) |
 | `SLACK_APPROVALS_WEBHOOK_URL` | Slack incoming webhook for #mrkd-internal-app | When the Slack app is removed | Ad approval messages |
 | `TYPESAFE_API_KEY` | TypeSafe AI key for the Jev model | When revoked | Ad tagging, Insights → What's working |
+| `GHL_PRIVATE_TOKEN` | GHL private integration token from MRKD's sub-account (view-only) | When deleted in GHL | Reading clients and the team from GHL directly |
 | Supabase access token `mrkd-sitebuilder-claude-3` | Lets Claude deploy changes | **16 Nov 2026**, renew before | Claude's cloud environment only |
 
 ## Replace the Meta token
@@ -39,6 +40,17 @@ The Lab posts in **#mrkd-internal-app** when an ad is submitted (tags the review
 6. Submit a test ad in The Lab. The message should appear within a few seconds.
 
 To stop the messages, delete the secret (or remove the app in Slack). If the link leaks: in the Slack app's Incoming Webhooks page, remove that webhook, add a new one, and replace the secret.
+
+## Connect GHL (read-only)
+
+1. In GHL, switch to **MRKD's own sub-account** (the one where clients are contacts), not a client's and not the agency view.
+2. **Settings → Private Integrations → Create new integration**. Name it "The Lab (read-only)".
+3. Tick only these permissions (all "View"): **View Contacts**, **View Users**, **View Locations**, **View Custom Fields**, **View Opportunities**, **View Calendars** and **View Calendar Events**. Nothing that edits.
+4. Create it and **copy the token** (GHL shows it once). Treat it like a password.
+5. In Supabase Secrets, **Add new secret**: name `GHL_PRIVATE_TOKEN`, paste the token, **Save**.
+6. Tell Claude, or wait for the next run at :25. **Sync** shows "GHL (direct, read-only)".
+
+If the token leaks or someone with access leaves: in the same GHL screen, delete it (or rotate it), create a new one and replace the secret.
 
 ## Add the TypeSafe key (Jev ad tagging)
 

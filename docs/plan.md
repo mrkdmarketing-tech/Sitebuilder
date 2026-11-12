@@ -252,7 +252,7 @@ The exact SQL lives in `supabase/migrations/` once Phase 0 starts.
 | **1b. Suggestions** | Live as **Today**: grouped by location, dismiss, Turn off with Meta confirmation and Undo, advance check of what Turn off can do | Turn off works on 7 of 19 suggested ads: Meta access (Manage campaigns, Pages). Per-client thresholds and budget actions not built. |
 | **1c. Claude connector** | Not started (design in claude-connector.md) | Everything |
 | **2. Ad approval** | Built: form in Retool's order, built-in mistake checks, check on Submit, review checklist, comments, history from Retool, Slack messages (Jordan default reviewer) | Slack webhook secret; Claude key for image/video text; ClickUp task on approval; LeadLabz website campaign requests; team switches over (Retool Ad Preview was still used on 10 Nov) |
-| **Next (agreed 12 Nov)** | Direct GHL connection, read-only first | GHL private integration token from Jordan; then run alongside the Retool bridge for a week before switching |
+| **Next (agreed 12 Nov)** | Direct GHL connection, read-only: built and deployed (ghl-sync, [ghl.md](ghl.md)) | GHL private integration token from Jordan; then run alongside the Retool bridge for a week before switching |
 | *Later* | Billing + leads, Onboarding, GHL/LeadLabz admin, cutover; ideas: lead quality (cost per booked/sale), fair within-account comparisons, budget pacing | Decided later |
 
 ### Running alongside Retool

@@ -2,6 +2,11 @@
 
 What changed, newest first. Every change to the platform adds a line here.
 
+## 2026-11-12: Direct GHL connection (read-only, waiting for the token)
+- New job `ghl-sync` reads MRKD's GHL sub-account directly: the team, and each client's contact (Client Status, Client ID, Assigned to). Hourly, view-only, never writes to GHL. Migration 3200.
+- Runs alongside the Retool copy; `ghl_compare()` lists any differences (and marks values changed in The Lab). Once they match for a week, The Lab switches to GHL directly.
+- Needs `GHL_PRIVATE_TOKEN` (private integration, view-only permissions): [steps](docs/sop/tokens-and-secrets.md#connect-ghl-read-only). Docs: [docs/ghl.md](docs/ghl.md).
+
 ## 2026-11-11: Today knows in advance when Turn off can't work
 - `run-rules` now asks Meta every 30 minutes whether each suggested ad could be paused (validate only, nothing changes). Where Meta won't allow it, the row shows **Turn off in Ads Manager** and why ("This ad account is view-only for The Lab", "The Lab can't see this client's Facebook Page", "Meta says this ad account can't be changed") instead of a button that fails. Migration 3100; reasons in `shared/domain/metaErrors.ts` (tested).
 - Today: 7 of 19 suggested ads can be turned off from The Lab. The rest need Meta access (docs/setup/meta.md).
