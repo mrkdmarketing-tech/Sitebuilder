@@ -7,7 +7,7 @@ import { Card, Empty, PageTitle } from '../../components/ui'
 
 export function SearchPage() {
   const ds = useData()
-  const [mode, setMode] = useState<'forms' | 'copy'>('forms')
+  const [mode, setMode] = useState<'forms' | 'copy'>('copy')
   const [query, setQuery] = useState('')
   const forms = useAsync(() => (mode === 'forms' ? ds.searchLeadForms(query) : Promise.resolve([])), [ds, mode, query])
   const copy = useAsync(() => (mode === 'copy' ? ds.searchAdCopy(query) : Promise.resolve([])), [ds, mode, query])
@@ -16,7 +16,7 @@ export function SearchPage() {
     <div>
       <PageTitle title="Search" subtitle="Find any lead form or ad copy across every client" />
       <div className="mb-3 flex flex-wrap gap-2">
-        {(['forms', 'copy'] as const).map((m) => (
+        {(['copy', 'forms'] as const).map((m) => (
           <button key={m} onClick={() => setMode(m)} className={`rounded-lg px-3 py-1.5 text-sm font-medium ${mode === m ? 'bg-primary text-on-primary' : 'border border-line bg-surface'}`}>
             {m === 'forms' ? 'Lead forms' : 'Ad copy'}
           </button>
@@ -39,7 +39,7 @@ export function SearchPage() {
                 </li>
               ))}
             </ul>
-          ) : <Empty>{forms.loading ? 'Searching…' : 'No lead forms match.'}</Empty>)}
+          ) : <Empty>{forms.loading ? 'Searching…' : "No lead forms yet. Reading lead forms needs one more Meta permission (pages_manage_ads); see docs/setup/meta-access-checklist.md."}</Empty>)}
         {mode === 'copy' &&
           (copy.data?.length ? (
             <ul className="divide-y divide-line">

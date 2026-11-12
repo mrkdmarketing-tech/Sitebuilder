@@ -2,6 +2,10 @@
 
 What changed, newest first. Every change to the platform adds a line here.
 
+## 2026-11-12: Leads tab removed
+- The Lab doesn't need people's names or contact details, so the empty Leads tab is gone from Insights and nothing asks Meta for them. Lead counts and cost per lead are unchanged.
+- Search opens on **Ad copy**. Lead form search stays empty unless the Meta key gets `pages_manage_ads` (forms only, no personal data).
+
 ## 2026-11-12: Turn off works on almost every account
 - Meta access granted to MRKDPlatformTools (Manage campaigns on ad accounts, Ads and Leads on Pages). 21 of 26 suggested ads can now be turned off from The Lab (was 7 of 19). Today re-checked at once. Remaining: GB Whiterock account, GB Cloverdale and GB Renton Pages, Double Five billing ([checklist](docs/setup/meta-access-checklist.md)).
 

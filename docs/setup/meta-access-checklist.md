@@ -71,7 +71,8 @@ Choose **Pages**, tick these, turn on **Ads** and **Leads** (Partial access), **
 - [ ] Tri Cities Jiu Jitsu Club llc (Page ID 105007684206577)
 - [ ] barrhaven martial arts centre (Page ID 1053113931451653)
 
-## 3. Token: add lead permissions (for the Leads tab)
+## 3. Token (only if lead form search is wanted)
 
-System users → MRKDPlatformTools → **Generate new token** → app The Lab → tick the existing permissions plus **leads_retrieval** and **pages_manage_ads** → Never expires → copy → Supabase Secrets → edit `META_SYSTEM_USER_TOKEN` → Save. Then revoke the old token. Steps in [meta.md](meta.md) step 4.
+**Decided 12 Nov 2026: The Lab doesn't need people's names or contact details**, so `leads_retrieval` isn't needed and the Leads tab was removed. Lead counts and cost per lead come from Meta's ad results and are unaffected.
 
+Lead form **search** (form names, questions, thank-you pages; no personal data) needs `pages_manage_ads` on the token (Meta answered "Requires pages_manage_ads permission" when tested). If wanted: System users → MRKDPlatformTools → **Generate new token** → app The Lab → tick the current permissions plus **pages_manage_ads** → Never expires → copy → Supabase Secrets → edit `META_SYSTEM_USER_TOKEN` → Save → tell Claude to check it → revoke the old token. Do this yourself, not through Cowork (the token shows on screen). A form sync would then need building.

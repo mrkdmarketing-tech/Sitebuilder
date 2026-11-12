@@ -30,6 +30,14 @@ Deno.serve(async (req) => {
     return json({ results, pages: (pages.data ?? []).map((p: { id: string; name: string; tasks?: string[] }) => ({ id: p.id, name: p.name, tasks: p.tasks ?? [] })), pagesError: pages.error?.message ?? null })
   }
 
+  // ?forms=<pageId>: can the token read a Page's lead forms (names and questions, no people)?
+  const formsParam = new URL(req.url).searchParams.get('forms')
+  if (formsParam && /^\d+$/.test(formsParam)) {
+    const r = await fetch(`https://graph.facebook.com/v23.0/${formsParam}/leadgen_forms?fields=id,name,status,questions&limit=5`, { headers: { Authorization: `Bearer ${token}` } })
+    const b = await r.json().catch(() => ({}))
+    return json({ http: r.status, count: b.data?.length ?? null, sample: (b.data ?? []).slice(0, 2).map((f: { name: string; questions?: unknown[] }) => ({ name: f.name, questions: f.questions?.length })), error: b.error ?? null })
+  }
+
   // ?adsets=<id>,<id>...: can these ad sets be paused? (validate only)
   const adsetsParam = new URL(req.url).searchParams.get('adsets')
   if (adsetsParam) {

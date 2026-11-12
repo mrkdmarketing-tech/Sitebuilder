@@ -29,7 +29,6 @@ const TABS: { key: Tab; label: string }[] = [
   { key: 'campaign', label: 'Campaigns' },
   { key: 'adset', label: 'Ad sets' },
   { key: 'ad', label: 'Ads' },
-  { key: 'leads', label: 'Leads' },
   { key: 'working', label: "What's working" },
 ]
 
@@ -89,7 +88,9 @@ export function InsightsPage() {
 
   const current = useAsync<LevelData>(async () => {
     const [account, campaign, adset, ad, leads] = await Promise.all([
-      ds.report('account', range), ds.report('campaign', range), ds.report('adset', range), ds.report('ad', range), ds.leads(range),
+      ds.report('account', range), ds.report('campaign', range), ds.report('adset', range), ds.report('ad', range),
+      // People's names and contact details aren't needed (Jordan, 12 Nov 2026), so leads aren't loaded.
+      Promise.resolve([] as MetaLead[]),
     ])
     return { account, campaign, adset, ad, leads }
   }, [ds, range.from, range.to, live])
