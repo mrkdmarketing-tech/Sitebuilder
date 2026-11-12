@@ -2,6 +2,9 @@
 
 What changed, newest first. Every change to the platform adds a line here.
 
+## 2026-11-12: Turn off works on almost every account
+- Meta access granted to MRKDPlatformTools (Manage campaigns on ad accounts, Ads and Leads on Pages). 21 of 26 suggested ads can now be turned off from The Lab (was 7 of 19). Today re-checked at once. Remaining: GB Whiterock account, GB Cloverdale and GB Renton Pages, Double Five billing ([checklist](docs/setup/meta-access-checklist.md)).
+
 ## 2026-11-12: GHL connected
 - Token added; first direct read: 221 client contacts and 7 users, no errors, no differences with the Retool copy. Findings (clients changed only in The Lab, clients with no status in GHL) in [docs/ghl.md](docs/ghl.md#first-run-12-nov-2026).
 

@@ -1,5 +1,12 @@
 # Meta access checklist (12 Nov 2026)
 
+**Done 12 Nov 2026 (via Cowork).** Re-check straight after: 54 of 55 ad accounts can now be changed by The Lab (was 33), 52 Pages visible (was 26), and **21 of 26 suggested ads can be turned off** (was 7 of 19). Still open:
+- **Gracie Barra Whiterock** ad account: still view-only.
+- **Gracie Barra Cloverdale** Page (100942154821406) and **Gracie Barra Renton** Page (1675215389229834): not visible to The Lab (probably not shared with MRKD's business). Cloverdale's 4 suggested ads can't be turned off until then.
+- **Double Five**: "Ad account not writable" (account unsettled: billing).
+- Step 3 (token with leads_retrieval) not done yet: Leads tab still empty.
+
+
 What MRKDPlatformTools (The Lab's Meta login) is missing, worked out from live data. Fixing both lists makes Turn off work everywhere and lets the Leads tab fill. After each batch, ask Claude to re-check (meta-check `?ads=` validate only).
 
 Where: **Business settings → Users → System users → MRKDPlatformTools → Assign assets**. Both screens let you tick many at once.
