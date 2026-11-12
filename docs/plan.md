@@ -243,6 +243,18 @@ The exact SQL lives in `supabase/migrations/` once Phase 0 starts.
 | **2. Ad approval** | M6: submission of copy + images/videos, AI quality check (copy, image text, video subtitles), "just double checking" prompt before publishing, review checklist, comments, Slack notifications, ClickUp API, templates, LeadLabz website campaign requests, history copied from Retool | **Ad Preview**, Meta Ad Components Templates | All new ad previews go through the new app |
 | *Later* | Billing + leads (Clients View parity), Onboarding, GHL/LeadLabz admin, cutover | Clients View, Clients Onboarding, LeadLabz apps | Decided after Phase 2 |
 
+### Status (12 Nov 2026)
+
+| Phase | Status | Left to do |
+|---|---|---|
+| **0. Foundations** | Mostly done: Supabase, Cloudflare Pages (sitebuilder-6iw.pages.dev), Retool bridge, sign-in with email code, two-step for owners/admins, docs and SOPs | GHL sidebar item and GHL sign-on; Google sign-in; own domain (e.g. app.mrkdmarketing.com) |
+| **1a. Meta insights** | Live: KPIs, all tabs, filters, sort, CSV, creatives, Sync screen, What's working (Jev tags) | **Leads tab and lead form search are empty** (0 leads synced): needs `leads_retrieval` on the token and the client Pages shared with MRKDPlatformTools. Confirm numbers match Ads Manager for a week, then stop using Retool's Meta Ads Insights. |
+| **1b. Suggestions** | Live as **Today**: grouped by location, dismiss, Turn off with Meta confirmation and Undo, advance check of what Turn off can do | Turn off works on 7 of 19 suggested ads: Meta access (Manage campaigns, Pages). Per-client thresholds and budget actions not built. |
+| **1c. Claude connector** | Not started (design in claude-connector.md) | Everything |
+| **2. Ad approval** | Built: form in Retool's order, built-in mistake checks, check on Submit, review checklist, comments, history from Retool, Slack messages (Jordan default reviewer) | Slack webhook secret; Claude key for image/video text; ClickUp task on approval; LeadLabz website campaign requests; team switches over (Retool Ad Preview was still used on 10 Nov) |
+| **Next (agreed 12 Nov)** | Direct GHL connection, read-only first | GHL private integration token from Jordan; then run alongside the Retool bridge for a week before switching |
+| *Later* | Billing + leads, Onboarding, GHL/LeadLabz admin, cutover; ideas: lead quality (cost per booked/sale), fair within-account comparisons, budget pacing | Decided later |
+
 ### Running alongside Retool
 While Clients View and Onboarding stay in Retool, some data the new app needs is still **created and kept up to date in Retool**: clients and their ads manager, onboarding info, campaign specifics, lead outcomes from the Google Sheets, employees, and GHL custom-field metadata. Rather than rebuild those syncs now, the new app uses a **Retool bridge**:
 
