@@ -36,6 +36,14 @@ A loop per client: **check → decide → change → measure**, every week.
    - Every change logged with before/after and undo, like Turn off.
 4. **Measure** 2–4 weeks later; keep what worked.
 
+**Jev (TypeSafe) for the judging, Claude for the writing.** Jev answers yes/no, pick-one and scores on text, very cheaply, using the existing `TYPESAFE_API_KEY`:
+- AI visibility: for each AI-assistant answer, is the gym named, how (top pick / one of several / not named), and which competitors are.
+- Pages: what each page is (program, location, pricing, FAQ, blog, thin) and whether it answers price, ages, first class, schedule.
+- Search Console queries: brand, local/near me, program, price, question.
+- Reviews: sentiment, topic, needs a reply.
+- Fix list: likely impact score, to order the work.
+Claude writes titles, descriptions, FAQ answers, pages and review replies, and reads text in images. Expected Jev cost: under $1 a month.
+
 **Order:** WordPress sites first (16, biggest share, fully automatable) → Google Business Profiles (needs Google API access approval) → Webflow → GHL/other sites as a fix list or browser agent.
 
 **Access needed per WordPress site:** an admin creates an **application password** for a "The Lab" user (Users → Profile → Application passwords). Stored as a secret, never in chat.
