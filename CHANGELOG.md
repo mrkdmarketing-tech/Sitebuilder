@@ -2,6 +2,9 @@
 
 What changed, newest first. Every change to the platform adds a line here.
 
+## 2026-11-13: Client website check (SEO groundwork)
+- New read-only `site-check` opened all 46 active clients' websites: 16 WordPress, 7 GHL/LeadLabz, 5 Squarespace/Wix/Webflow/GoDaddy, 2 gym-software pages, 8 unidentified, 8 couldn't be opened or have no site on file. 18 sites lack business details for Google; New Level Grappling's security certificate is invalid; Marcus Aurelio's address in GHL doesn't exist. Plan and findings: [docs/seo.md](docs/seo.md).
+
 ## 2026-11-12: Leads tab removed
 - The Lab doesn't need people's names or contact details, so the empty Leads tab is gone from Insights and nothing asks Meta for them. Lead counts and cost per lead are unchanged.
 - Search opens on **Ad copy**. Lead form search stays empty unless the Meta key gets `pages_manage_ads` (forms only, no personal data).
