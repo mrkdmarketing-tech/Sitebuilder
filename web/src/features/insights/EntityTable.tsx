@@ -3,7 +3,7 @@ import { ArrowDown, ArrowUp, ExternalLink, FileSpreadsheet } from 'lucide-react'
 import type { Level, ReportRow } from '@shared/domain/types.ts'
 import { adsManagerUrl } from '../../lib/links'
 import { ClientBadge, Empty, ManagerChip, StatusBadge } from '../../components/ui'
-import { columnsFor, metricsOf, type Column } from './columns'
+import { TONE_BG, columnsFor, metricsOf, type Column } from './columns'
 
 export type SortState = { key: string; dir: 'asc' | 'desc' }
 
@@ -73,7 +73,7 @@ export function EntityTable({
       key={c.key}
       onClick={() => onSort({ key: c.key, dir: sort.key === c.key && sort.dir === 'desc' ? 'asc' : 'desc' })}
       title={c.key === 'activeCpl' ? 'Cost per lead of the ads running now' : c.key === 'cpl' && level !== 'ad' ? 'Cost per lead of every ad that spent in this period, including ads since turned off' : undefined}
-      className={`cursor-pointer select-none whitespace-nowrap px-3 py-2 font-semibold ${c.numeric ? 'text-right' : 'text-left'} ${c.secondary ? 'hidden 2xl:table-cell' : ''}`}
+      className={`cursor-pointer select-none whitespace-nowrap px-3 py-2 font-semibold ${c.numeric ? 'text-right' : 'text-left'} ${c.secondary ? 'hidden 2xl:table-cell' : ''} ${c.tone ? `${TONE_BG[c.tone]} text-ink` : ''}`}
     >
       <span className="inline-flex items-center gap-1">
         {c.label}
@@ -135,7 +135,7 @@ export function EntityTable({
                 <td className="px-3 py-2"><ManagerChip name={r.managerName} /></td>
                 <td className="px-3 py-2"><StatusBadge status={r.status} label={level === 'account' ? r.statusLabel : undefined} /></td>
                 {columns.map((c) => (
-                  <td key={c.key} className={`whitespace-nowrap px-3 py-2 ${c.numeric ? 'text-right' : ''} ${c.secondary ? 'hidden 2xl:table-cell' : ''}`}>
+                  <td key={c.key} className={`whitespace-nowrap px-3 py-2 ${c.numeric ? 'text-right' : ''} ${c.secondary ? 'hidden 2xl:table-cell' : ''} ${c.tone ? `${TONE_BG[c.tone]} font-semibold` : ''}`}>
                     {c.render ? c.render(r, m) : (c.value(r, m) ?? '—')}
                   </td>
                 ))}

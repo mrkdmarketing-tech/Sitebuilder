@@ -2,6 +2,9 @@
 
 What changed, newest first. Every change to the platform adds a line here.
 
+## 2026-11-15: Colour for Active and overall CPL
+- Active CPL is highlighted green and overall CPL light blue everywhere they appear (tables, phone cards, CPL tile), in light and dark mode.
+
 ## 2026-11-15: Active CPL next to overall CPL
 - Insights shows **Active CPL** (only the ads running now) next to **CPL** (every ad that spent in the period, including ones since turned off): a column on accounts, campaigns and ad sets, on the phone cards, in the Sort menu and CSV, and under the CPL tile. Last 7 days: $31.62 overall vs $26.89 for active ads.
 - "No leads" when running ads spent without a lead; "—" when nothing is running.

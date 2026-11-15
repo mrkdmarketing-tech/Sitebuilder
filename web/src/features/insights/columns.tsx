@@ -18,6 +18,8 @@ export interface Column {
   numeric?: boolean
   /** Hidden on narrow desktop widths to keep the table readable. */
   secondary?: boolean
+  /** Coloured highlight: green for Active CPL, light blue for overall CPL. */
+  tone?: 'active' | 'overall'
 }
 
 const num = (key: string, label: string, value: Column['value'], fmt: (v: number | null) => string, secondary = false): Column => ({
@@ -79,7 +81,11 @@ export const LEVEL_EXTRA: Record<Level, Column[]> = {
 export const ACTIVE_CPL: Column = {
   ...num('activeCpl', 'Active CPL', (r) => activeCpl(r), (v) => money(v, { cents: true })),
   render: (r) => activeCplText(r),
+  tone: 'active',
 }
+
+/** Background for a highlighted column or figure. */
+export const TONE_BG = { active: 'bg-active-cpl', overall: 'bg-overall-cpl' } as const
 
 /** "$26.90"; "No leads" when running ads spent without a lead; "—" when nothing is running. */
 export function activeCplText(r: ReportRow): string {
@@ -91,7 +97,7 @@ export function activeCplText(r: ReportRow): string {
 /** Columns shown for a level, after the name/status columns. */
 export function columnsFor(level: Level): Column[] {
   if (level === 'ad') return [...METRIC_COLUMNS, ...LEVEL_EXTRA[level], ...OUTCOME_COLUMNS]
-  const metrics = [...METRIC_COLUMNS]
+  const metrics = METRIC_COLUMNS.map((c): Column => (c.key === 'cpl' ? { ...c, tone: 'overall' } : c))
   metrics.splice(metrics.findIndex((c) => c.key === 'cpl') + 1, 0, ACTIVE_CPL)
   return [...metrics, ...LEVEL_EXTRA[level], ...OUTCOME_COLUMNS]
 }

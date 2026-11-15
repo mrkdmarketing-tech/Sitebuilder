@@ -24,11 +24,17 @@ export function KpiTiles({ current, previous, loading, activeCpl }: { current?: 
         return (
           <div key={t.key} className="rounded-xl border border-line bg-surface px-3 py-2.5">
             <div className="text-xs font-semibold text-muted">{t.label}</div>
-            <div className={`kpi-value tabular mt-1 text-xl font-bold ${loading ? 'animate-pulse text-gray-300' : ''}`}>{t.fmt(value)}</div>
-            {t.key === 'cpl' && activeCpl !== undefined && (
-              <div className="tabular text-[11px] text-soft" title="Cost per lead of the ads running now. The big number counts every ad that spent in this period.">
-                Active ads <b className="text-ink">{money(activeCpl, { cents: true })}</b>
-              </div>
+            {t.key === 'cpl' && activeCpl !== undefined ? (
+              <>
+                {/* Overall CPL (light blue) and Active CPL (green), same colours as the tables. */}
+                <div className={`kpi-value tabular mt-1 block w-fit rounded-md bg-overall-cpl px-1.5 text-xl font-bold ${loading ? 'animate-pulse text-gray-300' : ''}`}
+                  title="Every ad that spent in this period, including ads since turned off">{t.fmt(value)}</div>
+                <div className="tabular mt-1 block w-fit rounded-md bg-active-cpl px-1.5 text-[11px] text-soft" title="Cost per lead of the ads running now">
+                  Active ads <b className="text-ink">{money(activeCpl, { cents: true })}</b>
+                </div>
+              </>
+            ) : (
+              <div className={`kpi-value tabular mt-1 text-xl font-bold ${loading ? 'animate-pulse text-gray-300' : ''}`}>{t.fmt(value)}</div>
             )}
             <div className="tabular mt-0.5 h-4 text-[11px]">
               {change !== null && Math.abs(change) >= 0.5 && (

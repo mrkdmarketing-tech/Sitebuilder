@@ -4,7 +4,7 @@ import type { Level, ReportRow } from '@shared/domain/types.ts'
 import { adsManagerUrl } from '../../lib/links'
 import { count, money, percent } from '../../lib/format'
 import { ClientBadge, Empty, ManagerChip, StatusBadge } from '../../components/ui'
-import { activeCplText, columnsFor, metricsOf } from './columns'
+import { TONE_BG, activeCplText, columnsFor, metricsOf } from './columns'
 import { sortRows, type SortState } from './EntityTable'
 
 /** Phone layout: one card per row with the headline numbers; tap for everything else. */
@@ -57,7 +57,7 @@ export function EntityCards({
                   <Stat label="Leads" value={count(r.leads)} />
                   {level === 'ad'
                     ? <Stat label="CPL" value={money(m.cpl, { cents: true })} />
-                    : <Stat label="Active CPL" value={activeCplText(r)} sub={`All ads ${money(m.cpl, { cents: true })}`} />}
+                    : <Stat label="Active CPL" value={activeCplText(r)} tone="active" sub={`All ads ${money(m.cpl, { cents: true })}`} />}
                   <Stat label="CR" value={percent(m.cr, 1)} />
                 </div>
                 <div className="mt-2 flex items-center justify-between">
@@ -97,12 +97,13 @@ export function EntityCards({
   )
 }
 
-function Stat({ label, value, sub }: { label: string; value: string; sub?: string }) {
+function Stat({ label, value, sub, tone }: { label: string; value: string; sub?: string; tone?: 'active' }) {
   return (
-    <div className="rounded-md bg-subtle py-1">
+    <div className={`overflow-hidden rounded-md py-1 ${tone ? TONE_BG[tone] : 'bg-subtle'}`}>
       <div className="text-[10px] font-medium uppercase text-muted">{label}</div>
       <div className="text-sm font-semibold">{value}</div>
-      {sub && <div className="text-[10px] text-muted">{sub}</div>}
+      {/* Overall CPL in light blue under the green Active CPL. */}
+      {sub && <div className={`mx-1 mt-0.5 rounded ${TONE_BG.overall} px-1 text-[10px] font-medium text-soft`}>{sub}</div>}
     </div>
   )
 }
