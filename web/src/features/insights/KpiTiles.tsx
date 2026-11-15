@@ -13,7 +13,7 @@ const TILES: { key: keyof KpiSummary; label: string; fmt: (v: number | null) => 
   { key: 'valueGenerated', label: 'Value generated', fmt: (v) => money(v) },
 ]
 
-export function KpiTiles({ current, previous, loading }: { current?: KpiSummary; previous?: KpiSummary; loading: boolean }) {
+export function KpiTiles({ current, previous, loading, activeCpl }: { current?: KpiSummary; previous?: KpiSummary; loading: boolean; activeCpl?: number | null }) {
   return (
     <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 xl:grid-cols-8">
       {TILES.map((t) => {
@@ -25,6 +25,11 @@ export function KpiTiles({ current, previous, loading }: { current?: KpiSummary;
           <div key={t.key} className="rounded-xl border border-line bg-surface px-3 py-2.5">
             <div className="text-xs font-semibold text-muted">{t.label}</div>
             <div className={`kpi-value tabular mt-1 text-xl font-bold ${loading ? 'animate-pulse text-gray-300' : ''}`}>{t.fmt(value)}</div>
+            {t.key === 'cpl' && activeCpl !== undefined && (
+              <div className="tabular text-[11px] text-soft" title="Cost per lead of the ads running now. The big number counts every ad that spent in this period.">
+                Active ads <b className="text-ink">{money(activeCpl, { cents: true })}</b>
+              </div>
+            )}
             <div className="tabular mt-0.5 h-4 text-[11px]">
               {change !== null && Math.abs(change) >= 0.5 && (
                 <span className={good ? 'text-good' : 'text-bad'}>

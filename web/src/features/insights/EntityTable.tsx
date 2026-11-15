@@ -8,7 +8,7 @@ import { columnsFor, metricsOf, type Column } from './columns'
 export type SortState = { key: string; dir: 'asc' | 'desc' }
 
 /** Cost metrics: spend with nothing to show for it counts as the most expensive, not blank. */
-const COST_KEYS = new Set(['cpl', 'cpr', 'cplc', 'cpm'])
+const COST_KEYS = new Set(['cpl', 'cpr', 'cplc', 'cpm', 'activeCpl'])
 
 /** The Sort menu (phone and desktop). Column headings on desktop sort too. */
 export const SORT_OPTIONS: { label: string; sort: SortState }[] = [
@@ -16,6 +16,8 @@ export const SORT_OPTIONS: { label: string; sort: SortState }[] = [
   { label: 'Spend: low to high', sort: { key: 'spend', dir: 'asc' } },
   { label: 'CPL: low to high', sort: { key: 'cpl', dir: 'asc' } },
   { label: 'CPL: high to low', sort: { key: 'cpl', dir: 'desc' } },
+  { label: 'Active CPL: low to high', sort: { key: 'activeCpl', dir: 'asc' } },
+  { label: 'Active CPL: high to low', sort: { key: 'activeCpl', dir: 'desc' } },
   { label: 'Leads: high to low', sort: { key: 'leads', dir: 'desc' } },
   { label: 'Leads: low to high', sort: { key: 'leads', dir: 'asc' } },
   { label: 'CR: high to low', sort: { key: 'cr', dir: 'desc' } },
@@ -32,7 +34,8 @@ export function sortRows(rows: ReportRow[], columns: Column[], sort: SortState):
   const sign = sort.dir === 'asc' ? 1 : -1
   const valueOf = (r: ReportRow) => {
     const v = col.value(r, metricsOf(r))
-    if ((v === null || v === undefined) && COST_KEYS.has(sort.key) && r.spend > 0) return Number.POSITIVE_INFINITY
+    const spent = sort.key === 'activeCpl' ? r.activeSpend ?? 0 : r.spend
+    if ((v === null || v === undefined) && COST_KEYS.has(sort.key) && spent > 0) return Number.POSITIVE_INFINITY
     return v
   }
   return [...rows].sort((a, b) => {
@@ -69,6 +72,7 @@ export function EntityTable({
     <th
       key={c.key}
       onClick={() => onSort({ key: c.key, dir: sort.key === c.key && sort.dir === 'desc' ? 'asc' : 'desc' })}
+      title={c.key === 'activeCpl' ? 'Cost per lead of the ads running now' : c.key === 'cpl' && level !== 'ad' ? 'Cost per lead of every ad that spent in this period, including ads since turned off' : undefined}
       className={`cursor-pointer select-none whitespace-nowrap px-3 py-2 font-semibold ${c.numeric ? 'text-right' : 'text-left'} ${c.secondary ? 'hidden 2xl:table-cell' : ''}`}
     >
       <span className="inline-flex items-center gap-1">

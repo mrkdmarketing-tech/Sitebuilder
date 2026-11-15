@@ -91,3 +91,21 @@ describe('percentChange', () => {
     expect(percentChange(null, 5)).toBeNull()
   })
 })
+
+describe('active ads CPL', () => {
+  const ad = (o: Partial<import('./types.ts').ReportRow>) => ({ level: 'ad', id: 'x', name: 'x', status: 'ACTIVE', statusLabel: 'ACTIVE', accountId: 'A', campaignId: 'C1', adsetId: 'S1', spend: 0, leads: 0, ...o }) as import('./types.ts').ReportRow
+  it('counts only running ads, per account, campaign and ad set', async () => {
+    const { activeTotals, withActiveTotals, activeCpl } = await import('./metrics.ts')
+    const t = activeTotals([
+      ad({ spend: 100, leads: 4 }),
+      ad({ spend: 50, leads: 1, campaignId: 'C2', adsetId: 'S2' }),
+      ad({ spend: 300, leads: 2, status: 'PAUSED' }), // turned off: only in the overall CPL
+    ])
+    expect(t.get('all')).toEqual({ spend: 150, leads: 5 })
+    expect(t.get('campaign:C1')).toEqual({ spend: 100, leads: 4 })
+    const [acc] = withActiveTotals([{ ...ad({ spend: 450, leads: 7 }), level: 'account', id: 'A' }], t)
+    expect(activeCpl(acc)).toBe(30) // vs overall 450 / 7 = 64.29
+    const [none] = withActiveTotals([{ ...ad({ spend: 10, leads: 1 }), level: 'campaign', id: 'C9' }], t)
+    expect(activeCpl(none)).toBeNull()
+  })
+})

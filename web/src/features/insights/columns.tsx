@@ -4,7 +4,7 @@
  * Every value comes from shared/domain/metrics.ts.
  */
 import type { ReactNode } from 'react'
-import { derive, type DerivedMetrics } from '@shared/domain/metrics.ts'
+import { activeCpl, derive, type DerivedMetrics } from '@shared/domain/metrics.ts'
 import type { Level, ReportRow } from '@shared/domain/types.ts'
 import { count, money, percent } from '../../lib/format'
 
@@ -75,9 +75,25 @@ export const LEVEL_EXTRA: Record<Level, Column[]> = {
   ad: AD_EXTRA,
 }
 
+/** CPL of the ads running now (accounts, campaigns, ad sets). "CPL" next to it counts every ad that spent in the period. */
+export const ACTIVE_CPL: Column = {
+  ...num('activeCpl', 'Active CPL', (r) => activeCpl(r), (v) => money(v, { cents: true })),
+  render: (r) => activeCplText(r),
+}
+
+/** "$26.90"; "No leads" when running ads spent without a lead; "—" when nothing is running. */
+export function activeCplText(r: ReportRow): string {
+  const v = activeCpl(r)
+  if (v !== null) return money(v, { cents: true })
+  return (r.activeSpend ?? 0) > 0 ? 'No leads' : '—'
+}
+
 /** Columns shown for a level, after the name/status columns. */
 export function columnsFor(level: Level): Column[] {
-  return [...METRIC_COLUMNS, ...LEVEL_EXTRA[level], ...OUTCOME_COLUMNS]
+  if (level === 'ad') return [...METRIC_COLUMNS, ...LEVEL_EXTRA[level], ...OUTCOME_COLUMNS]
+  const metrics = [...METRIC_COLUMNS]
+  metrics.splice(metrics.findIndex((c) => c.key === 'cpl') + 1, 0, ACTIVE_CPL)
+  return [...metrics, ...LEVEL_EXTRA[level], ...OUTCOME_COLUMNS]
 }
 
 export function metricsOf(r: ReportRow): DerivedMetrics {

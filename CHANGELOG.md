@@ -2,6 +2,10 @@
 
 What changed, newest first. Every change to the platform adds a line here.
 
+## 2026-11-15: Active CPL next to overall CPL
+- Insights shows **Active CPL** (only the ads running now) next to **CPL** (every ad that spent in the period, including ones since turned off): a column on accounts, campaigns and ad sets, on the phone cards, in the Sort menu and CSV, and under the CPL tile. Last 7 days: $31.62 overall vs $26.89 for active ads.
+- "No leads" when running ads spent without a lead; "—" when nothing is running.
+
 ## 2026-11-15: Jev tags on Insights
 - **Ads** show what they say as labels (Free trial · Kids · Place callout · Deadline · City). **Campaigns and ad sets** show a one-line summary of their ads.
 - New **"What the ad says" filters** on Campaigns, Ad sets and Ads: offer, audience, opening hook, and mentions price / deadline / city / uniform. Works with Sort and the CSV.

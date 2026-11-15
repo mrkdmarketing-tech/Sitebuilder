@@ -4,7 +4,7 @@
  */
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Download, Search, X } from 'lucide-react'
-import { kpiSummary } from '@shared/domain/metrics.ts'
+import { activeTotals, kpiSummary, withActiveTotals } from '@shared/domain/metrics.ts'
 import { presetRange, previousRange, type PresetKey } from '@shared/domain/dates.ts'
 import type { DateRange, Level, MetaLead, ReportRow } from '@shared/domain/types.ts'
 import { useData } from '../../data/source'
@@ -123,10 +123,12 @@ export function InsightsPage() {
     const okAds = tagged ? d.ad.filter(adOk) : d.ad
     const okCampaigns = new Set(okAds.map((r) => r.campaignId))
     const okAdsets = new Set(okAds.map((r) => r.adsetId))
+    // CPL of the ads running now, per account / campaign / ad set (from every ad, whatever the filters).
+    const active = activeTotals(d.ad)
     return {
-      account: byManager(d.account).filter(matches),
-      campaign: byManager(d.campaign).filter(inSelection).filter(matches).filter((r) => !tagged || okCampaigns.has(r.id)),
-      adset: byManager(d.adset).filter(inSelection).filter(matches).filter((r) => !tagged || okAdsets.has(r.id)),
+      account: withActiveTotals(byManager(d.account).filter(matches), active),
+      campaign: withActiveTotals(byManager(d.campaign).filter(inSelection).filter(matches).filter((r) => !tagged || okCampaigns.has(r.id)), active),
+      adset: withActiveTotals(byManager(d.adset).filter(inSelection).filter(matches).filter((r) => !tagged || okAdsets.has(r.id)), active),
       ad: byManager(d.ad).filter(inSelection).filter(matches).filter(adOk),
       leads: byManager(d.leads).filter(inSelection).filter((l) => !q || [l.name, l.email, l.adName, l.formName].some((v) => v?.toLowerCase().includes(q))),
     }
@@ -152,6 +154,12 @@ export function InsightsPage() {
 
   // KPIs follow Retool: all accounts for "Active acc.", selected accounts (if any) for the rest.
   const kpis = useMemo(() => (current.data ? kpiSummary(byManager(current.data.account), selected) : undefined), [current.data, byManager, selected])
+  // Active ads only, for the CPL tile: same managers and selected accounts as the other tiles.
+  const kpiActiveCpl = useMemo(() => {
+    const ads = current.data ? byManager(current.data.ad).filter((r) => selected.size === 0 || (r.accountId !== null && selected.has(r.accountId))) : []
+    const t = activeTotals(ads).get('all')
+    return t && t.leads ? t.spend / t.leads : null
+  }, [current.data, byManager, selected])
   const prevKpis = useMemo(() => (previous.data ? kpiSummary(byManager(previous.data), selected) : undefined), [previous.data, byManager, selected])
 
   const toggle = (id: string) =>
@@ -208,7 +216,7 @@ export function InsightsPage() {
         }
       />
 
-      <KpiTiles current={kpis} previous={prevKpis} loading={current.loading} />
+      <KpiTiles activeCpl={kpiActiveCpl} current={kpis} previous={prevKpis} loading={current.loading} />
 
       {selected.size > 0 && (
         <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">

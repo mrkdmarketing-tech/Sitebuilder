@@ -38,6 +38,9 @@ export type DeliveryStatus = 'ACTIVE' | 'PAUSED' | 'REMOVED' | 'DISABLED' | 'OTH
 export interface ReportRow extends Totals {
   level: Level
   id: string
+  /** Spend and leads of the ads that are running now (accounts, campaigns, ad sets; added by withActiveTotals). */
+  activeSpend?: number
+  activeLeads?: number
   name: string
   status: DeliveryStatus
   /** Meta's raw status label, e.g. "ACTIVE", "UNSETTLED", "CAMPAIGN_PAUSED". */

@@ -134,3 +134,42 @@ export const HIGHER_IS_BETTER: Record<keyof KpiSummary, boolean> = {
   ctr: true,
   linkCtr: true,
 }
+
+// ---------------------------------------------------------------------------
+// Active ads only: CPL of the ads running now, next to the CPL of every ad that
+// spent in the period (which includes ads since turned off).
+
+export interface ActiveTotals { spend: number; leads: number }
+
+/** Spend and leads of running ads (delivery status ACTIVE), per account, campaign and ad set, plus 'all'. */
+export function activeTotals(adRows: readonly ReportRow[]): Map<string, ActiveTotals> {
+  const out = new Map<string, ActiveTotals>()
+  const add = (key: string, r: ReportRow) => {
+    const t = out.get(key) ?? { spend: 0, leads: 0 }
+    t.spend += r.spend || 0
+    t.leads += r.leads || 0
+    out.set(key, t)
+  }
+  for (const r of adRows) {
+    if (r.status !== 'ACTIVE') continue
+    add('all', r)
+    if (r.accountId) add(`account:${r.accountId}`, r)
+    if (r.campaignId) add(`campaign:${r.campaignId}`, r)
+    if (r.adsetId) add(`adset:${r.adsetId}`, r)
+  }
+  return out
+}
+
+/** Rows with activeSpend / activeLeads filled in (0 when none of their ads are running). */
+export function withActiveTotals<T extends ReportRow>(rows: readonly T[], totals: Map<string, ActiveTotals>): T[] {
+  return rows.map((r) => {
+    if (r.level === 'ad') return r
+    const key = r.level === 'account' ? `account:${r.accountId ?? r.id}` : `${r.level}:${r.id}`
+    const t = totals.get(key)
+    return { ...r, activeSpend: t?.spend ?? 0, activeLeads: t?.leads ?? 0 }
+  })
+}
+
+/** CPL of running ads; null when nothing is running or nothing was spent on them. */
+export const activeCpl = (r: Pick<ReportRow, 'activeSpend' | 'activeLeads'>): number | null =>
+  r.activeSpend && r.activeLeads ? r.activeSpend / r.activeLeads : null

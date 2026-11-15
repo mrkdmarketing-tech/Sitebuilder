@@ -4,7 +4,7 @@ import type { Level, ReportRow } from '@shared/domain/types.ts'
 import { adsManagerUrl } from '../../lib/links'
 import { count, money, percent } from '../../lib/format'
 import { ClientBadge, Empty, ManagerChip, StatusBadge } from '../../components/ui'
-import { columnsFor, metricsOf } from './columns'
+import { activeCplText, columnsFor, metricsOf } from './columns'
 import { sortRows, type SortState } from './EntityTable'
 
 /** Phone layout: one card per row with the headline numbers; tap for everything else. */
@@ -55,7 +55,9 @@ export function EntityCards({
                 <div className="tabular mt-2 grid grid-cols-4 gap-2 text-center">
                   <Stat label="Spend" value={money(r.spend)} />
                   <Stat label="Leads" value={count(r.leads)} />
-                  <Stat label="CPL" value={money(m.cpl, { cents: true })} />
+                  {level === 'ad'
+                    ? <Stat label="CPL" value={money(m.cpl, { cents: true })} />
+                    : <Stat label="Active CPL" value={activeCplText(r)} sub={`All ads ${money(m.cpl, { cents: true })}`} />}
                   <Stat label="CR" value={percent(m.cr, 1)} />
                 </div>
                 <div className="mt-2 flex items-center justify-between">
@@ -95,11 +97,12 @@ export function EntityCards({
   )
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
+function Stat({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
     <div className="rounded-md bg-subtle py-1">
       <div className="text-[10px] font-medium uppercase text-muted">{label}</div>
       <div className="text-sm font-semibold">{value}</div>
+      {sub && <div className="text-[10px] text-muted">{sub}</div>}
     </div>
   )
 }

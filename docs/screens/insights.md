@@ -50,3 +50,10 @@ Route `/search` (`web/src/features/search/`), replacing Retool's **Search Meta L
 ## What the ad says (Jev tags)
 
 Labels under each ad, a summary under each campaign and ad set, and filters by offer, audience, opening hook, price, deadline, city and uniform. See [../creative-tags.md](../creative-tags.md#on-insights-since-15-nov-2026).
+
+## Active CPL (since 15 Nov 2026)
+
+- **CPL** counts every ad that spent in the date range, including ads since turned off. **Active CPL** counts only the ads running now (delivery status Active: ad, ad set, campaign and account all on).
+- Accounts, campaigns and ad sets get an **Active CPL** column next to CPL (sortable, in the Sort menu and the CSV). Phone cards show Active CPL with "All ads $X" under it. The CPL tile shows "Active ads $X" under the overall figure, for the same ads managers and selected accounts.
+- "No leads": running ads spent without a lead. "—": nothing is running.
+- Worked out from the ad rows (`activeTotals`, `withActiveTotals`, `activeCpl` in `shared/domain/metrics.ts`, tested). Last 7 days on 15 Nov 2026: CPL $31.62 overall, $26.89 for active ads.
