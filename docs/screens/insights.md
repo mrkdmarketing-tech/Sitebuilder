@@ -46,3 +46,7 @@ Route `/search` (`web/src/features/search/`), replacing Retool's **Search Meta L
 | ![Insights, desktop](images/1-desktop-insights.png) | ![Insights, phone](images/4-phone-insights.png) |
 | ![Ads tab, desktop](images/2-desktop-ads.png) | ![Account cards, phone](images/5-phone-accounts.png) |
 | ![Suggestions, desktop](images/3-desktop-suggestions.png) | ![Suggestions, phone](images/6-phone-suggestions.png) |
+
+## What the ad says (Jev tags)
+
+Labels under each ad, a summary under each campaign and ad set, and filters by offer, audience, opening hook, price, deadline, city and uniform. See [../creative-tags.md](../creative-tags.md#on-insights-since-15-nov-2026).

@@ -2,6 +2,12 @@
 
 What changed, newest first. Every change to the platform adds a line here.
 
+## 2026-11-15: Jev tags on Insights
+- **Ads** show what they say as labels (Free trial · Kids · Place callout · Deadline · City). **Campaigns and ad sets** show a one-line summary of their ads.
+- New **"What the ad says" filters** on Campaigns, Ad sets and Ads: offer, audience, opening hook, and mentions price / deadline / city / uniform. Works with Sort and the CSV.
+- Jev now also answers four yes/no questions per ad; all 5,857 ads re-tagged. Ads whose text Meta keeps in the post or asset feed are now read and tagged too (every ad from the last 7 days has tags).
+- Migration 3300; `meta-sync` and `tag-creatives` updated and deployed. Docs: [docs/creative-tags.md](docs/creative-tags.md).
+
 ## 2026-11-13: Client website check (SEO groundwork)
 - New read-only `site-check` opened all 46 active clients' websites: 16 WordPress, 7 GHL/LeadLabz, 5 Squarespace/Wix/Webflow/GoDaddy, 2 gym-software pages, 8 unidentified, 8 couldn't be opened or have no site on file. 18 sites lack business details for Google; New Level Grappling's security certificate is invalid; Marcus Aurelio's address in GHL doesn't exist. Plan and findings: [docs/seo.md](docs/seo.md).
 

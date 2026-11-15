@@ -15,6 +15,7 @@
  *
  * Secrets: META_SYSTEM_USER_TOKEN, CRON_SECRET.
  */
+import { creativeCopy } from '../../../shared/domain/creativeTags.ts'
 import { serviceClient } from '../_shared/supabase.ts'
 import { logRun } from '../_shared/sync-log.ts'
 import { isAuthorisedCron, json } from '../_shared/http.ts'
@@ -176,7 +177,7 @@ async function syncAccount(db: ReturnType<typeof serviceClient>, accountId: stri
 
   // Ads + their creatives
   const ads = await graph(`${act}/ads`, {
-    fields: 'id,name,adset_id,campaign_id,status,effective_status,creative{id,name,title,body,call_to_action_type,image_url,thumbnail_url,video_id,effective_object_story_id}',
+    fields: 'id,name,adset_id,campaign_id,status,effective_status,creative{id,name,title,body,call_to_action_type,image_url,thumbnail_url,video_id,effective_object_story_id,object_story_spec{link_data{message,name},video_data{message,title,video_id}},asset_feed_spec{bodies,titles,videos}}',
     filtering: live,
     thumbnail_width: '400',
     thumbnail_height: '400',
@@ -185,13 +186,17 @@ async function syncAccount(db: ReturnType<typeof serviceClient>, accountId: stri
   const creatives = [...new Map(
     ads.map((a) => a.creative as Row | undefined).filter((c): c is Row => !!c?.id).map((c) => [c.id as string, c]),
   ).values()]
-  await upsert(db, 'meta_ad_creatives', creatives.map((c) => ({
-    id: c.id, account_id: accountId, name: c.name ?? null, title: c.title ?? null, body: c.body ?? null,
+  await upsert(db, 'meta_ad_creatives', creatives.map((c) => {
+    // Some ads keep their text in the post spec or asset feed instead of title/body.
+    const copy = creativeCopy(c)
+    return {
+    id: c.id, account_id: accountId, name: c.name ?? null, title: copy.title, body: copy.body,
     call_to_action: c.call_to_action_type ?? null, image_url: c.image_url ?? null, thumbnail_url: c.thumbnail_url ?? null,
-    video_id: c.video_id ?? null,
+    video_id: copy.videoId,
     permalink_url: c.effective_object_story_id ? `https://www.facebook.com/${c.effective_object_story_id}` : null,
     raw: c, synced_at: now,
-  })))
+  }
+  }))
   // An ad can be live while its ad set or campaign is archived (so it wasn't
   // in the lists above). Add minimal parent rows first so nothing is dropped.
   await ensureParents(db, accountId, now, campaigns, adsets, ads.map((a) => ({

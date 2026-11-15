@@ -21,6 +21,8 @@ import { EntityCards } from './EntityCards'
 import { LeadsList } from './LeadsList'
 import { CreativeModal } from './CreativeModal'
 import { WhatsWorking } from './WhatsWorking'
+import { TagChips, TagFilters, TagSummary } from './tags'
+import { FLAG_QUESTIONS, TAG_QUESTIONS, filterIsEmpty, matchesTagFilter, shortTag, summariseTags, type TagFilter } from '@shared/domain/creativeTags.ts'
 import { columnsFor, metricsOf } from './columns'
 
 type Tab = Level | 'leads' | 'working'
@@ -34,16 +36,16 @@ const TABS: { key: Tab; label: string }[] = [
 
 // Remembered per browser (a convenience only; safe if storage is unavailable).
 const STORE_KEY = 'mrkd.insights.v1'
-function loadPrefs(): { preset?: PresetKey; managers?: string[]; sort?: SortState } {
+function loadPrefs(): { preset?: PresetKey; managers?: string[]; sort?: SortState; tagFilter?: TagFilter } {
   try {
     return JSON.parse(localStorage.getItem(STORE_KEY) ?? '{}')
   } catch {
     return {}
   }
 }
-function savePrefs(p: { preset: PresetKey | 'custom'; managers: string[]; sort: SortState }) {
+function savePrefs(p: { preset: PresetKey | 'custom'; managers: string[]; sort: SortState; tagFilter: TagFilter }) {
   try {
-    localStorage.setItem(STORE_KEY, JSON.stringify({ preset: p.preset === 'custom' ? undefined : p.preset, managers: p.managers, sort: p.sort }))
+    localStorage.setItem(STORE_KEY, JSON.stringify({ preset: p.preset === 'custom' ? undefined : p.preset, managers: p.managers, sort: p.sort, tagFilter: p.tagFilter }))
   } catch {
     /* ignore */
   }
@@ -68,8 +70,9 @@ export function InsightsPage() {
   const [query, setQuery] = useState('')
   const [creativeRow, setCreativeRow] = useState<ReportRow | null>(null)
   const [sort, setSort] = useState<SortState>(prefs.sort ?? { key: 'spend', dir: 'desc' })
+  const [tagFilter, setTagFilter] = useState<TagFilter>(prefs.tagFilter ?? {})
 
-  useEffect(() => savePrefs({ preset, managers, sort }), [preset, managers, sort])
+  useEffect(() => savePrefs({ preset, managers, sort, tagFilter }), [preset, managers, sort, tagFilter])
 
   // First visit: an ads manager starts on their own accounts (assigned in GHL);
   // owners/admins start on everyone. After that, their own choice is remembered.
@@ -95,6 +98,10 @@ export function InsightsPage() {
     return { account, campaign, adset, ad, leads }
   }, [ds, range.from, range.to, live])
   const previous = useAsync(() => ds.report('account', previousRange(range)), [ds, range.from, range.to, live])
+  // Jev tags for the ads in this period (offer, audience, hook, yes/no tags).
+  const adCreativeIds = useMemo(() => (current.data?.ad ?? []).map((r) => r.creativeId ?? '').filter(Boolean), [current.data])
+  const tags = useAsync(() => ds.creativeTags(adCreativeIds), [ds, adCreativeIds])
+  const tagOf = useCallback((r: ReportRow) => (r.creativeId ? tags.data?.get(r.creativeId) ?? null : null), [tags.data])
   const { data: lastUpdated } = useAsync(() => ds.lastUpdated(), [ds, current.data])
 
   // Filters: ads manager → selected accounts → search text.
@@ -110,15 +117,38 @@ export function InsightsPage() {
     const d = current.data
     if (!d) return null
     const inSelection = (r: { accountId: string | null }) => selected.size === 0 || (r.accountId !== null && selected.has(r.accountId))
+    // Tag filter: ads that match, and the campaigns / ad sets running them.
+    const tagged = !filterIsEmpty(tagFilter)
+    const adOk = (r: ReportRow) => !tagged || matchesTagFilter(tagOf(r), tagFilter)
+    const okAds = tagged ? d.ad.filter(adOk) : d.ad
+    const okCampaigns = new Set(okAds.map((r) => r.campaignId))
+    const okAdsets = new Set(okAds.map((r) => r.adsetId))
     return {
       account: byManager(d.account).filter(matches),
-      campaign: byManager(d.campaign).filter(inSelection).filter(matches),
-      adset: byManager(d.adset).filter(inSelection).filter(matches),
-      ad: byManager(d.ad).filter(inSelection).filter(matches),
+      campaign: byManager(d.campaign).filter(inSelection).filter(matches).filter((r) => !tagged || okCampaigns.has(r.id)),
+      adset: byManager(d.adset).filter(inSelection).filter(matches).filter((r) => !tagged || okAdsets.has(r.id)),
+      ad: byManager(d.ad).filter(inSelection).filter(matches).filter(adOk),
       leads: byManager(d.leads).filter(inSelection).filter((l) => !q || [l.name, l.email, l.adName, l.formName].some((v) => v?.toLowerCase().includes(q))),
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [current.data, byManager, selected, q])
+  }, [current.data, byManager, selected, q, tagFilter, tagOf])
+
+  // One-line summary of what each campaign / ad set's ads say ("3 ads: 2 free trial, 1 seasonal · kids").
+  const summaries = useMemo(() => {
+    const byParent = new Map<string, ReturnType<typeof tagOf>[]>()
+    for (const r of current.data?.ad ?? []) {
+      for (const key of [`c:${r.campaignId}`, `s:${r.adsetId}`]) {
+        const list = byParent.get(key) ?? []
+        list.push(tagOf(r))
+        byParent.set(key, list)
+      }
+    }
+    return new Map([...byParent.entries()].map(([k, list]) => [k, summariseTags(list)]))
+  }, [current.data, tagOf])
+  const note = (r: ReportRow) =>
+    r.level === 'ad' ? <TagChips tags={tagOf(r)} />
+      : r.level === 'campaign' ? <TagSummary text={summaries.get(`c:${r.id}`) ?? null} />
+        : r.level === 'adset' ? <TagSummary text={summaries.get(`s:${r.id}`) ?? null} /> : null
 
   // KPIs follow Retool: all accounts for "Active acc.", selected accounts (if any) for the rest.
   const kpis = useMemo(() => (current.data ? kpiSummary(byManager(current.data.account), selected) : undefined), [current.data, byManager, selected])
@@ -144,9 +174,21 @@ export function InsightsPage() {
     }
     const cols = columnsFor(tab)
     const rows = filtered[tab]
+    const tagCols = tab === 'ad'
+      ? [...TAG_QUESTIONS.map((t) => t.label), ...FLAG_QUESTIONS.map((f) => f.label)]
+      : tab === 'campaign' || tab === 'adset' ? ["What the ads say"] : []
+    const tagValues = (r: ReportRow): (string | null)[] => {
+      if (tab === 'ad') {
+        const t = tagOf(r)
+        return [...TAG_QUESTIONS.map((q) => (t?.[q.key] ? shortTag(t[q.key]!) : null)), ...FLAG_QUESTIONS.map((f) => (t?.[f.key] == null ? null : t[f.key] ? 'Yes' : 'No'))]
+      }
+      if (tab === 'campaign') return [summaries.get(`c:${r.id}`) ?? null]
+      if (tab === 'adset') return [summaries.get(`s:${r.id}`) ?? null]
+      return []
+    }
     downloadCsv(`${tab}s_${stamp}.csv`, toCsv(
-      ['Name', 'Account', 'Client', 'Ads manager', 'Status', ...cols.map((c) => c.label)],
-      rows.map((r) => [r.name, r.accountName, r.clientName, r.managerName, r.statusLabel, ...cols.map((c) => c.value(r, metricsOf(r)) as string | number | null)]),
+      ['Name', 'Account', 'Client', 'Ads manager', 'Status', ...cols.map((c) => c.label), ...tagCols],
+      rows.map((r) => [r.name, r.accountName, r.clientName, r.managerName, r.statusLabel, ...cols.map((c) => c.value(r, metricsOf(r)) as string | number | null), ...tagValues(r)]),
     ))
   }
 
@@ -218,6 +260,7 @@ export function InsightsPage() {
           </div>
         </div>
 
+        {(tab === 'campaign' || tab === 'adset' || tab === 'ad') && <TagFilters value={tagFilter} onChange={setTagFilter} />}
         {current.error && <p className="p-4 text-sm text-bad">Couldn't load data: {current.error.message}</p>}
         {current.loading && !current.data && <p className="p-6 text-center text-sm text-muted">Loading…</p>}
         {filtered && tab === 'leads' && <LeadsList leads={filtered.leads} />}
@@ -225,10 +268,10 @@ export function InsightsPage() {
         {filtered && tab !== 'leads' && tab !== 'working' && (
           <>
             <div className="hidden md:block">
-              <EntityTable level={tab} rows={rows} selected={selected} onToggle={toggle} onToggleAll={toggleAll} onOpenCreative={setCreativeRow} sort={sort} onSort={setSort} />
+              <EntityTable level={tab} rows={rows} selected={selected} onToggle={toggle} onToggleAll={toggleAll} onOpenCreative={setCreativeRow} sort={sort} onSort={setSort} note={note} />
             </div>
             <div className="md:hidden">
-              <EntityCards level={tab} rows={rows} selected={selected} onToggle={toggle} onOpenCreative={setCreativeRow} sort={sort} />
+              <EntityCards level={tab} rows={rows} selected={selected} onToggle={toggle} onOpenCreative={setCreativeRow} sort={sort} note={note} />
             </div>
           </>
         )}

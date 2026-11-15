@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, type ReactNode } from 'react'
 import { ChevronDown, ExternalLink } from 'lucide-react'
 import type { Level, ReportRow } from '@shared/domain/types.ts'
 import { adsManagerUrl } from '../../lib/links'
@@ -9,7 +9,7 @@ import { sortRows, type SortState } from './EntityTable'
 
 /** Phone layout: one card per row with the headline numbers; tap for everything else. */
 export function EntityCards({
-  level, rows, selected, onToggle, onOpenCreative, sort,
+  level, rows, selected, onToggle, onOpenCreative, sort, note,
 }: {
   level: Level
   rows: ReportRow[]
@@ -17,6 +17,7 @@ export function EntityCards({
   onToggle?: (id: string) => void
   onOpenCreative: (row: ReportRow) => void
   sort: SortState
+  note?: (r: ReportRow) => ReactNode
 }) {
   const [expanded, setExpanded] = useState<string | null>(null)
   const columns = useMemo(() => columnsFor(level), [level])
@@ -47,6 +48,7 @@ export function EntityCards({
                         ? [r.clientName && r.clientName !== r.name ? r.clientName : null, r.clientId ? `Client #${r.clientId}` : 'No client linked'].filter(Boolean).join(' · ')
                         : [r.accountName, level !== 'campaign' ? r.campaignName : null].filter(Boolean).join(' › ')}
                     </div>
+                    {note?.(r)}
                   </div>
                   <StatusBadge status={r.status} label={level === 'account' ? r.statusLabel : undefined} />
                 </div>

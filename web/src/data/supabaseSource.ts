@@ -7,6 +7,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Creative, Employee, MetaLead, ReportRow } from '@shared/domain/types.ts'
 import type { RuleSettings } from '@shared/domain/rules.ts'
+import type { AdTags } from '@shared/domain/creativeTags.ts'
 import type { ActionRecord, ClientRow, CreativeTagRow, DataSource, StaffMember, LeadFormResult, StoredSuggestion, SyncRun, TurnOffResult } from './source'
 import type { Suggestion } from '@shared/domain/rules.ts'
 import { createSupabaseApprovals } from './approvalsSupabase'
@@ -134,6 +135,15 @@ export function createSupabaseSource(db: SupabaseClient): DataSource {
         job: string; started_at: string; finished_at: string | null; status: SyncRun['status']; rows: number | null; error: string | null
       }[]
       return rows.map((r) => ({ job: r.job, startedAt: r.started_at, finishedAt: r.finished_at, status: r.status, rows: r.rows, error: r.error }))
+    },
+    async creativeTags(creativeIds) {
+      const ids = [...new Set(creativeIds.filter(Boolean))]
+      const out = new Map<string, AdTags>()
+      for (let i = 0; i < ids.length; i += 500) {
+        const rows = check(await db.rpc('creative_tags_for', { p_ids: ids.slice(i, i + 500) })) as (AdTags & { creative_id: string })[]
+        for (const { creative_id, ...t } of rows) out.set(creative_id, t)
+      }
+      return out
     },
     async creativeTagReport(range) {
       const rows = check(await db.rpc('creative_tag_report', { p_from: range.from, p_to: range.to })) as

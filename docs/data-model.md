@@ -171,6 +171,7 @@ Adds `sync_runs` to Supabase Realtime so open screens reload when a job finishes
 
 - **3000** `creative_tag_report` counts lead campaigns only.
 - **3100** `suggestions.turn_off_check`: whether Meta would let The Lab pause the ad (run-rules, validate only).
+- **3300** `creative_tags` gets yes/no tags (price, deadline, place, uniform) and `version`; `creatives_to_tag(limit, version)` re-tags older versions; `creative_tags_for(ids)` for Insights.
 - **3200** Direct GHL, read-only: `ghl_contacts_live`, `ghl_users_live` (written by `ghl-sync`), `ghl_compare()` (differences with the Retool copy), hourly schedule `ghl-sync` at :25. See [ghl.md](ghl.md).
 
 ## Changing the schema

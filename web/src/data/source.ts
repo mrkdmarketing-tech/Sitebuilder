@@ -4,6 +4,7 @@
  *   - supabaseSource: the real database via Supabase RPCs (supabase/migrations/0600)
  * Screens don't know or care which one they get. See docs/architecture.md.
  */
+import type { AdTags } from '@shared/domain/creativeTags.ts'
 import { createContext, useContext } from 'react'
 import type { Creative, DateRange, Employee, Level, MetaLead, ReportRow } from '@shared/domain/types.ts'
 import type { RuleSettings, Suggestion } from '@shared/domain/rules.ts'
@@ -148,6 +149,8 @@ export interface DataSource {
   storedSuggestions(): Promise<StoredSuggestion[] | null>
   /** Insights -> What's working: spend and leads by creative tag across all accounts (migration 2800). */
   creativeTagReport(range: DateRange): Promise<CreativeTagRow[]>
+  /** Jev tags for these creatives (Insights labels and filters). Untagged creatives are left out. */
+  creativeTags(creativeIds: string[]): Promise<Map<string, AdTags>>
   /** "Not now" (back in 24 h), "Dismiss" (not suggested again for 7 days), or "open" to undo either. */
   updateSuggestion(id: string, status: 'snoozed' | 'dismissed' | 'open'): Promise<void>
   /** "Turn off": pauses the ad in Meta through the meta-action function. */

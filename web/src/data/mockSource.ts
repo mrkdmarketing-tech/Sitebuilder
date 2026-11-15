@@ -12,6 +12,7 @@ import { DEFAULT_RULE_SETTINGS, type RuleSettings } from '@shared/domain/rules.t
 import { addDays, todayInZone } from '@shared/domain/dates.ts'
 import type { DateRange, DeliveryStatus, Level, ReportRow, Totals } from '@shared/domain/types.ts'
 import { generateMockData, type MockAccount, type MockClient, type MockDataset, type MockDay } from './mock/generate'
+import type { AdTags } from '@shared/domain/creativeTags.ts'
 import type { CreativeTagRow, DataSource, SyncRun } from './source'
 import { createMockApprovals } from './approvalsMock'
 
@@ -298,6 +299,16 @@ export function createMockSource(data: MockDataset = generateMockData()): DataSo
         { job: 'retool_bridge', startedAt: ago(4), finishedAt: ago(4), status: 'ok', rows: 6612, error: null },
         { job: 'meta.sync', startedAt: ago(42), finishedAt: ago(41), status: 'partial', rows: 1198, error: '1 account failed: token missing permission' },
       ]
+    },
+    async creativeTags(creativeIds) {
+      // Made-up tags, the same every time for the same ad.
+      const pick = <T,>(list: T[], id: string, salt: number) => list[[...id].reduce((h, ch) => (h * 31 + ch.charCodeAt(0) + salt) >>> 0, 7) % list.length]
+      return new Map(creativeIds.filter(Boolean).map((id): [string, AdTags] => [id, {
+        offer: pick(['free_trial', 'free_trial', 'free_week', 'paid_intro', 'seasonal', 'no_offer'], id, 1),
+        audience: pick(['kids', 'adults', 'adults', 'women', 'teens'], id, 2),
+        hook: pick(['local_callout', 'local_callout', 'benefit', 'pain_point', 'urgency'], id, 3),
+        price: pick([true, false, false], id, 4), deadline: pick([true, false], id, 5), place: pick([true, true, false], id, 6), uniform: pick([true, false, false], id, 7),
+      }]))
     },
     async creativeTagReport() {
       await wait(150)

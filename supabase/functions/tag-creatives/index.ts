@@ -4,14 +4,14 @@
  * Questions and answer parsing: shared/domain/creativeTags.ts.
  *
  * Scheduled hourly at :50 with the cron secret (migration 2800). Each run tags up
- * to 400 creatives that have no tags yet, biggest recent spenders first; once the
+ * to 400 creatives that have no tags yet (or tags from an older TAG_VERSION), biggest recent spenders first; once the
  * backlog is done, runs only find the few new ads. ?limit=<n> for a one-off run.
  *
  * Secret: TYPESAFE_API_KEY (Supabase Edge Function secrets). Without it the run
  * does nothing and says so on the Sync screen.
  */
 import { createHash } from 'node:crypto'
-import { creativeText, jevRequest, parseJevAnswer } from '../../../shared/domain/creativeTags.ts'
+import { TAG_VERSION, creativeText, jevRequest, parseJevAnswer } from '../../../shared/domain/creativeTags.ts'
 import { isAuthorisedCron, json } from '../_shared/http.ts'
 import { serviceClient } from '../_shared/supabase.ts'
 import { logRun } from '../_shared/sync-log.ts'
@@ -48,7 +48,7 @@ Deno.serve(async (req) => {
   try {
     const result = await logRun(db, 'creatives.tag', async () => {
       if (!key) return { rows: 0, details: { skipped: 'TYPESAFE_API_KEY is not set.' } }
-      const { data, error } = await db.rpc('creatives_to_tag', { p_limit: limit })
+      const { data, error } = await db.rpc('creatives_to_tag', { p_limit: limit, p_version: TAG_VERSION })
       if (error) throw new Error(error.message)
       const todo = (data ?? []) as { id: string; title: string | null; body: string | null }[]
 
@@ -71,7 +71,8 @@ Deno.serve(async (req) => {
             }
             const { error: e } = await db.from('creative_tags').upsert({
               creative_id: c.id, offer: tags.offer, audience: tags.audience, hook: tags.hook,
-              confidence: tags.confidence, model: MODEL,
+              price: tags.price, deadline: tags.deadline, place: tags.place, uniform: tags.uniform,
+              confidence: tags.confidence, model: MODEL, version: TAG_VERSION,
               input_hash: createHash('sha256').update(state).digest('hex'), tagged_at: new Date().toISOString(),
             })
             if (e) throw new Error(e.message)

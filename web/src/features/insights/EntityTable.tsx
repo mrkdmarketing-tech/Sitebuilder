@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, type ReactNode } from 'react'
 import { ArrowDown, ArrowUp, ExternalLink, FileSpreadsheet } from 'lucide-react'
 import type { Level, ReportRow } from '@shared/domain/types.ts'
 import { adsManagerUrl } from '../../lib/links'
@@ -47,7 +47,7 @@ export function sortRows(rows: ReportRow[], columns: Column[], sort: SortState):
 
 /** Desktop table for one level. Accounts can be selected (filters KPIs and the other tabs). */
 export function EntityTable({
-  level, rows, selected, onToggle, onToggleAll, onOpenCreative, sort, onSort,
+  level, rows, selected, onToggle, onToggleAll, onOpenCreative, sort, onSort, note,
 }: {
   level: Level
   rows: ReportRow[]
@@ -57,6 +57,8 @@ export function EntityTable({
   onOpenCreative: (row: ReportRow) => void
   sort: SortState
   onSort: (s: SortState) => void
+  /** Extra line under the name (Jev tags). */
+  note?: (r: ReportRow) => ReactNode
 }) {
   const columns = useMemo(() => columnsFor(level), [level])
   const sorted = useMemo(() => sortRows(rows, columns, sort), [rows, columns, sort])
@@ -124,6 +126,7 @@ export function EntityTable({
                       ? [r.clientName && r.clientName !== r.name ? r.clientName : null, r.clientId ? `Client #${r.clientId}` : 'No client linked'].filter(Boolean).join(' · ')
                       : [r.accountName, level !== 'campaign' ? r.campaignName : null, level === 'ad' ? r.adsetName : null].filter(Boolean).join(' › ')}
                   </div>
+                  {note?.(r)}
                 </td>
                 <td className="px-3 py-2"><ManagerChip name={r.managerName} /></td>
                 <td className="px-3 py-2"><StatusBadge status={r.status} label={level === 'account' ? r.statusLabel : undefined} /></td>

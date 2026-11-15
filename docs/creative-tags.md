@@ -12,12 +12,22 @@ Defined once in `shared/domain/creativeTags.ts` (tests: `creativeTags.test.ts`);
 | Audience | Kids (parents), Teens, Adults, Women, Families |
 | Opening hook | Calls out a place or group, Problem or frustration, Result or benefit, Urgency or scarcity, Social proof, Question |
 | Format | Image or Video (from Meta, no AI) |
+| Yes/no (since 15 Nov 2026) | Mentions a price or saving (a free class alone doesn't count), has a deadline or limited spots, names the city or area, mentions a free uniform or gear |
 
 To change a list, edit `TAG_QUESTIONS`. Changed options apply to newly tagged ads; to re-tag everything, delete the rows in `creative_tags` and the hourly job redoes them.
 
+## On Insights (since 15 Nov 2026)
+
+- **Ads tab:** each ad shows its tags as small labels under its name (Free trial · Kids · Place callout · Deadline · City).
+- **Campaigns and Ad sets tabs:** a one-line summary of their ads in the period, e.g. "3 ads: 2 free trial, 1 seasonal · kids".
+- **Filters** ("What the ad says", on the Campaigns, Ad sets and Ads tabs): Offer, Audience, Opening hook, and Price / Deadline / City / Uniform. The Ads tab shows matching ads; Campaigns and Ad sets show the ones running them. Remembered per browser; **Clear** resets. Combine with Sort, e.g. Offer "Free trial" + CPL high to low finds the weakest free-trial ad.
+- **CSV:** ads get a column per tag; campaigns and ad sets get the summary.
+- Labels come from `creative_tags_for(ids)` (migration 3300). Helpers: `tagChips`, `matchesTagFilter`, `summariseTags` in `shared/domain/creativeTags.ts`.
+
 ## How it runs
 
-- **`tag-creatives`** (Edge Function, hourly at :50, migration 2800): takes up to 400 ad creatives with copy and no tags yet, biggest spenders of the last 90 days first, and asks Jev three choice questions about each (one request per creative, 6 at a time). Answers are saved in `creative_tags` with Jev's confidence. Meta creatives can't be edited, so each is tagged once.
+- **`tag-creatives`** (Edge Function, hourly at :50, migration 2800): takes up to 400 ad creatives with copy and no tags yet, biggest spenders of the last 90 days first, and asks Jev three choice questions about each (one request per creative, 6 at a time). Answers are saved in `creative_tags` with Jev's confidence. Meta creatives can't be edited, so each is tagged once per `TAG_VERSION` (bump it when the questions change and the hourly job re-tags everything; version 2 on 15 Nov 2026 took about 6 runs of 1,000).
+- **Ad text:** some ads keep their text in the post spec or, with several texts, in the asset feed rather than in title/body. The Meta sync reads those too (`creativeCopy`), so those ads get tagged (68 of the week's 345 ads were missing before 15 Nov 2026).
 - **API:** `POST https://api.typesafe.ai/v1/systemone` with `model`, `state` (the headline and primary text) and `questions`. Model `jev-latest` (override with the `JEV_MODEL` secret).
 - **Safety:** an answer Jev doesn't give, or gives outside the list, is saved as nothing rather than guessed. If no answer in a run can be read, the run fails on the **Sync** screen ("Ad tagging (Jev)") with an example of what came back. A rejected key stops the run.
 - **Report:** `creative_tag_report(from, to)` adds up spend and leads by tag for lead-campaign ads that spent in the period (sales campaigns left out). Any staff member can see it.
