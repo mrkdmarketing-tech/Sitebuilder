@@ -24,13 +24,13 @@ function useTodayCount(): number {
   return own || (me.role === 'owner' || me.role === 'admin' ? data.length : 0)
 }
 
-/** `phone: false` = left off the phone tab bar (5 slots); reachable from Settings. */
+/** `phone: false` = left off the phone tab bar (6 slots); reachable from Settings. */
 const NAV = [
   { to: '/today', label: 'Today', icon: ListChecks, phone: true },
   { to: '/insights', label: 'Insights', icon: BarChart3, phone: true },
   { to: '/approvals', label: 'Ad approval', icon: CheckSquare, phone: true },
   { to: '/search', label: 'Search', icon: Search, phone: true },
-  { to: '/clients', label: 'Clients', icon: Users, phone: false },
+  { to: '/clients', label: 'Clients', icon: Users, phone: true },
   { to: '/status', label: 'Sync', icon: Activity, phone: false },
   { to: '/settings', label: 'Settings', icon: Settings, phone: true },
 ]
@@ -55,11 +55,11 @@ export function Layout() {
           <Outlet />
         </main>
       </div>
-      <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-line bg-surface pb-[env(safe-area-inset-bottom)] md:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-6 border-t border-line bg-surface pb-[env(safe-area-inset-bottom)] md:hidden">
         {NAV.filter((n) => n.phone).map(({ to, label, icon: Icon }) => (
-          <NavLink key={to} to={to} className={({ isActive }) => `relative flex flex-col items-center gap-0.5 py-2 text-[11px] font-medium ${isActive ? 'text-brand' : 'text-muted'}`}>
+          <NavLink key={to} to={to} className={({ isActive }) => `relative flex min-w-0 flex-col items-center gap-0.5 py-2 text-[10px] font-medium ${isActive ? 'text-brand' : 'text-muted'}`}>
             <Icon size={20} />
-            {label}
+            <span className="max-w-full truncate px-0.5">{label === 'Ad approval' ? 'Approvals' : label}</span>
             {to === '/today' && todayCount > 0 && (
               <span className="absolute left-1/2 top-1 ml-2 rounded-full bg-bad px-1.5 text-[10px] font-bold leading-4 text-white">{todayCount}</span>
             )}

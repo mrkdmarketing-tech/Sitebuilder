@@ -52,10 +52,12 @@ export function ClientsPage() {
   const rows = useMemo(() => {
     const q = query.trim().toLowerCase()
     return (list.data ?? []).filter((c) => {
+      // Typing a search looks through every client, whatever its status.
+      if (q) return [c.name, c.managerName, c.city, ...c.accounts.map((a) => a.name)].some((v) => v?.toLowerCase().includes(q))
       if (view === 'live' && c.status !== 'Active' && c.status !== 'New') return false
       if ((view === 'Paused' || view === 'Inactive') && c.status !== view) return false
       if (view === 'changed' && !c.overridden && !c.accounts.some((a) => a.linkedInLab)) return false
-      return !q || [c.name, c.managerName, c.city, ...c.accounts.map((a) => a.name)].some((v) => v?.toLowerCase().includes(q))
+      return true
     })
   }, [list.data, view, query])
 
@@ -89,8 +91,10 @@ export function ClientsPage() {
         <label className="flex h-9 min-w-0 flex-1 items-center gap-1.5 rounded-lg border border-line bg-surface px-2 sm:max-w-xs">
           <Search size={14} className="text-muted" />
           <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search clients, managers, ad accounts" className="w-full bg-transparent text-sm outline-none" />
+          {query && <button onClick={() => setQuery('')} aria-label="Clear search" className="text-muted"><X size={14} /></button>}
         </label>
       </div>
+      {query.trim() && <p className="-mt-1 mb-2 text-xs text-muted">Searching all clients (any status).</p>}
 
       {list.error && <p className="text-sm text-bad">Couldn't load clients: {list.error.message}</p>}
       {list.loading && !list.data && <p className="py-8 text-center text-sm text-muted">Loading...</p>}
@@ -126,7 +130,6 @@ function EditClient({ c, onClose, onDone }: { c: ClientRow; onClose: () => void;
   const ds = useData()
   const staff = useAsync(() => ds.staff(), [ds])
   const unlinked = useAsync(() => ds.unlinkedAccounts(), [ds])
-  const [status, setStatus] = useState(c.status ?? '')
   const [manager, setManager] = useState(c.managerId ?? '')
   const [link, setLink] = useState('')
   const [unlink, setUnlink] = useState<string[]>([])
@@ -135,7 +138,7 @@ function EditClient({ c, onClose, onDone }: { c: ClientRow; onClose: () => void;
   const [error, setError] = useState<string | null>(null)
 
   const managers = (staff.data ?? []).filter((s) => s.active && (s.isAdManager || s.id === c.managerId))
-  const changed = status !== (c.status ?? '') || manager !== (c.managerId ?? '') || !!link || unlink.length > 0
+  const changed = manager !== (c.managerId ?? '') || !!link || unlink.length > 0
 
   const run = async (fn: () => Promise<void>, text: string) => {
     setBusy(true)
@@ -150,25 +153,30 @@ function EditClient({ c, onClose, onDone }: { c: ClientRow; onClose: () => void;
   }
 
   const save = () => run(() => ds.setClient(c.id, {
-    status: status !== (c.status ?? '') ? status : undefined,
     managerId: manager !== (c.managerId ?? '') ? manager : undefined,
     link: link ? [link] : undefined,
     unlink: unlink.length ? unlink : undefined,
     note: note.trim() || undefined,
-  }), `${c.name} updated.${status === 'Inactive' || status === 'Paused' ? ' It no longer shows in Insights, Suggestions or Ad approval.' : ''}`)
+  }), `${c.name} updated.`)
 
   const field = 'w-full rounded-lg border border-line bg-surface px-2.5 py-2 text-sm'
   return (
     <Modal open onClose={onClose} title={c.name}>
       <div className="space-y-3 text-sm">
-        <label className="block">
-          <span className="mb-1 block text-xs font-semibold text-soft">Status</span>
-          <select value={status} onChange={(e) => setStatus(e.target.value)} className={field}>
-            {!c.status && <option value="">No status</option>}
-            {STATUSES.map((s) => <option key={s}>{s}</option>)}
-          </select>
+        <div>
+          <span className="mb-1 block text-xs font-semibold text-soft">Status <span className="font-normal text-muted">(tap to change, saves straight away)</span></span>
+          <div className="grid grid-cols-4 gap-1.5">
+            {STATUSES.map((s) => (
+              <button key={s} type="button" disabled={busy}
+                onClick={() => (s === (c.status ?? '') ? undefined : run(() => ds.setClient(c.id, { status: s }),
+                  `${c.name} is now ${s}.${s === 'Inactive' || s === 'Paused' ? ' It no longer shows in Insights, Today or Ad approval.' : ''}`))}
+                className={`rounded-lg border px-1 py-2 text-sm font-semibold disabled:opacity-60 ${s === (c.status ?? '') ? 'border-brand bg-selected text-brand' : 'border-line'}`}>
+                {s}
+              </button>
+            ))}
+          </div>
           <span className="mt-1 block text-xs text-muted">Inactive = removed from The Lab. Paused = hidden until set back to Active.</span>
-        </label>
+        </div>
         <label className="block">
           <span className="mb-1 block text-xs font-semibold text-soft">Ads manager</span>
           <select value={manager} onChange={(e) => setManager(e.target.value)} className={field}>
