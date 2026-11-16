@@ -3,13 +3,14 @@ import { ChevronDown, ExternalLink } from 'lucide-react'
 import type { Level, ReportRow } from '@shared/domain/types.ts'
 import { adsManagerUrl } from '../../lib/links'
 import { count, money, percent } from '../../lib/format'
-import { ClientBadge, Empty, ManagerChip, StatusBadge } from '../../components/ui'
+import { Empty, ManagerChip, StatusBadge } from '../../components/ui'
+import { ClientStatusBadge } from './ClientStatus'
 import { TONE_BG, activeCplText, columnsFor, metricsOf } from './columns'
 import { sortRows, type SortState } from './EntityTable'
 
 /** Phone layout: one card per row with the headline numbers; tap for everything else. */
 export function EntityCards({
-  level, rows, selected, onToggle, onOpenCreative, sort, note,
+  level, rows, selected, onToggle, onOpenCreative, sort, note, onClientStatus,
 }: {
   level: Level
   rows: ReportRow[]
@@ -18,6 +19,7 @@ export function EntityCards({
   onOpenCreative: (row: ReportRow) => void
   sort: SortState
   note?: (r: ReportRow) => ReactNode
+  onClientStatus?: (r: ReportRow) => void
 }) {
   const [expanded, setExpanded] = useState<string | null>(null)
   const columns = useMemo(() => columnsFor(level), [level])
@@ -41,7 +43,7 @@ export function EntityCards({
                   <div className="min-w-0">
                     <div className="flex items-center gap-1.5">
                       <span className="truncate font-semibold">{r.name}</span>
-                      {level === 'account' && <ClientBadge status={r.clientStatus} />}
+                      {level === 'account' && <ClientStatusBadge r={r} onEdit={onClientStatus} />}
                     </div>
                     <div className="truncate text-xs text-muted">
                       {level === 'account'

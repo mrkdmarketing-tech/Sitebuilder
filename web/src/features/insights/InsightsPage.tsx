@@ -21,6 +21,7 @@ import { EntityCards } from './EntityCards'
 import { LeadsList } from './LeadsList'
 import { CreativeModal } from './CreativeModal'
 import { WhatsWorking } from './WhatsWorking'
+import { ClientStatusModal } from './ClientStatus'
 import { TagChips, TagFilters, TagSummary } from './tags'
 import { FLAG_QUESTIONS, TAG_QUESTIONS, filterIsEmpty, matchesTagFilter, shortTag, summariseTags, type TagFilter } from '@shared/domain/creativeTags.ts'
 import { columnsFor, metricsOf } from './columns'
@@ -71,6 +72,9 @@ export function InsightsPage() {
   const [creativeRow, setCreativeRow] = useState<ReportRow | null>(null)
   const [sort, setSort] = useState<SortState>(prefs.sort ?? { key: 'spend', dir: 'desc' })
   const [tagFilter, setTagFilter] = useState<TagFilter>(prefs.tagFilter ?? {})
+  const [statusFor, setStatusFor] = useState<ReportRow | null>(null)
+  const [reloadKey, setReloadKey] = useState(0)
+  const [statusNotice, setStatusNotice] = useState<string | null>(null)
 
   useEffect(() => savePrefs({ preset, managers, sort, tagFilter }), [preset, managers, sort, tagFilter])
 
@@ -96,7 +100,7 @@ export function InsightsPage() {
       Promise.resolve([] as MetaLead[]),
     ])
     return { account, campaign, adset, ad, leads }
-  }, [ds, range.from, range.to, live])
+  }, [ds, range.from, range.to, live, reloadKey])
   const previous = useAsync(() => ds.report('account', previousRange(range)), [ds, range.from, range.to, live])
   // Jev tags for the ads in this period (offer, audience, hook, yes/no tags).
   const adCreativeIds = useMemo(() => (current.data?.ad ?? []).map((r) => r.creativeId ?? '').filter(Boolean), [current.data])
@@ -268,6 +272,12 @@ export function InsightsPage() {
           </div>
         </div>
 
+        {statusNotice && (
+          <div className="flex items-start justify-between gap-2 border-b border-line bg-emerald-50 px-3 py-2 text-sm text-emerald-900">
+            <span>{statusNotice}</span>
+            <button onClick={() => setStatusNotice(null)} aria-label="Close"><X size={14} /></button>
+          </div>
+        )}
         {(tab === 'campaign' || tab === 'adset' || tab === 'ad') && <TagFilters value={tagFilter} onChange={setTagFilter} />}
         {current.error && <p className="p-4 text-sm text-bad">Couldn't load data: {current.error.message}</p>}
         {current.loading && !current.data && <p className="p-6 text-center text-sm text-muted">Loading…</p>}
@@ -276,16 +286,20 @@ export function InsightsPage() {
         {filtered && tab !== 'leads' && tab !== 'working' && (
           <>
             <div className="hidden md:block">
-              <EntityTable level={tab} rows={rows} selected={selected} onToggle={toggle} onToggleAll={toggleAll} onOpenCreative={setCreativeRow} sort={sort} onSort={setSort} note={note} />
+              <EntityTable level={tab} rows={rows} selected={selected} onToggle={toggle} onToggleAll={toggleAll} onOpenCreative={setCreativeRow} sort={sort} onSort={setSort} note={note} onClientStatus={isAdmin ? setStatusFor : undefined} />
             </div>
             <div className="md:hidden">
-              <EntityCards level={tab} rows={rows} selected={selected} onToggle={toggle} onOpenCreative={setCreativeRow} sort={sort} note={note} />
+              <EntityCards level={tab} rows={rows} selected={selected} onToggle={toggle} onOpenCreative={setCreativeRow} sort={sort} note={note} onClientStatus={isAdmin ? setStatusFor : undefined} />
             </div>
           </>
         )}
       </Card>
 
       <CreativeModal row={creativeRow} onClose={() => setCreativeRow(null)} />
+      {statusFor && (
+        <ClientStatusModal r={statusFor} onClose={() => setStatusFor(null)}
+          onDone={(text) => { setStatusFor(null); setStatusNotice(text); setReloadKey((k) => k + 1) }} />
+      )}
     </div>
   )
 }

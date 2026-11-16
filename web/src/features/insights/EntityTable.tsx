@@ -2,7 +2,8 @@ import { useMemo, type ReactNode } from 'react'
 import { ArrowDown, ArrowUp, ExternalLink, FileSpreadsheet } from 'lucide-react'
 import type { Level, ReportRow } from '@shared/domain/types.ts'
 import { adsManagerUrl } from '../../lib/links'
-import { ClientBadge, Empty, ManagerChip, StatusBadge } from '../../components/ui'
+import { Empty, ManagerChip, StatusBadge } from '../../components/ui'
+import { ClientStatusBadge } from './ClientStatus'
 import { TONE_BG, columnsFor, metricsOf, type Column } from './columns'
 
 export type SortState = { key: string; dir: 'asc' | 'desc' }
@@ -50,7 +51,7 @@ export function sortRows(rows: ReportRow[], columns: Column[], sort: SortState):
 
 /** Desktop table for one level. Accounts can be selected (filters KPIs and the other tabs). */
 export function EntityTable({
-  level, rows, selected, onToggle, onToggleAll, onOpenCreative, sort, onSort, note,
+  level, rows, selected, onToggle, onToggleAll, onOpenCreative, sort, onSort, note, onClientStatus,
 }: {
   level: Level
   rows: ReportRow[]
@@ -62,6 +63,8 @@ export function EntityTable({
   onSort: (s: SortState) => void
   /** Extra line under the name (Jev tags). */
   note?: (r: ReportRow) => ReactNode
+  /** Owners/admins: change a client's status from its badge. */
+  onClientStatus?: (r: ReportRow) => void
 }) {
   const columns = useMemo(() => columnsFor(level), [level])
   const sorted = useMemo(() => sortRows(rows, columns, sort), [rows, columns, sort])
@@ -123,7 +126,7 @@ export function EntityTable({
                       {r.name}
                     </a>
                     <ExternalLink size={12} className="shrink-0 text-muted" />
-                    {level === 'account' && <ClientBadge status={r.clientStatus} />}
+                    {level === 'account' && <ClientStatusBadge r={r} onEdit={onClientStatus} />}
                   </div>
                   <div className="truncate text-xs text-muted">
                     {level === 'account'

@@ -2,6 +2,10 @@
 
 What changed, newest first. Every change to the platform adds a line here.
 
+## 2026-11-16: Change a client's status from Insights
+- Owners and admins can click the status badge next to an account on **Insights → Ad accounts** (desktop and phone) and set Active, New, Paused or Inactive. Same change as the Clients screen (kept in The Lab, wins over GHL). Paused and Inactive clients drop out of Insights at once.
+- Before, status could only be changed on the Clients screen, which isn't on the phone's bottom bar (Settings → Clients).
+
 ## 2026-11-15: Colour for Active and overall CPL
 - Active CPL is highlighted green and overall CPL light blue everywhere they appear (tables, phone cards, CPL tile), in light and dark mode.
 

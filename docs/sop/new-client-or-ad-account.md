@@ -40,6 +40,8 @@ After 30 to 45 minutes:
 
 Owners and admins can do all of the above for a client straight from The Lab, without waiting for GHL or Retool: **Clients** (sidebar; on phones, Settings → Clients) → click the client.
 
+**Quicker for status:** on **Insights → Ad accounts**, click the client's status badge (Active, New...) next to the account name, on desktop or phone, and pick Active, New, Paused or Inactive. Paused and Inactive clients disappear from Insights straight away; bring them back from Clients → Paused / Inactive.
+
 | Change | Effect |
 |---|---|
 | **Status** Active / New | Shows in Insights, Suggestions and Ad approval |
