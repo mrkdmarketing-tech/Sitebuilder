@@ -5,6 +5,7 @@
  * Screens don't know or care which one they get. See docs/architecture.md.
  */
 import type { AdTags } from '@shared/domain/creativeTags.ts'
+import type { StyleKitApi } from './styleKit'
 import { createContext, useContext } from 'react'
 import type { Creative, DateRange, Employee, Level, MetaLead, ReportRow } from '@shared/domain/types.ts'
 import type { RuleSettings, Suggestion } from '@shared/domain/rules.ts'
@@ -177,6 +178,8 @@ export interface DataSource {
   setClient(clientId: number, change: ClientChange): Promise<void>
   /** Ad approval (docs/ad-approval.md). */
   readonly approvals: ApprovalsApi
+  /** Ad Studio: the MRKD style kit's files (docs/ad-studio.md). */
+  readonly styleKit: StyleKitApi
 }
 
 export const DataContext = createContext<DataSource | null>(null)

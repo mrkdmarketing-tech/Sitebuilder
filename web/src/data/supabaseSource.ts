@@ -8,6 +8,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Creative, Employee, MetaLead, ReportRow } from '@shared/domain/types.ts'
 import type { RuleSettings } from '@shared/domain/rules.ts'
 import type { AdTags } from '@shared/domain/creativeTags.ts'
+import { createStyleKit } from './styleKit'
 import type { ActionRecord, ClientRow, CreativeTagRow, DataSource, StaffMember, LeadFormResult, StoredSuggestion, SyncRun, TurnOffResult } from './source'
 import type { Suggestion } from '@shared/domain/rules.ts'
 import { createSupabaseApprovals } from './approvalsSupabase'
@@ -48,6 +49,7 @@ export function createSupabaseSource(db: SupabaseClient): DataSource {
   return {
     kind: 'supabase',
     approvals: createSupabaseApprovals(db),
+    styleKit: createStyleKit(db),
     async me() {
       const row = check(await db.rpc('me')) as { id: string; first_name: string; last_name: string; email: string | null; is_ad_manager: boolean; active: boolean; role: Employee['role'] } | null
       return row

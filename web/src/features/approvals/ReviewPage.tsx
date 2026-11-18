@@ -20,6 +20,7 @@ import {
 } from '@shared/domain/approvals.ts'
 import { Card, Modal } from '../../components/ui'
 import { useData } from '../../data/source'
+import { AdStudio } from '../studio/AdStudio'
 import type { CheckResult, ClientBrief, ReviewAsset, ReviewDetail, ReviewFinding, Template } from '../../data/approvals'
 import { useAsync } from '../../lib/useAsync'
 import { ACCEPTED_FILES, clock, prepareMedia } from '../../lib/media'
@@ -251,7 +252,7 @@ export function ReviewPage() {
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_380px]">
         <div className="min-w-0 space-y-4">
-          <MediaSection d={d} editable={editable} onChanged={reload} onNotice={setNotice} />
+          <MediaSection d={d} editable={editable} onChanged={reload} onNotice={setNotice} brief={brief.data ?? null} />
 
           <Section title="Copy">
             <div className="space-y-3">
@@ -495,10 +496,11 @@ function Questions({ value, editable, onChange }: { value: string[]; editable: b
   )
 }
 
-function MediaSection({ d, editable, onChanged, onNotice }: {
-  d: ReviewDetail; editable: boolean; onChanged: () => void; onNotice: (n: { ok: boolean; text: string }) => void
+function MediaSection({ d, editable, onChanged, onNotice, brief }: {
+  d: ReviewDetail; editable: boolean; onChanged: () => void; onNotice: (n: { ok: boolean; text: string }) => void; brief: ClientBrief | null
 }) {
   const ds = useData()
+  const [studio, setStudio] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
   const [progress, setProgress] = useState<string | null>(null)
   const [canva, setCanva] = useState('')
@@ -550,9 +552,16 @@ function MediaSection({ d, editable, onChanged, onNotice }: {
     <Section title="Images and videos" right={editable && (
       <>
         <input ref={fileRef} type="file" multiple accept={ACCEPTED_FILES} className="hidden" onChange={(e) => upload(e.target.files)} />
-        <Button onClick={() => fileRef.current?.click()} disabled={!!progress}><Upload size={14} /> Add files</Button>
+        <div className="flex flex-wrap gap-2">
+          <Button onClick={() => setStudio(true)} disabled={!!progress}><Sparkles size={14} /> Create with a style</Button>
+          <Button onClick={() => fileRef.current?.click()} disabled={!!progress}><Upload size={14} /> Add files</Button>
+        </div>
       </>
     )}>
+      {studio && (
+        <AdStudio reviewId={d.id} clientName={d.clientName ?? 'Client'} brief={brief} onClose={() => setStudio(false)}
+          onAdded={(n) => { setStudio(false); onNotice({ ok: true, text: `Added ${n} ad${n === 1 ? '' : 's'} made in Ad Studio. They go through the same checks and review as uploads.` }); onChanged() }} />
+      )}
       {progress && <p className="mb-2 text-sm text-muted">{progress}</p>}
       {d.assets.length === 0 && !progress && <p className="text-sm text-muted">{editable ? 'No files yet. Images and videos are private to MRKD staff.' : 'No files.'}</p>}
       <div className="grid gap-3 sm:grid-cols-2">

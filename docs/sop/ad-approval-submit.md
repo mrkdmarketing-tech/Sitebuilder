@@ -9,6 +9,7 @@ How it works behind the scenes: [../ad-approval.md](../ad-approval.md).
 1. Open **Ad approval** and click **New ad**.
 2. Pick the **client** (location) and give the ad a **name** (follow the campaign naming convention). Click **Create**. It's saved as a draft and you can come back to it any time.
 3. **Images and videos:** click **Add files** and choose them from your computer, or paste a **Canva link**. Files are private to MRKD staff.
+   - Or click **Create with a style** to make ads in an approved MRKD style right there (Echo for now): pick Gracie Barra or generic, start from an example, **change every line to this client's real offer**, tick the confirmation, pick people and colours, **Make ads**, check each at full size, then **Add to this ad**. See [../ad-studio.md](../ad-studio.md).
 4. **Copy:** primary text and headline. Or pick a template under **Start from a template**; its `{{placeholders}}` are filled from the client's info (shown on the right). Call to action, description, tracking and URL parameters are under **More**.
 5. **Ad type and booking:** pick the ad type. It's used to spot the wrong discipline (Muay Thai in a jiu jitsu ad).
 6. **Lead form** (optional, folded): form name, type, greeting, questions, privacy policy link, thank-you message. Or note the existing Meta lead form you're reusing.

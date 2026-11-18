@@ -2,6 +2,12 @@
 
 What changed, newest first. Every change to the platform adds a line here.
 
+## 2026-11-18: Ad Studio (create ads in an approved style), Echo pilot
+- New **Create with a style** button in an ad's Images and videos: fill in the words, pick approved people and colours, and The Lab makes the ads in the **Echo** style, exactly as the MRKD style kit does. Picked ads are added to the ad and go through the usual checks and review.
+- The kit's own Python runs in the browser (Pyodide): no server, no monthly cost. Kit files are stored privately in The Lab (migration 3400) and cached in the browser.
+- House rules built in: GB people only for Gracie Barra, "Black Friday" only for a real BF offer, lines copied from the example are flagged and the offer must be confirmed before making ads. Docs: [docs/ad-studio.md](docs/ad-studio.md).
+- Also: Claude's Supabase access token renewed (the old one expired 16 Nov).
+
 ## 2026-11-16: Clients tab on phones
 - **Clients** is now on the phone's bottom bar (6 tabs; Ad approval shows as "Approvals" there).
 - Search on Clients looks through every client, whatever its status, so paused and inactive ones can be found and switched back.
