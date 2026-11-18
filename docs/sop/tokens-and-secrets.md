@@ -15,7 +15,7 @@ All secrets live in **Supabase → Edge Functions → Secrets** (supabase.com/da
 | `SLACK_APPROVALS_WEBHOOK_URL` | Slack incoming webhook for #mrkd-internal-app | When the Slack app is removed | Ad approval messages |
 | `TYPESAFE_API_KEY` | TypeSafe AI key for the Jev model | When revoked | Ad tagging, Insights → What's working |
 | `GHL_PRIVATE_TOKEN` | GHL private integration token from MRKD's sub-account (view-only) | When deleted in GHL | Reading clients and the team from GHL directly |
-| Supabase access token `mrkd-sitebuilder-claude-3` | Lets Claude deploy changes | **16 Nov 2026**, renew before | Claude's cloud environment only |
+| Supabase access token `mrkd-sitebuilder-claude-4` | Lets Claude deploy changes and read the database | The expiry chosen on 18 Nov 2026 (check supabase.com/dashboard/account/tokens); renew before | Claude's cloud environment only (network secret for api.supabase.com) |
 
 ## Replace the Meta token
 
@@ -51,6 +51,10 @@ To stop the messages, delete the secret (or remove the app in Slack). If the lin
 6. Tell Claude, or wait for the next run at :25. **Sync** shows "GHL (direct, read-only)".
 
 If the token leaks or someone with access leaves: in the same GHL screen, delete it (or rotate it), create a new one and replace the secret.
+
+## Renew Claude's Supabase access token
+
+When it expires, Claude's database checks and deploys fail with "Invalid access token" (happened 16 Nov 2026). supabase.com → avatar → **Account preferences → Access Tokens → Generate new token** (name `mrkd-sitebuilder-claude-N`, 90 days), then paste it into the secure form Claude opens (or the cloud environment's Network secrets, host `api.supabase.com`). Delete the old token in the same Supabase screen.
 
 ## Add the TypeSafe key (Jev ad tagging)
 
