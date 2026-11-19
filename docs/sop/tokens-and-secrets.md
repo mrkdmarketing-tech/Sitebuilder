@@ -14,7 +14,7 @@ All secrets live in **Supabase → Edge Functions → Secrets** (supabase.com/da
 | `CRON_SECRET` | Random string that lets the schedule start jobs | Never | Scheduled jobs (also stored in Supabase Vault) |
 | `SLACK_APPROVALS_WEBHOOK_URL` | Slack incoming webhook for #mrkd-internal-app | When the Slack app is removed | Ad approval messages |
 | `TYPESAFE_API_KEY` | TypeSafe AI key for the Jev model | When revoked | Ad tagging, Insights → What's working |
-| `GHL_PRIVATE_TOKEN` | GHL private integration token from MRKD's sub-account (view-only) | When deleted in GHL | Reading clients and the team from GHL directly |
+| `GHL_PRIVATE_TOKEN` | GHL private integration token from MRKD's sub-account (view-only) | When deleted in GHL | Reading clients and the team from GHL directly; chats and pipelines for Prospects |
 | Supabase access token `mrkd-sitebuilder-claude-4` | Lets Claude deploy changes and read the database | The expiry chosen on 18 Nov 2026 (check supabase.com/dashboard/account/tokens); renew before | Claude's cloud environment only (network secret for api.supabase.com) |
 
 ## Replace the Meta token
@@ -45,7 +45,7 @@ To stop the messages, delete the secret (or remove the app in Slack). If the lin
 
 1. In GHL, switch to **MRKD's own sub-account** (the one where clients are contacts), not a client's and not the agency view.
 2. **Settings → Private Integrations → Create new integration**. Name it "The Lab (read-only)".
-3. Tick only these permissions (all "View"): **View Contacts**, **View Users**, **View Locations**, **View Custom Fields**, **View Opportunities**, **View Calendars** and **View Calendar Events**. Nothing that edits.
+3. Tick only these permissions (all "View"): **View Contacts**, **View Users**, **View Locations**, **View Custom Fields**, **View Opportunities**, **View Conversations**, **View Conversation Messages**, **View Calendars** and **View Calendar Events**. Nothing that edits. (Conversations and messages are for the owners-only Prospects screen, added 19 Nov 2026.)
 4. Create it and **copy the token** (GHL shows it once). Treat it like a password.
 5. In Supabase Secrets, **Add new secret**: name `GHL_PRIVATE_TOKEN`, paste the token, **Save**.
 6. Tell Claude, or wait for the next run at :25. **Sync** shows "GHL (direct, read-only)".

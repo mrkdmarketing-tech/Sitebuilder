@@ -35,6 +35,14 @@
   --color-alert-med-line: #fde68a;
   --color-active-cpl: #dcfce7;   /* Active CPL highlight (ads running now) */
   --color-overall-cpl: #e0f2fe;  /* CPL highlight (every ad in the period) */
+  --color-hot: #e11d48;          /* Prospects: hot / warm / cold */
+  --color-hot-soft: #fff1f2;
+  --color-warm: #ea580c;
+  --color-warm-soft: #fff7ed;
+  --color-cold: #2563eb;
+  --color-cold-soft: #eff6ff;
+  --color-pipeline: #0f172a;     /* Prospects: pipeline panel */
+  --color-pipeline-ink: #f8fafc;
   --radius-xl: 1rem;
 }
 
@@ -70,6 +78,14 @@ aside { border-right: 1px solid var(--color-line); }
   --color-selected: #0f2a29;
   --color-active-cpl: rgb(52 211 153 / 0.16);
   --color-overall-cpl: rgb(56 189 248 / 0.16);
+  --color-hot: #fb7185;
+  --color-hot-soft: rgb(251 113 133 / 0.14);
+  --color-warm: #fb923c;
+  --color-warm-soft: rgb(251 146 60 / 0.14);
+  --color-cold: #60a5fa;
+  --color-cold-soft: rgb(96 165 250 / 0.14);
+  --color-pipeline: #16212b;
+  --color-pipeline-ink: #e6edf3;
   --color-header: #0d1319;
   --color-header-ink: #e6edf3;
   --color-primary: #14b8a6;

@@ -49,11 +49,12 @@ One secret, `GHL_PRIVATE_TOKEN`: steps in [sop/tokens-and-secrets.md](sop/tokens
 - **Truro Brazilian Jiu Jitsu**: in GHL only (no Client ID), added as client 900001 (Active, Adam), and its Meta ad account "Truro BJJ" (3355307331455804) linked to it.
 - **Elite Team Monterey** (client 264): now Active from GHL. It has **no Meta ad account** shared with MRKD's system user yet, so it can't appear on Insights until one is shared and linked on the Clients screen.
 - **AACE and Barrhaven**: Inactive because they were set Inactive in The Lab on 16 Nov, after their last GHL change. The Lab change wins; set them back on the Clients screen if that was a mistake.
-- Contacts with a Client Status but left out (no company name, or not assigned to the team): 7 email-only contacts and "jj padilla" (a person, tag "infinite").
+- Contacts with a Client Status but left out (no company name, or not assigned to the team): 7 email-only contacts and one contact that is a person, not a business.
 
 ## Next steps
 
 1. Token added → first run → check `ghl_compare()` with Jordan.
 2. A week of matching runs → The Lab reads clients, status and ads manager from GHL directly; the Retool copy stops for those tables. Run every 15 minutes.
 3. ~~New clients: find them in GHL directly.~~ Done 19 Nov (step 4 above).
-4. Later, when agreed: each client's own sub-account (appointments, opportunities) for lead quality, and writing back to GHL.
+4. ~~Chats and sales pipelines~~: read for the owners-only Prospects screen since 19 Nov ([prospects.md](prospects.md)).
+5. Later, when agreed: each client's own sub-account (appointments, opportunities) for lead quality, and writing back to GHL.

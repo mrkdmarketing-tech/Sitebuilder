@@ -16,6 +16,7 @@ import type { AdTags } from '@shared/domain/creativeTags.ts'
 import type { CreativeTagRow, DataSource, SyncRun } from './source'
 import { createMockApprovals } from './approvalsMock'
 import { noStyleKit } from './styleKit'
+import { createMockProspects } from './prospects'
 
 /** localStorage key for the sample-mode "Viewing as" switch. */
 export const VIEW_AS_KEY = 'mrkd.viewAs'
@@ -179,6 +180,7 @@ export function createMockSource(data: MockDataset = generateMockData()): DataSo
     kind: 'sample',
     approvals,
     styleKit: noStyleKit,
+    prospects: createMockProspects(),
     async me() {
       // Sample mode has no login: "Viewing as" in the banner picks who you are.
       let id = 'emp_alex'

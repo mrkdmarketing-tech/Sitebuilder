@@ -45,7 +45,7 @@ Nothing in the browser holds a secret: the app only has the public key and the s
 | **GHL** | Clients, status, ads manager, team (read-only; status and new clients direct since 19 Nov) | MRKD's own sub-account (location `1Pbw0cdWjFMBsIFPrA0d`), private integration "The Lab (read-only)" | [ghl.md](ghl.md) |
 | **Retool** | Still the source for clients, onboarding, lead-sheet outcomes, templates; copied every 15 min, never written | Retool Database | [retool-bridge.md](retool-bridge.md) |
 | **Slack** | Ad approval messages | #mrkd-internal-app, incoming webhook (not added yet) | [ad-approval.md](ad-approval.md#slack-messages) |
-| **TypeSafe (Jev)** | Tags every ad: offer, audience, hook, yes/no tags | console.typesafe.ai | [creative-tags.md](creative-tags.md) |
+| **TypeSafe (Jev)** | Tags every ad: offer, audience, hook, yes/no tags; reads Prospects chats (type, temperature) | console.typesafe.ai | [creative-tags.md](creative-tags.md) |
 | **Anthropic (Claude API)** | Optional: reading text inside ad images on Submit | console.anthropic.com (key not added) | [ad-approval.md](ad-approval.md) |
 | **Google Drive** | Source of the MRKD ad styles kit (loaded into The Lab per style) | Folder "MRKD STYLE KIT" | [ad-studio.md](ad-studio.md) |
 | **jsDelivr CDN** | Serves the browser Python engine (Pyodide 0.27.7) for Ad Studio | Public, no account | [ad-studio.md](ad-studio.md) |
@@ -60,8 +60,8 @@ All in **Supabase → Edge Functions → Secrets** unless noted. Never in chat, 
 | `META_SYSTEM_USER_TOKEN` | meta-sync, meta-action, run-rules, meta-check | Set (never expires) |
 | `RETOOL_DB_URL` | retool-bridge | Set |
 | `CRON_SECRET` (+ Vault `cron_secret`) | every scheduled job | Set |
-| `GHL_PRIVATE_TOKEN` | ghl-sync | Set (12 Nov) |
-| `TYPESAFE_API_KEY` | tag-creatives | Set (11 Nov) |
+| `GHL_PRIVATE_TOKEN` | ghl-sync, prospects-sync | Set (12 Nov) |
+| `TYPESAFE_API_KEY` | tag-creatives, prospects-sync | Set (11 Nov) |
 | `SLACK_APPROVALS_WEBHOOK_URL` | approval-notify | **Not set** |
 | `ANTHROPIC_API_KEY` | ad-check (Claude part) | **Not set** (optional) |
 | Claude's Supabase access token | Claude only (deploys, database) | In the Claude cloud environment; `mrkd-sitebuilder-claude-4` (18 Nov) |
@@ -75,6 +75,7 @@ All in **Supabase → Edge Functions → Secrets** unless noted. Never in chat, 
 | `run-rules` | :10 and :40 | insights → suggestions (+ Turn off check with Meta) |
 | `ghl-sync` | :25 hourly | GHL → `ghl_contacts_live`, `ghl_users_live`; client status and ads manager; adds GHL-only clients |
 | `tag-creatives` | :50 hourly | creatives → Jev → `creative_tags` |
+| `prospects-sync` | :05 and :35 | GHL chats and pipelines → Jev → `prospects`, `prospect_messages` (owners only) |
 | `meta-action` | on Turn off / Undo | Meta (pause / resume), `actions_log` |
 | `ad-check` | on Submit / Full check | ad copy (+ Claude if key) → findings |
 | `approval-notify` | on ad status change | → Slack |
@@ -95,6 +96,7 @@ Detail and how to check them: [background-jobs.md](background-jobs.md). Every ru
 | Ads in approval, comments, checklist | The Lab | Old Retool Ad Preview history copied in, read-only |
 | Ad styles kit | Google Drive → `style_kit_files` | Loaded per style by Claude ([ad-studio.md](ad-studio.md)) |
 | Client websites (SEO) | Public websites (site-check) | [seo.md](seo.md) |
+| Prospects (owners only) | GHL chats and sales pipelines (prospects-sync); value, stage, notes set in The Lab | [prospects.md](prospects.md) |
 
 ## Screens and where their code is
 
@@ -105,10 +107,11 @@ Detail and how to check them: [background-jobs.md](background-jobs.md). Every ru
 | Ad approval (+ Ad Studio) | `web/src/features/approvals/`, `web/src/features/studio/` | [sop/ad-approval-submit.md](sop/ad-approval-submit.md), [sop/ad-approval-review.md](sop/ad-approval-review.md), [sop/ad-studio.md](sop/ad-studio.md) |
 | Search (ad copy) | `web/src/features/search/` | [screens/insights.md](screens/insights.md#search) |
 | Clients | `web/src/features/clients/` | [sop/new-client-or-ad-account.md](sop/new-client-or-ad-account.md) |
+| Prospects (owners only) | `web/src/features/prospects/` | [sop/prospects.md](sop/prospects.md) |
 | Sync | `web/src/features/status/` | [sop/weekly-health-check.md](sop/weekly-health-check.md) |
 | Settings (staff, thresholds, two-step) | `web/src/features/settings/` | [sop/staff-and-access.md](sop/staff-and-access.md), [sop/changing-thresholds.md](sop/changing-thresholds.md), [sop/security.md](sop/security.md) |
 
-Rules shared by the app and the jobs live in `shared/domain/` (one file per topic, each with tests): metrics, dates, rules (suggestions), today, approvals, adChecks (mistake checks), approvalSlack, creativeTags, styleKit (Ad Studio), metaErrors, ghl, siteCheck.
+Rules shared by the app and the jobs live in `shared/domain/` (one file per topic, each with tests): metrics, dates, rules (suggestions), today, approvals, adChecks (mistake checks), approvalSlack, creativeTags, styleKit (Ad Studio), metaErrors, ghl, siteCheck, prospects.
 
 ## What's waiting on someone
 

@@ -167,7 +167,7 @@ Adds `sync_runs` to Supabase Realtime so open screens reload when a job finishes
 
 `creative_tags` (one row per ad creative: offer, audience, hook, Jev's confidence, model, input hash), written only by the `tag-creatives` function. `creatives_to_tag(limit)` (service role only) lists untagged creatives with copy, biggest recent spenders first. `creative_tag_report(from, to)` sums spend and leads by tag (and image/video) for Active/New clients' ads that spent in the period. Hourly schedule `tag-creatives` at :50. See [creative-tags.md](creative-tags.md).
 
-## 3000 to 3600
+## 3000 to 3700
 
 - **3000** `creative_tag_report` counts lead campaigns only.
 - **3100** `suggestions.turn_off_check`: whether Meta would let The Lab pause the ad (run-rules, validate only).
@@ -176,6 +176,7 @@ Adds `sync_runs` to Supabase Realtime so open screens reload when a job finishes
 - **3400** `style_kit_files` (MRKD style kit files for Ad Studio: code, fonts, configs, approved people, previews; staff read only), `style_kit_list(style)`, `style_kit_get(paths)`. See [ad-studio.md](ad-studio.md).
 - **3500** Status and ads manager from GHL: trigger `clients_00_from_ghl` (before `clients_apply_override`, so Lab changes still win) takes `active_status` and `ad_manager_id` from `ghl_contacts_live`; `apply_ghl_live()` re-applies them (service role only).
 - **3600** Clients from GHL: `add_ghl_clients(jsonb)` adds GHL-only clients (ids from `private.ghl_client_id_seq`, 900001 up, `source = 'ghl'`); `private.merge_ghl_clients()` moves a GHL-only client's rows to Retool's id once Retool has the same contact, then deletes it. See [ghl.md](ghl.md).
+- **3700** Prospects, **owners only**: `prospects` (one per person: GHL contact or added by hand; Jev's suggestions `ai_*`; owners' `industry`, `temperature`, `value` a month, `stage`, `next_step`, `next_date`, `notes`, `hidden`; GHL pipeline, stage and value), `prospect_messages` (latest 40 messages per chat). `is_owner()` (owner role + two-step) is the only policy; owners may update only their own fields (column grants) and add or delete hand-added ones. Schedule `prospects-sync` at :05 and :35. See [prospects.md](prospects.md).
 - **3200** Direct GHL, read-only: `ghl_contacts_live`, `ghl_users_live` (written by `ghl-sync`), `ghl_compare()` (differences with the Retool copy), hourly schedule `ghl-sync` at :25. See [ghl.md](ghl.md).
 
 ## Changing the schema

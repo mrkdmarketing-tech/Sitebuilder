@@ -33,6 +33,7 @@ Everything about the MRKD platform is documented here. **Start with the row that
 | Ad Studio: making ads in an approved style inside The Lab | [ad-studio.md](ad-studio.md) |
 | Jev ad tags and Insights → What's working | [creative-tags.md](creative-tags.md) |
 | GHL direct connection (read-only) | [ghl.md](ghl.md) |
+| Prospects (owners only): sales chats from GHL, stage, value | [prospects.md](prospects.md) |
 | Client websites, SEO and AEO plan | [seo.md](seo.md) |
 | Meta access for The Lab (what was missing, how to fix) | [setup/meta-access-checklist.md](setup/meta-access-checklist.md) |
 | Background jobs (Meta sync, Retool bridge…) and schedules | [background-jobs.md](background-jobs.md) |

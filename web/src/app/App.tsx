@@ -17,6 +17,7 @@ import { ReviewPage } from '../features/approvals/ReviewPage'
 import { SyncStatusPage } from '../features/status/SyncStatusPage'
 import { SettingsPage } from '../features/settings/SettingsPage'
 import { ClientsPage } from '../features/clients/ClientsPage'
+import { ProspectsPage } from '../features/prospects/ProspectsPage'
 
 /**
  * Routes (docs/architecture.md):
@@ -29,6 +30,7 @@ import { ClientsPage } from '../features/clients/ClientsPage'
  *   /status       Sync health
  *   /settings     Suggestion thresholds (admins edit), staff, light/dark, links
  *   /clients      Client status, ads manager, ad accounts (admins change; overrides GHL/Retool)
+ *   /prospects    Owners only: people MRKD is selling to (GHL chats, Jev, value, stage)
  * Sign-in: AuthGate (Google restricted to mrkd.ca, plus email link), then MfaGate
  * (authenticator code; required for owners/admins). GHL single sign-on later.
  */
@@ -52,6 +54,7 @@ export function App() {
           <Route path="status" element={<SyncStatusPage />} />
           <Route path="settings" element={<SettingsPage />} />
           <Route path="clients" element={<ClientsPage />} />
+          <Route path="prospects" element={<ProspectsPage />} />
           <Route path="*" element={<Navigate to="/today" replace />} />
         </Route>
       </Routes>

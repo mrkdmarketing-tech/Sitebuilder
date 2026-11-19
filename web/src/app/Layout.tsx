@@ -1,5 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom'
-import { BarChart3, CheckSquare, ListChecks, Search, Activity, Settings, Moon, Sun, Users } from 'lucide-react'
+import { BarChart3, CheckSquare, ListChecks, Search, Activity, Settings, Moon, Sun, Target, Users } from 'lucide-react'
 import { SAMPLE_MODE } from '../lib/config'
 import { supabase } from '../lib/supabase'
 import { useData } from '../data/source'
@@ -24,13 +24,17 @@ function useTodayCount(): number {
   return own || (me.role === 'owner' || me.role === 'admin' ? data.length : 0)
 }
 
-/** `phone: false` = left off the phone tab bar (6 slots); reachable from Settings. */
-const NAV = [
+/**
+ * `phone: false` = left off the phone tab bar; reachable from Settings.
+ * `owners: true` = only shown to owners (the data is locked to them too).
+ */
+const NAV: { to: string; label: string; icon: typeof Users; phone: boolean; owners?: boolean }[] = [
   { to: '/today', label: 'Today', icon: ListChecks, phone: true },
   { to: '/insights', label: 'Insights', icon: BarChart3, phone: true },
   { to: '/approvals', label: 'Ad approval', icon: CheckSquare, phone: true },
   { to: '/search', label: 'Search', icon: Search, phone: true },
   { to: '/clients', label: 'Clients', icon: Users, phone: true },
+  { to: '/prospects', label: 'Prospects', icon: Target, phone: true, owners: true },
   { to: '/status', label: 'Sync', icon: Activity, phone: false },
   { to: '/settings', label: 'Settings', icon: Settings, phone: true },
 ]
@@ -39,8 +43,15 @@ const NAV = [
  * App shell ("Air", docs/design-options.md). Desktop: left sidebar.
  * Phones: name and light/dark button on top, tab bar at the bottom.
  */
+function useNav() {
+  const { me } = useSession()
+  return NAV.filter((n) => !n.owners || me?.role === 'owner')
+}
+
 export function Layout() {
   const todayCount = useTodayCount()
+  const nav = useNav()
+  const phoneNav = nav.filter((n) => n.phone)
   return (
     <div className="flex min-h-full flex-col">
       <UpdateBanner />
@@ -55,8 +66,9 @@ export function Layout() {
           <Outlet />
         </main>
       </div>
-      <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-6 border-t border-line bg-surface pb-[env(safe-area-inset-bottom)] md:hidden">
-        {NAV.filter((n) => n.phone).map(({ to, label, icon: Icon }) => (
+      <nav className="fixed inset-x-0 bottom-0 z-30 grid border-t border-line bg-surface pb-[env(safe-area-inset-bottom)] md:hidden"
+        style={{ gridTemplateColumns: `repeat(${phoneNav.length}, minmax(0, 1fr))` }}>
+        {phoneNav.map(({ to, label, icon: Icon }) => (
           <NavLink key={to} to={to} className={({ isActive }) => `relative flex min-w-0 flex-col items-center gap-0.5 py-2 text-[10px] font-medium ${isActive ? 'text-brand' : 'text-muted'}`}>
             <Icon size={20} />
             <span className="max-w-full truncate px-0.5">{label === 'Ad approval' ? 'Approvals' : label}</span>
@@ -90,11 +102,12 @@ function UserBadge() {
 }
 
 function SideNav({ todayCount }: { todayCount: number }) {
+  const nav = useNav()
   return (
     <aside className="sticky top-0 hidden h-screen w-56 shrink-0 flex-col bg-header px-3 py-5 text-header-ink md:flex">
       <span className="px-2"><LabLockup /></span>
       <nav className="mt-6 flex flex-col gap-1">
-        {NAV.map(({ to, label, icon: Icon }) => (
+        {nav.map(({ to, label, icon: Icon }) => (
           <NavLink key={to} to={to} className={({ isActive }) => `flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold transition ${isActive ? 'bg-primary text-on-primary' : 'text-header-ink/70 hover:bg-header-ink/10 hover:text-header-ink'}`}>
             <Icon size={17} />
             {label}

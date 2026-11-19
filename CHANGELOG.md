@@ -2,6 +2,12 @@
 
 What changed, newest first. Every change to the platform adds a line here.
 
+## 2026-11-19: Prospects (owners only)
+- New **Prospects** tab for Jordan and Trent only (desktop and phone): the people MRKD is selling to, from GHL chats of the last 120 days.
+- Jev reads each chat (no names or contact details sent) and suggests the type (Jiu jitsu, Steel structures, Other) and Hot / Warm / Cold. Owners set value a month, stage (New, Call 1 booked, Call 1 done, Proposal sent, Call 2, Won, Lost), next step and notes; their choices win.
+- Pipeline panel with the total open value split by temperature; board by stage; the chat under each prospect; add someone by hand.
+- Locked in the database: staff and admins get nothing. GHL permissions added: View Conversations, View Conversation Messages, View Opportunities. Docs: [docs/prospects.md](docs/prospects.md), [docs/sop/prospects.md](docs/sop/prospects.md).
+
 ## 2026-11-19: Client status follows GHL directly
 - Marking a client Active (or Paused, Inactive) in GHL now shows in The Lab within the hour. Before, The Lab waited for Retool's copy, which lagged or missed clients.
 - Clients that exist only in GHL (a business, assigned to a team member, Active / New / Paused) are added to The Lab automatically. First one: **Truro Brazilian Jiu Jitsu**, with its Meta ad account linked.

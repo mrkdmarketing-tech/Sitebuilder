@@ -11,6 +11,7 @@ All in [`supabase/functions/`](../supabase/functions) (Supabase Edge Functions, 
 | `meta-check` | On demand (cron secret): `select private.call_function('meta-check', '?…')`, read `net._http_response` | Diagnostics, never returns the token: token permissions and editable vs view-only accounts; `?ad=<id>` why an ad can't be paused; `?ads=<ids>` validate-only pause for many ads + visible Pages; `?adsets=<ids>`; `?forms=<pageId>` can lead forms be read | `META_SYSTEM_USER_TOKEN` | Live |
 | `ad-check` | App: **Submit** and **Full check** on an ad (signed-in staff) | Built-in mistake checks (no AI) on the copy, then, if the Claude key is set, Claude reads copy, image text and video stills; saves findings ([ad-approval.md](ad-approval.md)) | `ANTHROPIC_API_KEY` (optional) | Live; Claude part waits for the key |
 | `approval-notify` | Database trigger on `ad_review_events` (status changes of Lab ads) | Posts Retool-style messages in #mrkd-internal-app, tagging the reviewer or the ad's creator ([ad-approval.md](ad-approval.md#slack-messages)) | `SLACK_APPROVALS_WEBHOOK_URL` | Built; skips until the webhook is added |
+| `prospects-sync` | Every 30 min at **:05** and **:35** | Owners-only Prospects: GHL chats (last 120 days), messages, sales pipelines; Jev suggests type and temperature ([prospects.md](prospects.md)) | `GHL_PRIVATE_TOKEN`, `TYPESAFE_API_KEY` | Live (19 Nov) |
 | `tag-creatives` | Hourly at **:50** | Jev (TypeSafe) tags each new ad creative: offer, audience, hook, 4 yes/no tags ([creative-tags.md](creative-tags.md)) | `TYPESAFE_API_KEY` | Live (11 Nov) |
 | `ghl-sync` | Hourly at **:25** | Reads MRKD's GHL sub-account directly, read-only: users and each client's contact (status, client ID, assigned to) → `ghl_*_live`; adds GHL-only clients; client status and ads manager follow GHL; counts differences with the Retool copy ([ghl.md](ghl.md)) | `GHL_PRIVATE_TOKEN` | Live (status from GHL since 19 Nov) |
 | `site-check` | On demand (cron secret) | Opens each active client's website home page: what it's built on, basic SEO signals ([seo.md](seo.md)) | none | Built (13 Nov) |
@@ -29,8 +30,8 @@ Set in Supabase → Project Settings → Edge Functions → Secrets. **Never in 
 | `RETOOL_DB_URL` | retool-bridge | Jordan/Trent (Retool Database connection string) |
 | `ANTHROPIC_API_KEY` | ad-check | MRKD's Anthropic account (optional; not added yet) |
 | `CRON_SECRET` | all scheduled jobs | Any long random string; also used in the schedule below |
-| `GHL_PRIVATE_TOKEN` | ghl-sync | GHL private integration in MRKD's sub-account, view-only ([sop/tokens-and-secrets.md](sop/tokens-and-secrets.md#connect-ghl-read-only)) |
-| `TYPESAFE_API_KEY` | tag-creatives | TypeSafe AI console ([sop/tokens-and-secrets.md](sop/tokens-and-secrets.md#add-the-typesafe-key-jev-ad-tagging)) |
+| `GHL_PRIVATE_TOKEN` | ghl-sync, prospects-sync | GHL private integration in MRKD's sub-account, view-only ([sop/tokens-and-secrets.md](sop/tokens-and-secrets.md#connect-ghl-read-only)) |
+| `TYPESAFE_API_KEY` | tag-creatives, prospects-sync | TypeSafe AI console ([sop/tokens-and-secrets.md](sop/tokens-and-secrets.md#add-the-typesafe-key-jev-ad-tagging)) |
 | `SLACK_APPROVALS_WEBHOOK_URL` | approval-notify | Slack incoming webhook for #mrkd-internal-app ([sop/tokens-and-secrets.md](sop/tokens-and-secrets.md#connect-slack-ad-approval-messages)) |
 | `APP_URL`, `GHL_LOCATION_ID`, `JEV_MODEL` | approval-notify, ghl-sync, tag-creatives | Optional overrides (defaults: the Lab's address, MRKD's GHL sub-account, `jev-latest`) |
 
@@ -47,6 +48,7 @@ Live (migration 1200): `pg_cron` jobs call `private.call_function(name)`, which 
 | `meta-backfill` (`meta-sync?days=37`) | `20 7 * * *` (~2:20am Toronto) | Live |
 | `run-rules` | `10,40 * * * *` | Live |
 | `tag-creatives` | `50 * * * *` | Live |
+| `prospects-sync` | `5,35 * * * *` | Live |
 | `ghl-sync` | `25 * * * *` | Live |
 
 Check them with `select jobname, schedule, active from cron.job;` and recent calls with `select * from net._http_response order by id desc limit 5;`.

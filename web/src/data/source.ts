@@ -10,6 +10,7 @@ import { createContext, useContext } from 'react'
 import type { Creative, DateRange, Employee, Level, MetaLead, ReportRow } from '@shared/domain/types.ts'
 import type { RuleSettings, Suggestion } from '@shared/domain/rules.ts'
 import type { ApprovalsApi } from './approvals'
+import type { ProspectsApi } from './prospects'
 
 export interface LeadFormResult {
   id: string
@@ -180,6 +181,8 @@ export interface DataSource {
   readonly approvals: ApprovalsApi
   /** Ad Studio: the MRKD style kit's files (docs/ad-studio.md). */
   readonly styleKit: StyleKitApi
+  /** Owners only: Prospects (docs/prospects.md). */
+  readonly prospects: ProspectsApi
 }
 
 export const DataContext = createContext<DataSource | null>(null)

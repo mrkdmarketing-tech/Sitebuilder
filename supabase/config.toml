@@ -34,5 +34,8 @@ verify_jwt = false
 [functions.ghl-sync]
 verify_jwt = false
 
+[functions.prospects-sync]
+verify_jwt = false
+
 [functions.site-check]
 verify_jwt = false

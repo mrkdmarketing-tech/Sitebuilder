@@ -12,6 +12,7 @@ import { createStyleKit } from './styleKit'
 import type { ActionRecord, ClientRow, CreativeTagRow, DataSource, StaffMember, LeadFormResult, StoredSuggestion, SyncRun, TurnOffResult } from './source'
 import type { Suggestion } from '@shared/domain/rules.ts'
 import { createSupabaseApprovals } from './approvalsSupabase'
+import { createSupabaseProspects } from './prospects'
 
 function check<T>(res: { data: T | null; error: { message: string } | null }): T {
   if (res.error) throw new Error(res.error.message)
@@ -50,6 +51,7 @@ export function createSupabaseSource(db: SupabaseClient): DataSource {
     kind: 'supabase',
     approvals: createSupabaseApprovals(db),
     styleKit: createStyleKit(db),
+    prospects: createSupabaseProspects(db),
     async me() {
       const row = check(await db.rpc('me')) as { id: string; first_name: string; last_name: string; email: string | null; is_ad_manager: boolean; active: boolean; role: Employee['role'] } | null
       return row

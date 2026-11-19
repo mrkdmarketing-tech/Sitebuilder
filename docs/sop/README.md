@@ -25,6 +25,7 @@ The other docs explain how The Lab is built. These explain how to **use and run*
 | [Security](security.md) | Setup checklist (2-step everywhere), two-step sign-in, lost phone |
 | [Tokens and secrets](tokens-and-secrets.md) | A token expires, leaks, or someone with access leaves |
 | [Weekly health check](weekly-health-check.md) | Every Monday |
+| [Prospects](prospects.md) (owners only) | Working on sales: who's hot, value, stage, next step |
 | [Meta access for The Lab](../setup/meta-access-checklist.md) | Turn off can't work on an account ("Can't turn off from The Lab") |
 | [Troubleshooting](troubleshooting.md) | Something looks wrong |
 
