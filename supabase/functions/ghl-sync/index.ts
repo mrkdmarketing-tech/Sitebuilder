@@ -43,6 +43,28 @@ Deno.serve(async (req) => {
     }
   }
 
+  // ?probe=access: which parts of GHL the token can read (status codes and counts only; no names or messages).
+  if (new URL(req.url).searchParams.get('probe') === 'access' && token) {
+    const h = { Authorization: `Bearer ${token}`, Version: GHL_VERSION, Accept: 'application/json' }
+    const get = async (path: string) => {
+      const res = await fetch(`${GHL_API}${path}`, { headers: h })
+      return { status: res.status, body: await res.json().catch(() => ({})) as Record<string, unknown> }
+    }
+    const conv = await get(`/conversations/search?locationId=${location}&limit=50`)
+    const convs = (conv.body.conversations ?? []) as { id: string; type?: string; lastMessageType?: string }[]
+    const types: Record<string, number> = {}
+    for (const c of convs) { const t = c.lastMessageType ?? c.type ?? 'unknown'; types[t] = (types[t] ?? 0) + 1 }
+    const msgs = convs[0] ? await get(`/conversations/${convs[0].id}/messages?limit=1`) : null
+    const pipes = await get(`/opportunities/pipelines?locationId=${location}`)
+    const opps = await get(`/opportunities/search?location_id=${location}&limit=1`)
+    return json({
+      conversations: { status: conv.status, total: conv.body.total ?? null, lastMessageTypesInLatest50: types },
+      messages: msgs ? { status: msgs.status } : null,
+      pipelines: { status: pipes.status, pipelines: ((pipes.body.pipelines ?? []) as { name: string; stages?: { name: string }[] }[]).map((p) => ({ name: p.name, stages: (p.stages ?? []).map((s) => s.name) })) },
+      opportunities: { status: opps.status, total: (opps.body.meta as { total?: number } | undefined)?.total ?? null },
+    })
+  }
+
   // ?search=<text>: find contacts in MRKD's sub-account (read-only diagnostic, e.g. a new client not in Retool yet).
   const search = new URL(req.url).searchParams.get('search')
   if (search && token) {
