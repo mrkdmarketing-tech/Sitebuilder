@@ -42,7 +42,7 @@ Nothing in the browser holds a secret: the app only has the public key and the s
 | **GitHub** | All code and these docs | `mrkdmarketing-tech/Sitebuilder`, branch `claude/retool-overview-hsg1ch` | [development.md](development.md) |
 | **Supabase** (Pro) | Database, sign-in, background jobs, private file storage | Project `mhayvuxqrlwyvalceerw` (Canada Central) | [setup/accounts.md](setup/accounts.md), [data-model.md](data-model.md) |
 | **Meta** | Ad numbers (sync), Turn off / Undo, diagnostics | Business Manager, app **MRKD Platform**, system user **MRKDPlatformTools** | [setup/meta.md](setup/meta.md), [setup/meta-access-checklist.md](setup/meta-access-checklist.md) |
-| **GHL** | Clients, status, ads manager, team (read-only, direct since 12 Nov) | MRKD's own sub-account (location `1Pbw0cdWjFMBsIFPrA0d`), private integration "The Lab (read-only)" | [ghl.md](ghl.md) |
+| **GHL** | Clients, status, ads manager, team (read-only; status and new clients direct since 19 Nov) | MRKD's own sub-account (location `1Pbw0cdWjFMBsIFPrA0d`), private integration "The Lab (read-only)" | [ghl.md](ghl.md) |
 | **Retool** | Still the source for clients, onboarding, lead-sheet outcomes, templates; copied every 15 min, never written | Retool Database | [retool-bridge.md](retool-bridge.md) |
 | **Slack** | Ad approval messages | #mrkd-internal-app, incoming webhook (not added yet) | [ad-approval.md](ad-approval.md#slack-messages) |
 | **TypeSafe (Jev)** | Tags every ad: offer, audience, hook, yes/no tags | console.typesafe.ai | [creative-tags.md](creative-tags.md) |
@@ -73,7 +73,7 @@ All in **Supabase → Edge Functions → Secrets** unless noted. Never in chat, 
 | `retool-bridge` | every 15 min | Retool → clients, employees, onboarding, sheet leads, templates, Ad Preview history |
 | `meta-sync` | every 30 min (3 days) + 2:20am (37 days) | Meta → accounts, campaigns, ad sets, ads, creatives, daily insights |
 | `run-rules` | :10 and :40 | insights → suggestions (+ Turn off check with Meta) |
-| `ghl-sync` | :25 hourly | GHL → `ghl_contacts_live`, `ghl_users_live` (compare only) |
+| `ghl-sync` | :25 hourly | GHL → `ghl_contacts_live`, `ghl_users_live`; client status and ads manager; adds GHL-only clients |
 | `tag-creatives` | :50 hourly | creatives → Jev → `creative_tags` |
 | `meta-action` | on Turn off / Undo | Meta (pause / resume), `actions_log` |
 | `ad-check` | on Submit / Full check | ad copy (+ Claude if key) → findings |
@@ -87,7 +87,7 @@ Detail and how to check them: [background-jobs.md](background-jobs.md). Every ru
 | Data | Source today | Notes |
 |---|---|---|
 | Spend, leads, clicks, statuses of ads | Meta (meta-sync) | Lead **counts** only: names and contact details are not read (decided 12 Nov) |
-| Clients, status, ads manager | GHL via Retool copy; direct GHL read running alongside | Changes made in The Lab win (`client_overrides`) and aren't sent to GHL yet |
+| Clients, status, ads manager | Status, ads manager and GHL-only clients: GHL directly (hourly). Name and other details: Retool copy | Changes made in The Lab win (`client_overrides`) and aren't sent to GHL yet |
 | Staff list and roles | GHL users via Retool copy; roles set in The Lab | Owners: Jordan, Trent ([sop/staff-and-access.md](sop/staff-and-access.md)) |
 | Booked / showed / closed per lead | Client Google Sheets via Retool (`sheet_leads`) | Not used on screens yet |
 | Onboarding, offers, programs | Retool onboarding | Used by ad approval checks and Ad Studio |

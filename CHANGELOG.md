@@ -2,6 +2,11 @@
 
 What changed, newest first. Every change to the platform adds a line here.
 
+## 2026-11-19: Client status follows GHL directly
+- Marking a client Active (or Paused, Inactive) in GHL now shows in The Lab within the hour. Before, The Lab waited for Retool's copy, which lagged or missed clients.
+- Clients that exist only in GHL (a business, assigned to a team member, Active / New / Paused) are added to The Lab automatically. First one: **Truro Brazilian Jiu Jitsu**, with its Meta ad account linked.
+- Changes made in The Lab still win over GHL. Migrations 3500 and 3600; details in [docs/ghl.md](docs/ghl.md).
+
 ## 2026-11-19: Docs tidy-up
 - New [docs/system-map.md](docs/system-map.md): every service, account, secret, background job, schedule and data source on one page, and where each screen's code lives.
 - New [docs/open-items.md](docs/open-items.md): everything waiting, on whom, with the steps.

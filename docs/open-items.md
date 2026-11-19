@@ -17,7 +17,9 @@ Everything that's waiting, who it's waiting on, and where the steps are. Updated
 | Google sign-in | No more email codes, no 2-per-hour email limit | [setup/hosting-and-signin.md](setup/hosting-and-signin.md#google-sign-in-staff-use-their-mrkdca-google-account) |
 | Two-step for Trent; Adam and Zohirul to sign in | Owner actions for Trent; staff using Today | [sop/security.md](sop/security.md), [sop/signing-in.md](sop/signing-in.md) |
 | SEO pilot: pick 2 or 3 WordPress clients; admin access to their sites | Automatic SEO fixes | [seo.md](seo.md) |
-| Tidy GHL: 8 clients changed in The Lab, 5 with no status, test contact "Business Name" | GHL and The Lab agree | [ghl.md](ghl.md#first-run-12-nov-2026) |
+| Elite Team Monterey: share its Meta ad account with MRKD (system user MRKDPlatformTools), then link it on Clients | It shows on Insights (it's Active, but has no ad account in The Lab) | [sop/new-client-or-ad-account.md](sop/new-client-or-ad-account.md) |
+| AACE and Barrhaven: confirm Inactive (set in The Lab 16 Nov) or switch back on Clients | Status matches GHL | [ghl.md](ghl.md#19-nov-2026-status-from-ghl) |
+| Tidy GHL: clients changed in The Lab, test contact "Business Name", 7 email-only contacts with a Client Status | GHL and The Lab agree | [ghl.md](ghl.md#first-run-12-nov-2026) |
 | New Level Grappling's website certificate is broken; Marcus Aurelio's website address in GHL is wrong | Their sites and SEO | [seo.md](seo.md) |
 | Renew Claude's Supabase access token before it expires (made 18 Nov) | Claude can keep deploying | [sop/tokens-and-secrets.md](sop/tokens-and-secrets.md#renew-claudes-supabase-access-token) |
 
@@ -25,7 +27,7 @@ Everything that's waiting, who it's waiting on, and where the steps are. Updated
 
 | Item | Notes |
 |---|---|
-| Switch client data to GHL directly | After a week of `ghl-sync` matching the Retool copy (from about 19 Nov) ([ghl.md](ghl.md)) |
+| Switch the rest of client data to GHL directly | Status, ads manager and new clients already come from GHL (19 Nov); name, city and website still from Retool ([ghl.md](ghl.md)) |
 | More Ad Studio styles | Next candidates: COMIC, KJB, GBP, KCE, F15, CK/KS, GRG, LS ([ad-studio.md](ad-studio.md)) |
 | Client photos and new people in Ad Studio (Higgsfield, with approval) | Never send photos of minors to AI |
 | Lead quality next to CPL (booked rate, cost per booking / sale) | Data already in `sheet_leads` |

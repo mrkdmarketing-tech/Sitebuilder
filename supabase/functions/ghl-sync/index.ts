@@ -4,10 +4,13 @@
  *  - Users (the team): GET /users/?locationId=...
  *  - Each client's contact: GET /contacts/{id} for every client The Lab knows
  *    (Client Status and Client ID custom fields, "assigned to" = ads manager).
+ *  - Every contact with a Client Status (POST /contacts/search): clients that
+ *    exist only in GHL (Active/New/Paused and assigned to a team member) are
+ *    added to The Lab (add_ghl_clients, migration 3600).
  *
- * Saves what it reads in ghl_users_live and ghl_contacts_live. The Lab still
- * uses the Retool copy; ghl_compare() lists differences until we switch over.
- * Never writes to GHL (no write permissions are asked for).
+ * Saves what it reads in ghl_users_live and ghl_contacts_live, then
+ * apply_ghl_live() makes client status and ads manager follow GHL (Lab changes
+ * still win; migration 3500). Never writes to GHL (view-only permissions).
  *
  * Scheduled hourly with the cron secret (migration 3200). Secrets:
  * GHL_PRIVATE_TOKEN (private integration token from MRKD's sub-account),
@@ -37,6 +40,32 @@ Deno.serve(async (req) => {
       const msg = explainGhlError(res.status, path.split('?')[0], body)
       if (res.status === 401 || res.status === 403) throw new Stop(msg)
       throw new Error(msg)
+    }
+  }
+
+  // ?search=<text>: find contacts in MRKD's sub-account (read-only diagnostic, e.g. a new client not in Retool yet).
+  const search = new URL(req.url).searchParams.get('search')
+  if (search && token) {
+    try {
+      const res = await fetch(`${GHL_API}/contacts/search`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, Version: GHL_VERSION, Accept: 'application/json', 'Content-Type': 'application/json' },
+        body: JSON.stringify(search === '*'
+          ? { locationId: location, pageLimit: 1 }
+          : search === 'has-status'
+            ? { locationId: location, pageLimit: 100, filters: [{ field: 'customFields.Qukwm5t43UFGbdfB3ZAE', operator: 'exists' }] }
+            : { locationId: location, pageLimit: 20, query: search.slice(0, 80) }),
+      })
+      const body = await res.json().catch(() => ({}))
+      if (!res.ok) return json({ error: explainGhlError(res.status, '/contacts/search', JSON.stringify(body)) }, 502)
+      const { data: fieldRows } = await db.from('ghl_custom_fields').select('id, field_key').in('field_key', ['contact.client_status', 'contact.client_id'])
+      const fields = {
+        status: fieldRows?.find((f) => f.field_key === 'contact.client_status')?.id ?? null,
+        clientId: fieldRows?.find((f) => f.field_key === 'contact.client_id')?.id ?? null,
+      }
+      return json({ total: body.total ?? null, contacts: (body.contacts ?? []).map((c: unknown) => summariseContact(c, fields)) })
+    } catch (err) {
+      return json({ error: (err as Error).message }, 500)
     }
   }
 
@@ -92,10 +121,55 @@ Deno.serve(async (req) => {
       // GHL allows 100 requests per 10 seconds per sub-account; 4 at a time stays well under.
       await Promise.all(Array.from({ length: 4 }, worker))
 
+      // 3. Every contact with a Client Status: find clients that exist only in GHL.
+      const known = new Set(ids)
+      const found: ReturnType<typeof summariseContact>[] = []
+      const raws = new Map<string, unknown>()
+      for (let page = 1; page <= 10; page++) {
+        const res = await fetch(`${GHL_API}/contacts/search`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}`, Version: GHL_VERSION, Accept: 'application/json', 'Content-Type': 'application/json' },
+          body: JSON.stringify({ locationId: location, pageLimit: 100, page, filters: fields.status ? [{ field: `customFields.${fields.status}`, operator: 'exists' }] : [] }),
+        })
+        if (!res.ok) { firstProblem ??= explainGhlError(res.status, '/contacts/search', await res.text()); break }
+        const body = await res.json() as { contacts?: unknown[]; total?: number }
+        for (const c of body.contacts ?? []) {
+          const s = summariseContact(c, fields)
+          if (s) { found.push(s); raws.set(s.contactId, c) }
+        }
+        if (!body.contacts?.length || found.length >= (body.total ?? 0)) break
+      }
+      const ghlOnly = found.filter((s) => s && !known.has(s.contactId))
+      for (const s of ghlOnly) {
+        if (!s) continue
+        await db.from('ghl_contacts_live').upsert({
+          contact_id: s.contactId, location_id: s.locationId || location, client_id: s.clientId, name: s.name,
+          client_status: s.clientStatus, assigned_to: s.assignedTo, data: raws.get(s.contactId) ?? {}, fetched_at: now,
+        })
+      }
+      const team = new Set(users.map((u) => u.id))
+      // A business (company name set), assigned to a team member, with a live status.
+      // Contacts that are just a person or an email (e.g. old billing contacts) are left out.
+      const raw = (id: string) => (raws.get(id) ?? {}) as { companyName?: string; city?: string; website?: string }
+      const toAdd = ghlOnly.filter((s) => s && s.assignedTo && team.has(s.assignedTo) && ['Active', 'New', 'Paused'].includes(s.clientStatus ?? '')
+          && (raw(s.contactId).companyName ?? '').trim())
+        .map((s) => {
+          const r = raw(s!.contactId)
+          return { contactId: s!.contactId, name: r.companyName!.trim(), status: s!.clientStatus, assignedTo: s!.assignedTo, city: r.city ?? null, website: r.website ?? null }
+        })
+      const { data: added, error: addErr } = await db.rpc('add_ghl_clients', { p: toAdd })
+      if (addErr) throw new Error(addErr.message)
+
+      // 4. Status and ads manager follow GHL (Lab changes still win).
+      const { data: applied, error: applyErr } = await db.rpc('apply_ghl_live')
+      if (applyErr) throw new Error(applyErr.message)
       const { data: diff } = await db.rpc('ghl_compare')
       return {
         rows: saved, partial: missing + failed > 0,
-        details: { users: users.length, contacts: ids.length, saved, missing, failed, firstProblem, differences: (diff ?? []).length },
+        details: {
+          users: users.length, contacts: ids.length, saved, missing, failed, firstProblem, differences: (diff ?? []).length,
+          withStatusInGhl: found.length, ghlOnly: ghlOnly.length, added, applied,
+        },
       }
     })
     return json(result)
