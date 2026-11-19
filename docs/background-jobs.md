@@ -2,14 +2,20 @@
 
 All in [`supabase/functions/`](../supabase/functions) (Supabase Edge Functions, Deno + TypeScript). Every run is recorded in `sync_runs`.
 
-| Function | Trigger | What it does | Status |
-|---|---|---|---|
-| `meta-sync` | Every **30 min** (`?days=3`); nightly `?days=37` backfill | All visible ad accounts (name, status, currency); then, for accounts linked to Active/New clients, campaigns → ad sets → ads + creatives → daily ad-level insights, 4 accounts at a time, each independent. Deleted/archived ads that spent in the window get minimal rows so their numbers are kept. Token only in the Authorization header. | **Live** (9 Nov 2026). Leads list and `run-rules` trigger: next. |
-| `retool-bridge` | Every **15 min** | Copies employees, clients (+ ads manager), ad account links, onboarding, campaign specifics, sheet leads, website requests, and (since 10 Nov) GHL custom field names, templates and Ad Preview history from Retool, read-only ([retool-bridge.md](retool-bridge.md)) | **Live** (9 Nov 2026) |
-| `run-rules` | `10,40 * * * *` (10 min after each Meta sync) | Evaluates suggestion rules on the last 7 days and saves them to `suggestions`, stamped with the client's GHL ads manager; resolves ones that cleared; reopens expired snoozes ([suggestions.md](suggestions.md)) | **Live** (10 Nov 2026) |
-| `meta-action` | App button ("Turn off"), signed-in staff only | Checks the caller may see the suggestion, re-reads the ad, pauses it in Meta, logs to `actions_log`, marks the suggestion done | **Live** (10 Nov 2026) |
-| `meta-check` | On demand (`select private.call_function('meta-check')`, then read `net._http_response`) | Diagnostic: lists the Meta token's granted permissions and which ad accounts the system user can edit vs only view. Never returns the token. | Live |
-| `ad-check` | App button "Check for mistakes", signed-in staff only | Reads the ad's copy, image previews and video frames plus the client's details, asks Claude for mistakes as strict JSON, saves findings and the checklist's AI column, records cost ([ad-approval.md](ad-approval.md#how-the-check-works-built-10-nov-2026)) | **Deployed** (10 Nov 2026). Answers "not set up yet" until `ANTHROPIC_API_KEY` is added. |
+| Function | Trigger | What it does | Secrets | Status |
+|---|---|---|---|---|
+| `meta-sync` | Every **30 min** (`?days=3`); nightly `?days=37` backfill | All visible ad accounts; then, for accounts linked to Active/New clients, campaigns → ad sets → ads + creatives (incl. text kept in the post spec / asset feed) → daily ad-level insights, 4 accounts at a time. | `META_SYSTEM_USER_TOKEN` | Live (9 Nov) |
+| `retool-bridge` | Every **15 min** | Copies employees, clients (+ ads manager), ad account links, onboarding, campaign specifics, sheet leads, website requests, GHL custom field names, templates and Ad Preview history from Retool, read-only ([retool-bridge.md](retool-bridge.md)) | `RETOOL_DB_URL` | Live (9 Nov) |
+| `run-rules` | `10,40 * * * *` | Suggestion rules on the last 7 days → `suggestions`; resolves cleared ones; reopens expired snoozes; **checks in advance whether Meta would let The Lab pause each suggested ad** (validate only) → `turn_off_check` ([suggestions.md](suggestions.md)) | `META_SYSTEM_USER_TOKEN` | Live (10 Nov; check since 12 Nov) |
+| `meta-action` | App: **Turn off** / **Undo** on Today (signed-in staff) | Checks access, re-reads the ad, pauses (or turns back on), reads it back to confirm, logs to `actions_log` with Meta's full answer | `META_SYSTEM_USER_TOKEN` | Live |
+| `meta-check` | On demand (cron secret): `select private.call_function('meta-check', '?…')`, read `net._http_response` | Diagnostics, never returns the token: token permissions and editable vs view-only accounts; `?ad=<id>` why an ad can't be paused; `?ads=<ids>` validate-only pause for many ads + visible Pages; `?adsets=<ids>`; `?forms=<pageId>` can lead forms be read | `META_SYSTEM_USER_TOKEN` | Live |
+| `ad-check` | App: **Submit** and **Full check** on an ad (signed-in staff) | Built-in mistake checks (no AI) on the copy, then, if the Claude key is set, Claude reads copy, image text and video stills; saves findings ([ad-approval.md](ad-approval.md)) | `ANTHROPIC_API_KEY` (optional) | Live; Claude part waits for the key |
+| `approval-notify` | Database trigger on `ad_review_events` (status changes of Lab ads) | Posts Retool-style messages in #mrkd-internal-app, tagging the reviewer or the ad's creator ([ad-approval.md](ad-approval.md#slack-messages)) | `SLACK_APPROVALS_WEBHOOK_URL` | Built; skips until the webhook is added |
+| `tag-creatives` | Hourly at **:50** | Jev (TypeSafe) tags each new ad creative: offer, audience, hook, 4 yes/no tags ([creative-tags.md](creative-tags.md)) | `TYPESAFE_API_KEY` | Live (11 Nov) |
+| `ghl-sync` | Hourly at **:25** | Reads MRKD's GHL sub-account directly, read-only: users and each client's contact (status, client ID, assigned to) → `ghl_*_live`; counts differences with the Retool copy ([ghl.md](ghl.md)) | `GHL_PRIVATE_TOKEN` | Live (12 Nov), comparing |
+| `site-check` | On demand (cron secret) | Opens each active client's website home page: what it's built on, basic SEO signals ([seo.md](seo.md)) | none | Built (13 Nov) |
+
+Not a background job: **Ad Studio** renders ads in the browser (Pyodide) from kit files in `style_kit_files` ([ad-studio.md](ad-studio.md)).
 
 Shared helpers: `_shared/supabase.ts` (service/user clients), `_shared/sync-log.ts` (records runs), `_shared/http.ts` (CORS, JSON, cron secret check). Meta API → table mapping is in `shared/meta/mapping.ts` (unit-tested).
 
@@ -19,13 +25,14 @@ Set in Supabase → Project Settings → Edge Functions → Secrets. **Never in 
 
 | Secret | Used by | Who provides |
 |---|---|---|
-| `META_SYSTEM_USER_TOKEN` | meta-sync, meta-action | Jordan/Trent (Business Manager System User, `ads_read` + `ads_management`) |
+| `META_SYSTEM_USER_TOKEN` | meta-sync, meta-action, run-rules, meta-check | Jordan/Trent (Business Manager System User MRKDPlatformTools; permissions in [setup/meta.md](setup/meta.md)) |
 | `RETOOL_DB_URL` | retool-bridge | Jordan/Trent (Retool Database connection string) |
-| `ANTHROPIC_API_KEY` | ad-check | MRKD's Anthropic account (Phase 2) |
+| `ANTHROPIC_API_KEY` | ad-check | MRKD's Anthropic account (optional; not added yet) |
 | `CRON_SECRET` | all scheduled jobs | Any long random string; also used in the schedule below |
 | `GHL_PRIVATE_TOKEN` | ghl-sync | GHL private integration in MRKD's sub-account, view-only ([sop/tokens-and-secrets.md](sop/tokens-and-secrets.md#connect-ghl-read-only)) |
 | `TYPESAFE_API_KEY` | tag-creatives | TypeSafe AI console ([sop/tokens-and-secrets.md](sop/tokens-and-secrets.md#add-the-typesafe-key-jev-ad-tagging)) |
 | `SLACK_APPROVALS_WEBHOOK_URL` | approval-notify | Slack incoming webhook for #mrkd-internal-app ([sop/tokens-and-secrets.md](sop/tokens-and-secrets.md#connect-slack-ad-approval-messages)) |
+| `APP_URL`, `GHL_LOCATION_ID`, `JEV_MODEL` | approval-notify, ghl-sync, tag-creatives | Optional overrides (defaults: the Lab's address, MRKD's GHL sub-account, `jev-latest`) |
 
 `SUPABASE_URL`, `SUPABASE_ANON_KEY` and `SUPABASE_SERVICE_ROLE_KEY` are provided automatically.
 
@@ -39,6 +46,8 @@ Live (migration 1200): `pg_cron` jobs call `private.call_function(name)`, which 
 | `meta-sync` (`?days=3`) | `*/30 * * * *` | Live |
 | `meta-backfill` (`meta-sync?days=37`) | `20 7 * * *` (~2:20am Toronto) | Live |
 | `run-rules` | `10,40 * * * *` | Live |
+| `tag-creatives` | `50 * * * *` | Live |
+| `ghl-sync` | `25 * * * *` | Live |
 
 Check them with `select jobname, schedule, active from cron.job;` and recent calls with `select * from net._http_response order by id desc limit 5;`.
 

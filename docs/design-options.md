@@ -1,6 +1,6 @@
 # Design: Air
 
-The Lab has one look, **Air**: light sidebar, lots of white space, teal accent, with a **dark mode**. Picked by Jordan on 11 Nov 2026 from eight options (the decision is in [decisions.md](decisions.md#2026-11-11-look-air-with-light-and-dark-mode)).
+The Lab has one look, **Air**: light sidebar, lots of white space, teal accent, with a **dark mode**. Picked by Jordan on 11 Nov 2026 from eight options (the decision is in [decisions.md](decisions.md#2026-11-11-look-g--air-with-light-and-dark-mode)).
 
 ## Logo
 

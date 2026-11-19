@@ -2,6 +2,13 @@
 
 What changed, newest first. Every change to the platform adds a line here.
 
+## 2026-11-19: Docs tidy-up
+- New [docs/system-map.md](docs/system-map.md): every service, account, secret, background job, schedule and data source on one page, and where each screen's code lives.
+- New [docs/open-items.md](docs/open-items.md): everything waiting, on whom, with the steps.
+- New SOP [docs/sop/ad-studio.md](docs/sop/ad-studio.md) (Create with a style, and adding a style).
+- Updated SOPs for what changed since 11 Nov: daily check (Active CPL, Sort, tags, What's working, status badge), weekly check (Jev and GHL jobs, "Can't turn off" rows, open items), reviewing (Slack, Jordan default reviewer), new client (share the Facebook Page too), troubleshooting (lead form search, Ad Studio, Claude's token).
+- Brought docs in line with the app: every background job and secret listed, Leads tab and `leads_retrieval` marked as dropped, ad approval and plan status as of 19 Nov, new decisions logged. All links between docs checked.
+
 ## 2026-11-18: Ad Studio (create ads in an approved style), Echo pilot
 - New **Create with a style** button in an ad's Images and videos: fill in the words, pick approved people and colours, and The Lab makes the ads in the **Echo** style, exactly as the MRKD style kit does. Picked ads are added to the ad and go through the usual checks and review.
 - The kit's own Python runs in the browser (Pyodide): no server, no monthly cost. Kit files are stored privately in The Lab (migration 3400) and cached in the browser.
@@ -135,7 +142,7 @@ What changed, newest first. Every change to the platform adds a line here.
 - The 2:20am 37-day backfill now asks Meta for one week at a time. Atlantic MMA (752 ads) was failing on the 37-day request; the re-run synced all 45 accounts. The 30-minute syncs have been green every run since the retry fix.
 
 ## 2026-11-11: Four sleeker design options
-- Added E · Graphite, F · Onyx, G · Air and H · Studio as options only ([design-options.md](docs/design-options.md#sleeker-options), with screenshots). Nothing changes for anyone until one is picked: try them in **Settings → Look → Sleeker options**.
+- Added E · Graphite, F · Onyx, G · Air and H · Studio as options only ([design-options.md](docs/design-options.md#earlier-options-removed-11-nov-2026), with screenshots). Nothing changes for anyone until one is picked: try them in **Settings → Look → Sleeker options**.
 
 ## 2026-11-10: Ad approval (Phase 2)
 - **Ad approval is live** at `/approvals`, replacing Retool's Ad Preview: list with **Needs me / In progress / All / From Retool**, **New ad**, an editor for setup, creative, images and videos, lead form and notes, templates that fill in the client's details, a client info panel, the 11-point checklist, comments and history.

@@ -2,7 +2,7 @@
 
 Replaces Retool's **Ad Preview** and **Meta Ad Components Templates**. Design agreed with Jordan, Nov 2026.
 
-**Status (10 Nov 2026): built and live** at `/approvals`, except the AI call itself, which starts working when the Claude key is added (`ANTHROPIC_API_KEY`, see [sop/tokens-and-secrets.md](sop/tokens-and-secrets.md#add-the-claude-key-ai-ad-check)). Until then "Check for mistakes" says "The AI check isn't set up yet" and everything else works. Step-by-step use: [sop/ad-approval-submit.md](sop/ad-approval-submit.md), [sop/ad-approval-review.md](sop/ad-approval-review.md).
+**Status (19 Nov 2026): built and live** at `/approvals` (phone tab "Approvals"): form, built-in mistake checks as you type and on Submit, "Hey, just double checking", review checklist, comments, history, Retool history, Jordan as default reviewer, **Ad Studio** ([ad-studio.md](ad-studio.md)). Waiting: the Slack webhook (messages are built), and the optional Claude key for reading text inside images (`ANTHROPIC_API_KEY`). Not built: ClickUp task on approval, pushing approved ads to Meta. Step-by-step use: [sop/ad-approval-submit.md](sop/ad-approval-submit.md), [sop/ad-approval-review.md](sop/ad-approval-review.md), [sop/ad-studio.md](sop/ad-studio.md).
 
 Not built yet: Slack and ClickUp notifications (below), and choosing an existing Meta lead form from a list (for now its name or ID is typed in).
 

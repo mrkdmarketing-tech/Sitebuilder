@@ -8,7 +8,7 @@ Route `/insights`. Code: `web/src/features/insights/`. Replaces Retool's **Meta 
 
 **KPI tiles (8):** Active acc. · Leads · CPL · CPM · CR · CPR · CPLC · Value generated. Each shows % change vs the previous period; green = better, red = worse (for costs, down is better).
 
-**Tabs with counts:** Ad accounts · Campaigns · Ad sets · Ads · Leads. Search box (name, account, client, campaign) and **CSV** download of the current tab with the current filters.
+**Tabs with counts:** Ad accounts · Campaigns · Ad sets · Ads · What's working ([../creative-tags.md](../creative-tags.md)). (The Leads tab was removed on 12 Nov 2026: The Lab doesn't read people's names or contact details.) Search box (name, account, client, campaign) and **CSV** download of the current tab with the current filters.
 
 ## Tables (desktop)
 
@@ -21,11 +21,10 @@ Spend · Leads · CPL · CPM · CPR · CPLC · CR % · Impressions · Reach · L
 | Campaigns | Daily budget, objective, bid strategy, buying type, pacing |
 | Ad sets | Genders, age, optimization goal, ADV+, learning stage |
 | Ads | Creative thumbnail (click for the creative popup), CTR, link CTR, comments, page likes, messages |
-| Leads | Name, email (mailto), phone, created, form, ad |
 
 Sort with the **Sort** menu above the list (spend, CPL, leads, CR, CPLC, either direction, or name; phone and desktop, remembered per browser) or by clicking a column header. Spend with no leads sorts as the most expensive. Less important columns (CPR, impressions, reach, clicks, settings) appear on wide screens (≥ 1536px) and are always in the CSV and the phone "More" view.
 
-**Selecting accounts** (checkboxes) recalculates the KPI tiles for those accounts (as in Retool) **and** filters the Campaigns, Ad sets, Ads and Leads tabs to them. A chip row shows the selection, with a Clear button.
+**Selecting accounts** (checkboxes) recalculates the KPI tiles for those accounts (as in Retool) **and** filters the Campaigns, Ad sets and Ads tabs to them. A chip row shows the selection, with a Clear button.
 
 ## Phone
 

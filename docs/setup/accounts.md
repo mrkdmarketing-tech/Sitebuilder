@@ -8,13 +8,17 @@ Step-by-step for the accounts the platform needs. Do them in order. **Never past
 |---|---|
 | Supabase project | **Done** (9 Nov 2026). Project ref `mhayvuxqrlwyvalceerw`, region Canada (Central), PostgreSQL 17. |
 | Database installed | **Done.** All migrations applied and verified: 36 tables, row-level security on every table, 84 access rules, private `ad-assets` bucket, thresholds and checklist loaded. Supabase security advisor clean apart from 4 intended items (see [auth.md](../auth.md#supabase-security-advisor)). |
-| Supabase access token for Claude | **Done.** Stored encrypted in the `mrkd-sitebuilder` Claude cloud environment (never in chat or the repo). Expires after 7 days; make a new one when asked. |
+| Supabase access token for Claude | **Done.** `mrkd-sitebuilder-claude-4` (18 Nov 2026), stored encrypted in the `mrkd-sitebuilder` Claude cloud environment (never in chat or the repo). Renew before it expires: [../sop/tokens-and-secrets.md](../sop/tokens-and-secrets.md#renew-claudes-supabase-access-token). |
 | Retool DB connection (`RETOOL_DB_URL`) | **Done.** Secret added 9 Nov 2026; bridge live every 15 min ([retool-bridge.md](../retool-bridge.md)). |
 | Cloudflare | **Live** at **https://sitebuilder-6iw.pages.dev** (Pages project `sitebuilder`, builds `claude/retool-overview-hsg1ch` on every push). Supabase sign-in Site URL and redirect list point there. Build settings: [hosting-and-signin.md](hosting-and-signin.md). |
 | Google sign-in | To do: create the Google OAuth client ([hosting-and-signin.md](hosting-and-signin.md#google-sign-in-staff-use-their-mrkdca-google-account)). |
 | Meta System User | **Done.** App `MRKD Platform` + system user `MRKDPlatformTools` token (never expires) saved as `META_SYSTEM_USER_TOKEN` in Supabase secrets. Spec: [meta.md](meta.md). |
 | GHL menu link + sign-on | To do (Phase 0). On hold until Jordan says go. |
-| Claude key for the ad mistake check (`ANTHROPIC_API_KEY`) | To do. Steps: [../sop/tokens-and-secrets.md](../sop/tokens-and-secrets.md#add-the-claude-key-ai-ad-check). Ad approval works without it; only "Check for mistakes" waits for it. |
+| Claude key for the ad mistake check (`ANTHROPIC_API_KEY`) | Optional, not added. Steps: [../sop/tokens-and-secrets.md](../sop/tokens-and-secrets.md#add-the-claude-key-ai-ad-check). Everything works without it; only reading text inside images waits for it. |
+| TypeSafe Jev key (`TYPESAFE_API_KEY`) | **Done** (11 Nov 2026). Ad tagging live ([../creative-tags.md](../creative-tags.md)). |
+| GHL private integration (`GHL_PRIVATE_TOKEN`) | **Done** (12 Nov 2026), view-only, MRKD's sub-account ([../ghl.md](../ghl.md)). |
+| Slack webhook (`SLACK_APPROVALS_WEBHOOK_URL`) | To do: [../sop/tokens-and-secrets.md](../sop/tokens-and-secrets.md#connect-slack-ad-approval-messages). |
+| Meta access for MRKDPlatformTools | **Mostly done** (12 Nov 2026): 54 of 55 ad accounts, 52 Pages. Leftovers: [meta-access-checklist.md](meta-access-checklist.md). |
 
 **How Claude installs database changes:** with the access token above, through Supabase's management API. Each migration file in `supabase/migrations/` runs as one all-or-nothing step and is recorded in `supabase_migrations.schema_migrations`, the same table the Supabase CLI uses, so either method can be used later.
 

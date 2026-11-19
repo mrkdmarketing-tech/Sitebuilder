@@ -1,6 +1,6 @@
 # Architecture
 
-How the platform is put together. For *why*, see [decisions.md](decisions.md). For the plan and phases, see [plan.md](plan.md).
+How the platform is put together. For *why*, see [decisions.md](decisions.md). For the plan and phases, see [plan.md](plan.md). **For every service, secret, job and data source on one page, see [system-map.md](system-map.md).**
 
 ## The pieces
 
@@ -22,7 +22,8 @@ flowchart LR
 |---|---|---|
 | **Web app** | `web/`, hosted on Cloudflare Pages | Everything people see. Reads data, never computes it from APIs directly. |
 | **Database** | Supabase Postgres, `supabase/migrations/` | All data, reporting functions, security rules. |
-| **Background jobs** | Supabase Edge Functions, `supabase/functions/` | Meta sync, Retool bridge, suggestion runs, "Turn off" action, AI ad check. |
+| **Background jobs** | Supabase Edge Functions, `supabase/functions/` | Meta sync, Retool bridge, suggestion runs (+ Turn off check), Turn off / Undo, ad mistake check, Slack messages, Jev tagging, GHL read, diagnostics. Full list: [background-jobs.md](background-jobs.md). |
+| **Ad Studio engine** | `web/src/lib/pyRender*.ts` | Runs the MRKD style kit's Python in the browser (Pyodide) to make ads ([ad-studio.md](ad-studio.md)). |
 | **Shared logic** | `shared/` | KPI formulas, date presets, suggestion rules, Meta mapping. Used by both the app and the jobs, so they always agree. |
 
 ## How a screen gets its numbers

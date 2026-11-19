@@ -1,5 +1,7 @@
 # Overnight update: 10 to 11 Nov 2026
 
+> Historical update (10 Nov 2026). Current status: [../open-items.md](../open-items.md) and [../plan.md](../plan.md#status-19-nov-2026).
+
 What was built while Jordan slept, what to test, and what's needed. Live at https://sitebuilder-6iw.pages.dev (reload once if you see "The Lab was updated").
 
 ## Done
@@ -11,7 +13,7 @@ What was built while Jordan slept, what to test, and what's needed. Live at http
 | **Check for mistakes** (AI) | Button on each ad | Reads the copy, lead form, text in images and subtitles in videos (stills taken in the browser, no audio), checks against the client's details. **Needs the Claude key** (below); until then it says it isn't set up. |
 | **Retool history** | Ad approval, **From Retool** | All 596 Retool ads, 13 creative + 8 lead form templates, copied read-only every 15 minutes. Images weren't copied (Retool stored them inside the database); the screen says how many there were. |
 | **Settings** | **Settings** tab (phone: bottom bar) | Owners/admins change suggestion thresholds; every change is logged. Also a **Look** switch to try the 4 designs on real data. |
-| **4 sleeker design options** | Settings → Look → **Sleeker options**, or [design-options.md](../design-options.md#sleeker-options) | E · Graphite, F · Onyx, G · Air, H · Studio. Not applied; everyone still sees Classic. |
+| **4 sleeker design options** | Settings → Look → **Sleeker options**, or [design-options.md](../design-options.md#earlier-options-removed-11-nov-2026) | E · Graphite, F · Onyx, G · Air, H · Studio. Not applied; everyone still sees Classic. |
 | **SOPs** | [docs/sop/](../sop/README.md) | 12 step-by-step procedures for ads managers and admins. |
 | **Meta sync retry** | Sync tab | Meta's "Service temporarily unavailable" was failing one random account most hours. The sync now waits and retries those. |
 

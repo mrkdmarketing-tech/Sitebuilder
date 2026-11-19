@@ -29,7 +29,7 @@ Phase numbers refer to [plan.md](plan.md) §5.
 | **Ad sets table** | Same metrics + Campaign · Genders · Age range · Optimization goal · ADV+ · Learning stage | Keep | 1a |
 | **Ads table** | Same metrics + Campaign · Ad set · creative thumbnail · CTR · Link CTR · Comments · Page likes · Messages | Keep | 1a |
 | Creative popup | Click the thumbnail → image or video thumbnail, title, body, video ID | Improve: Also shows its performance and AI notes | 1a |
-| **Leads tab** | Name · Email (mailto) · Created at · Form · Ad | Keep | 1a |
+| **Leads tab** | Name · Email (mailto) · Created at · Form · Ad | **Dropped** (12 Nov 2026: The Lab doesn't read people's details; lead counts stay) | – |
 | Click a row → Meta Ads Manager | Opens that account, campaign, ad set or ad in Ads Manager | Keep | 1a |
 | Download CSV / refresh per table | Toolbar buttons | Keep: CSV export. Refresh not needed (live). | 1a |
 | "Sync" and "Fetch Creatives" buttons | Manually trigger the Meta sync workflows | Improve: Not needed: syncs every 30 min. Admin "sync now" on the sync health page. | 1a |

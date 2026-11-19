@@ -167,11 +167,13 @@ Adds `sync_runs` to Supabase Realtime so open screens reload when a job finishes
 
 `creative_tags` (one row per ad creative: offer, audience, hook, Jev's confidence, model, input hash), written only by the `tag-creatives` function. `creatives_to_tag(limit)` (service role only) lists untagged creatives with copy, biggest recent spenders first. `creative_tag_report(from, to)` sums spend and leads by tag (and image/video) for Active/New clients' ads that spent in the period. Hourly schedule `tag-creatives` at :50. See [creative-tags.md](creative-tags.md).
 
-## 3000 to 3200
+## 3000 to 3400
 
 - **3000** `creative_tag_report` counts lead campaigns only.
 - **3100** `suggestions.turn_off_check`: whether Meta would let The Lab pause the ad (run-rules, validate only).
 - **3300** `creative_tags` gets yes/no tags (price, deadline, place, uniform) and `version`; `creatives_to_tag(limit, version)` re-tags older versions; `creative_tags_for(ids)` for Insights.
+- **3300** `creative_tags` gets yes/no tags and `version`; see above.
+- **3400** `style_kit_files` (MRKD style kit files for Ad Studio: code, fonts, configs, approved people, previews; staff read only), `style_kit_list(style)`, `style_kit_get(paths)`. See [ad-studio.md](ad-studio.md).
 - **3200** Direct GHL, read-only: `ghl_contacts_live`, `ghl_users_live` (written by `ghl-sync`), `ghl_compare()` (differences with the Retool copy), hourly schedule `ghl-sync` at :25. See [ghl.md](ghl.md).
 
 ## Changing the schema

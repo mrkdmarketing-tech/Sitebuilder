@@ -35,9 +35,23 @@ The ads manager is **Assigned to** on the client's contact in MRKD's GHL, copied
 
 See [acting-on-suggestions.md](acting-on-suggestions.md#when-turn-off-doesnt-work).
 
-## The Leads tab is empty
+## Lead form search is empty
 
-The Meta token doesn't have the **leads_retrieval** permission yet. Add it when regenerating the token ([../setup/meta.md](../setup/meta.md)).
+Reading lead forms needs the `pages_manage_ads` permission on the Meta token, which isn't added yet (the Leads tab was removed on 12 Nov 2026: The Lab doesn't read people's names or contact details). Steps: [../setup/meta-access-checklist.md](../setup/meta-access-checklist.md#3-token-only-if-lead-form-search-is-wanted).
+
+## Ad Studio won't load
+
+- "Couldn't load the style kit": reload the page. Still failing: check you're signed in and on the live site (sample data has no kit).
+- Stuck on "Loading the design engine": the browser downloads about 25 MB from cdn.jsdelivr.net the first time. On a slow or restricted network (some office Wi-Fi blocks CDNs) try another network.
+- A "STOP:" message after Make ads comes from the kit itself, e.g. a Gracie Barra person on a non-GB gym. Read it and change that ad.
+
+## A "Can't turn off from The Lab" row on Today
+
+The Lab already asked Meta and knows Turn off would fail (view-only account, Page not shared, or billing). Use **Turn off in Ads Manager**, and fix the access: [../setup/meta-access-checklist.md](../setup/meta-access-checklist.md).
+
+## Claude can't deploy or read the database ("Invalid access token")
+
+Claude's Supabase access token expired. [tokens-and-secrets.md](tokens-and-secrets.md#renew-claudes-supabase-access-token).
 
 ## Someone can't sign in
 

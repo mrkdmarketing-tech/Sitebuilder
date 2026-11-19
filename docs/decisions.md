@@ -47,3 +47,19 @@ First uses, at Jordan's request on 11 Nov 2026:
 
 Jordan wanted an atom. Of four atom designs in the Air colours, he picked B: teal atom on a navy tile with one white electron (the extra electron keeps it from looking like the React logo). The product name is written "The Lab" with a smaller "by MRKD". Used in the sidebar, phone header, sign-in screen, browser tab and phone home-screen icon ([design-options.md](design-options.md#logo)).
 
+
+## 2026-11-12: No people's details from Meta
+
+Jordan: "We don't need the names." The Lab reads lead **counts** (spend, CPL) from Meta's ad results, not the people who filled in forms. The Leads tab was removed and `leads_retrieval` isn't requested. Outcomes (booked, showed, closed) still come from the client lead sheets via Retool.
+
+## 2026-11-12: GHL connected directly, read-only first
+
+A private integration token from MRKD's own GHL sub-account, view-only permissions. It runs alongside the Retool copy and is compared before The Lab switches over. Nothing is written to GHL until Jordan says so. Retool's own GHL token is never reused.
+
+## 2026-11-11: Jev (TypeSafe) for tagging ads, Claude for writing
+
+Jev answers choice and yes/no questions very cheaply, so it tags every ad's copy (offer, audience, hook, price, deadline, city, uniform). Claude stays for writing and reading images.
+
+## 2026-11-18: Ad Studio renders in the browser, not on a server
+
+The MRKD style kit's own Python runs in the browser with Pyodide, so ads look exactly like the approved ones with no render server and no monthly cost. Kit files are stored privately in the database (staff read), not in the repo (they include approved people photos). Pilot style: Echo. Every ad still goes through approval.

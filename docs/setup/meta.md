@@ -19,18 +19,18 @@ Everything needed to give the platform permanent, read-only access to the client
 | Scope | Needed for | When |
 |---|---|---|
 | `ads_read` | Ad accounts, campaigns, ad sets, ads, creatives, insights (spend, leads, clicks…) | **Now** |
-| `leads_retrieval` | Reading the leads people submit on lead forms | **Now** |
-| `pages_show_list` | Listing the client Facebook pages (lead forms live on pages) | **Now** |
-| `pages_read_engagement` | Reading lead form details (questions, intro, thank-you page) | **Now** |
-| `pages_manage_ads` | Meta requires it alongside `leads_retrieval` to read leads | **Now** (add if leads come back empty without it) |
-| `ads_management` | The **Turn off ad** button in suggestions | **Later** (Phase 1b), add then |
+| `ads_management` | **Turn off** / **Undo** on Today, and the advance "can Turn off work?" check | **On the token** |
+| `pages_show_list` | Listing the client Facebook pages | **On the token** |
+| `pages_read_engagement` | Page details | **On the token** |
+| `pages_manage_ads` | Reading lead forms (lead form search); later, creating ads from approved ads | **Optional, not on the token.** Not offered until someone is admin of the Meta app ([meta-access-checklist.md](meta-access-checklist.md#3-token-only-if-lead-form-search-is-wanted)) |
+| `leads_retrieval` | People's names and contact details from lead forms | **Not wanted** (decided 12 Nov 2026: The Lab doesn't read them) |
 | `business_management` | Only if we need to list accounts through the business rather than the system user | Not needed unless asked |
 
 Don't tick anything else. If a scope isn't listed when generating the token, the app is missing the **Marketing API** product (step 2).
 
 ## Checked 10 Nov 2026 (meta-check)
 
-- Token permissions granted: `ads_read`, `ads_management`, `business_management`, `pages_show_list`, `pages_read_engagement`. (`leads_retrieval` and `pages_manage_ads` are **not** on it yet; needed for the leads list.)
+- Token permissions granted: `ads_read`, `ads_management`, `business_management`, `pages_show_list`, `pages_read_engagement`. (`leads_retrieval` and `pages_manage_ads` are not on it; see the table above for whether they're wanted.)
 - 54 ad accounts visible; **32 can edit ads** (pause works), **22 view-only** (assigned with View performance), so one-click Turn off won't work on those until they get **Manage campaigns**.
 
 ## Checked 11 Nov 2026: why Turn off failed

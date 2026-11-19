@@ -7,7 +7,7 @@ For The Lab to show a client's numbers and suggestions, four things must be true
 | # | Must be true | Where it's set |
 |---|---|---|
 | 1 | The client exists, status **Active** or **New**, with an ads manager | Retool Clients View + GHL "Assigned to" |
-| 2 | The ad account is shared with The Lab's Meta system user | Meta Business settings |
+| 2 | The ad account **and the client's Facebook Page** are shared with The Lab's Meta system user | Meta Business settings |
 | 3 | The ad account is linked to the client | Retool Clients View (ad account on the client) |
 | 4 | Data has synced | Automatic, within 30 minutes |
 
@@ -24,7 +24,9 @@ For The Lab to show a client's numbers and suggestions, four things must be true
 3. Permissions: **Manage campaigns** (needed for one-click Turn off) and View performance. Not "Full control".
 4. **Save**.
 
-The same screen fixes accounts that show "only lets The Lab view, not change ads" on Turn off: open the account under MRKDPlatformTools and add **Manage campaigns**.
+5. Same screen: **Assign assets → Pages** → tick the client's Facebook Page → turn on **Ads** and **Leads** → **Assign**. Without the Page, Meta refuses to pause the client's lead ads ("Missing Lead Form"). If the Page isn't listed, the client must first add MRKD as a partner on their Page.
+
+The same screen fixes Today rows that say **"Can't turn off from The Lab"**: "view-only" means add **Manage campaigns** on the account; "can't see this client's Facebook Page" means step 5. Today re-checks within 6 hours (or ask Claude to re-check now). Full list of what was missing on 12 Nov 2026: [../setup/meta-access-checklist.md](../setup/meta-access-checklist.md).
 
 ## 3. Link the ad account to the client
 

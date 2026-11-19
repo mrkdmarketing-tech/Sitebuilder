@@ -12,6 +12,7 @@ The other docs explain how The Lab is built. These explain how to **use and run*
 | [Working through Today (Turn off, Undo, Not now, Dismiss)](acting-on-suggestions.md) | Every working morning, first thing |
 | [Deeper account check](daily-account-check.md) | When Today flags an account, or weekly |
 | [Submitting an ad for approval](ad-approval-submit.md) | Every new ad or ad change |
+| [Creating ads with a style (Ad Studio)](ad-studio.md) | Making the ad's images in an approved style |
 | [Reviewing an ad](ad-approval-review.md) | When an ad is waiting for your review |
 
 ## For owners and admins
@@ -19,12 +20,15 @@ The other docs explain how The Lab is built. These explain how to **use and run*
 | SOP | When |
 |---|---|
 | [Adding or removing staff](staff-and-access.md) | Someone joins or leaves |
-| [New client or new ad account](new-client-or-ad-account.md) | A client is onboarded, paused or leaves, a new ad account is created, or a client moves to another ads manager |
+| [New client or new ad account](new-client-or-ad-account.md) | A client is onboarded, paused or leaves (Clients tab or the status badge on Insights), a new ad account or Page is shared, or a client moves to another ads manager |
 | [Changing suggestion thresholds](changing-thresholds.md) | Suggestions are too noisy or too quiet |
 | [Security](security.md) | Setup checklist (2-step everywhere), two-step sign-in, lost phone |
 | [Tokens and secrets](tokens-and-secrets.md) | A token expires, leaks, or someone with access leaves |
 | [Weekly health check](weekly-health-check.md) | Every Monday |
+| [Meta access for The Lab](../setup/meta-access-checklist.md) | Turn off can't work on an account ("Can't turn off from The Lab") |
 | [Troubleshooting](troubleshooting.md) | Something looks wrong |
+
+**Where is everything?** [../system-map.md](../system-map.md) (services, secrets, jobs, data sources). **What's waiting?** [../open-items.md](../open-items.md).
 
 ## Rules that apply to every SOP
 
