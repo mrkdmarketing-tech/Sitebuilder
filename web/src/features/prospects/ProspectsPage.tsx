@@ -334,11 +334,11 @@ function ProspectCard({ p, onOpen, compact, showStage }: { p: ProspectRow; onOpe
       ) : (
         <button type="button" title="Not a prospect: remove from the board" aria-label={`Remove ${p.name} from the board`}
           onClick={(e) => { e.stopPropagation(); ctx.remove([p]) }}
-          className="absolute right-1.5 top-1.5 rounded-full p-1 text-muted opacity-60 hover:bg-subtle hover:text-ink hover:opacity-100 lg:opacity-0 lg:group-hover:opacity-100 lg:focus:opacity-100">
-          <X size={14} />
+          className="absolute right-0.5 top-0.5 flex h-10 w-10 items-center justify-center rounded-full text-muted hover:bg-subtle hover:text-ink lg:right-1.5 lg:top-1.5 lg:h-6 lg:w-6 lg:opacity-0 lg:group-hover:opacity-100 lg:focus:opacity-100">
+          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-subtle lg:bg-transparent"><X size={14} /></span>
         </button>
       )}
-      <div className="flex items-start justify-between gap-2 pr-5">
+      <div className="flex items-start justify-between gap-2 pr-8 lg:pr-5">
         <div className="min-w-0">
           <div className="truncate font-semibold">{p.name}</div>
           {p.company && <div className="truncate text-xs text-muted">{p.company}</div>}
