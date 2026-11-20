@@ -2,6 +2,11 @@
 
 What changed, newest first. Every change to the platform adds a line here.
 
+## 2026-11-20: Prospects: add and remove people
+- Remove someone who isn't a prospect straight from their card (the x), or several at once with **Select**. **Undo** for a few seconds; removed people stay off the board and can be added back from "Not on the board".
+- **Add → From GHL**: search anyone in MRKD's GHL by name, email or phone and put them on the board; their latest chat comes in and Jev reads it. **Not in GHL** is still there for personal Facebook chats.
+- The 30-minute refresh no longer takes off someone an owner has worked on.
+
 ## 2026-11-19: Prospects (owners only)
 - New **Prospects** tab for Jordan and Trent only (desktop and phone): the people MRKD is selling to, from GHL chats of the last 120 days.
 - Jev reads each chat (no names or contact details sent) and suggests the type (Jiu jitsu, Steel structures, Other) and Hot / Warm / Cold. Owners set value a month, stage (New, Call 1 booked, Call 1 done, Proposal sent, Call 2, Won, Lost), next step and notes; their choices win.

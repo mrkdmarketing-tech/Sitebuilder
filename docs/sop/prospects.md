@@ -26,21 +26,30 @@ Prospects lists the people MRKD is talking to who haven't signed yet. Chats arri
 
 **Open in GHL** goes to the contact in GHL to reply. The Lab doesn't send messages.
 
-## Not a prospect
+## Remove someone who isn't a prospect
 
-For a client, job applicant, supplier or anyone else who isn't a sale: open it and tap **Not a prospect**. It moves to **Show not on the board** at the bottom. To bring someone back, open them there and tap **Back on the board** (or **Save**).
+- **One person:** tap the **x** in the corner of their card (on a computer it shows when you point at the card). Or open them and tap **Not a prospect: remove**.
+- **Several at once:** tap **Select**, tap each person (a tick appears), then **Remove from board** in the bar at the bottom.
+- A bar says "Removed ..." with **Undo** for a few seconds.
 
-Jev also keeps clients, job applicants and vendors off the board by itself. Check **Show not on the board** now and then for anyone it got wrong.
+Removed people stay removed: the 30-minute GHL refresh never puts them back. They're listed under **Show not on the board** at the bottom, with **Add to board** next to each one to bring them back.
 
-## Add someone by hand
+Jev also keeps clients, job applicants and vendors off the board by itself. Check **Show not on the board** now and then for anyone it got wrong, and tap **Add to board**.
 
-For a chat GHL can't see, e.g. on your personal Facebook: **Add prospect**, fill in the name (business, type, temperature, value and notes are optional), **Add**. Messages to MRKD's Facebook Page, Instagram, texts and emails come in from GHL on their own. People you added by hand can be deleted from their panel.
+## Add someone
+
+Tap **Add**:
+
+- **From GHL**: type a name, email or phone number and tap **Add** next to the right person. Use this for anyone in MRKD's GHL who isn't on the board yet: older chats (more than 120 days), someone removed earlier ("Add back"), or a client you're selling more to. Their latest chat comes in and Jev reads it.
+- **Not in GHL**: for a chat GHL can't see, e.g. on your personal Facebook. Fill in the name (business, type, temperature, value and notes are optional) and tap **Add**. People added this way can be deleted from their panel.
+
+Messages to MRKD's Facebook Page, Instagram, texts and emails come in from GHL on their own.
 
 ## If something looks wrong
 
 | What you see | What to do |
 |---|---|
-| Someone you're talking to is missing | Their chat must be in MRKD's GHL sub-account and from the last 120 days. Clients (anyone with a Client Status) are left out on purpose. Otherwise add them by hand. |
+| Someone you're talking to is missing | Only chats from the last 120 days come in by themselves, and clients (anyone with a Client Status) are left out on purpose. Use **Add → From GHL** to put them on the board, or **Not in GHL** if they aren't in GHL at all. |
 | A new message isn't showing | Wait for the next run (:05 or :35). **Sync** shows the latest "prospects.sync" run. |
 | Jev's type or temperature is wrong | Pick the right one and Save. Jev won't change it back. |
 | "Couldn't load prospects" | Sign out and in again with your authenticator code. If it continues, tell Claude. |

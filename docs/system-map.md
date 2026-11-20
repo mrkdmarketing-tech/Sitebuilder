@@ -75,6 +75,7 @@ All in **Supabase → Edge Functions → Secrets** unless noted. Never in chat, 
 | `run-rules` | :10 and :40 | insights → suggestions (+ Turn off check with Meta) |
 | `ghl-sync` | :25 hourly | GHL → `ghl_contacts_live`, `ghl_users_live`; client status and ads manager; adds GHL-only clients |
 | `tag-creatives` | :50 hourly | creatives → Jev → `creative_tags` |
+| `prospects-action` | on Add (Prospects) | owners search and add GHL contacts |
 | `prospects-sync` | :05 and :35 | GHL chats and pipelines → Jev → `prospects`, `prospect_messages` (owners only) |
 | `meta-action` | on Turn off / Undo | Meta (pause / resume), `actions_log` |
 | `ad-check` | on Submit / Full check | ad copy (+ Claude if key) → findings |

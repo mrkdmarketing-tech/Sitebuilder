@@ -198,8 +198,12 @@ Deno.serve(async (req) => {
         return ok
       })
 
-      // Rows from earlier runs that are now left out (became a client, the team).
-      if (dropped.size) await db.from('prospects').delete().eq('source', 'ghl').in('contact_id', [...dropped])
+      // Rows from earlier runs that are now left out (became a client, the team),
+      // unless an owner has worked on them (gave a stage or value, or removed them).
+      if (dropped.size) {
+        await db.from('prospects').delete().eq('source', 'ghl').eq('hidden', false).is('stage', null).is('value', null)
+          .in('contact_id', [...dropped])
+      }
 
       const { data: known } = await db.from('prospects').select('contact_id, last_message_at, ai_read_until, ai_version, message_count')
       const existing = new Map((known ?? []).map((p) => [p.contact_id as string, p]))

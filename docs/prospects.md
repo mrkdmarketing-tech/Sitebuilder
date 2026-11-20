@@ -35,7 +35,12 @@ What Jev gets: the chat text only, with names, email addresses, phone numbers an
 | Notes | Free text, owners only. |
 | Not a prospect | Takes it off the board (it stays under "Not on the board"). |
 
-Prospects can also be **added by hand** for chats GHL can't see (e.g. a personal Facebook profile). Facebook and Instagram messages to MRKD's Page do come through GHL by themselves.
+**Adding and removing (added 20 Nov):**
+
+- **Remove**: the x on a card, Select mode for several, or "Not a prospect" in the panel. It sets `hidden`; Undo clears it. The sync never changes `hidden`, so removed people stay off the board. "Add to board" under "Not on the board" brings them back.
+- **Add from GHL**: searches every contact in MRKD's sub-account (`prospects-action`, action `search`: name, email or phone) and adds one (`add`: reads the contact, its latest chat of 40 messages and sales opportunity; Jev reads the chat). For older chats, someone removed earlier, or a client being sold more.
+- **Add by hand**: for chats GHL can't see (e.g. a personal Facebook profile). Facebook and Instagram messages to MRKD's Page do come through GHL by themselves.
+- The 30-minute sync no longer deletes a contact an owner has worked on (given a stage or value, or removed), even if it later looks like a client or the team.
 
 ## First run (19 Nov 2026)
 
@@ -50,6 +55,7 @@ No prospect names are kept in this repository: they live only in the database, b
 | Rules (stages, types, temperature, Jev questions, totals) | `shared/domain/prospects.ts` (tests: `prospects.test.ts`) |
 | Tables and access | `supabase/migrations/20261119003700_prospects.sql` |
 | Sync job | `supabase/functions/prospects-sync/index.ts` (`?probe=shape` shows GHL's field names, no values) |
+| Search and add from GHL | `supabase/functions/prospects-action/index.ts`: only an owner with two-step sign-in (`is_owner()`) or the server's cron secret; anyone else gets 403 |
 | Screen | `web/src/features/prospects/ProspectsPage.tsx`, data in `web/src/data/prospects.ts` |
 
 GHL permissions needed on "The Lab (read-only)": View Conversations, View Conversation Messages, View Opportunities (added 19 Nov), plus the ones in [sop/tokens-and-secrets.md](sop/tokens-and-secrets.md#connect-ghl-read-only).

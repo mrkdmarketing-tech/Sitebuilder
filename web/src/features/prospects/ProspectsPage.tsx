@@ -9,8 +9,8 @@
  * Deliberately not a table like Insights: a pipeline panel on top, then a
  * board by stage (desktop) or stage tabs with cards (phone).
  */
-import { useMemo, useState, type ReactNode } from 'react'
-import { ExternalLink, EyeOff, Flame, Lock, Plus, Search, Snowflake, Sun, X } from 'lucide-react'
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { Check, CheckSquare, ExternalLink, EyeOff, Flame, Lock, Plus, Search, Snowflake, Sun, X } from 'lucide-react'
 import { MRKD_LOCATION_ID } from '@shared/domain/ghl.ts'
 import {
   INDUSTRIES, OPEN_STAGES, STAGES, TEMPERATURES, industryOf, label, lastContact, money, onBoard, pipelineTotals,
@@ -18,7 +18,7 @@ import {
 } from '@shared/domain/prospects.ts'
 import { Empty, Modal } from '../../components/ui'
 import { useData } from '../../data/source'
-import type { ProspectChange } from '../../data/prospects'
+import type { GhlContactResult, ProspectChange } from '../../data/prospects'
 import { useAsync } from '../../lib/useAsync'
 import { useSession } from '../../app/session'
 
@@ -34,6 +34,17 @@ const shortDate = (d: string) => new Date(d.length === 10 ? `${d}T12:00:00` : d)
 const today = () => new Date().toISOString().slice(0, 10)
 
 type IndustryFilter = Industry | 'all'
+
+/** What a card can do: open, remove from the board, or be picked in Select mode. */
+interface CardActions {
+  remove: (rows: ProspectRow[]) => void
+  selecting: boolean
+  selected: Set<string>
+  toggle: (id: string) => void
+}
+const CardCtx = createContext<CardActions>({ remove: () => {}, selecting: false, selected: new Set(), toggle: () => {} })
+
+interface Toast { text: string; undo?: () => Promise<void> }
 
 export function ProspectsPage() {
   const { me } = useSession()
@@ -54,7 +65,38 @@ function Prospects() {
   const [openId, setOpenId] = useState<string | null>(null)
   const [adding, setAdding] = useState(false)
   const [showOff, setShowOff] = useState(false)
+  const [selecting, setSelecting] = useState(false)
+  const [selected, setSelected] = useState<Set<string>>(new Set())
+  const [toast, setToast] = useState<Toast | null>(null)
   const reload = () => setVersion((v) => v + 1)
+
+  useEffect(() => {
+    if (!toast) return
+    const t = setTimeout(() => setToast(null), 8000)
+    return () => clearTimeout(t)
+  }, [toast])
+
+  const setHidden = async (rows: ProspectRow[], hidden: boolean) => {
+    for (const r of rows) await ds.prospects.save(r.contactId, hidden ? { hidden: true } : { hidden: false, stage: r.stage ?? 'new' })
+    reload()
+  }
+  /** Remove from the board ("Not a prospect"), with Undo. */
+  const remove = async (rows: ProspectRow[]) => {
+    if (!rows.length) return
+    try {
+      await setHidden(rows, true)
+      setSelected(new Set()); setSelecting(false)
+      setToast({ text: rows.length === 1 ? `Removed ${rows[0].name}` : `Removed ${rows.length} people`, undo: () => setHidden(rows, false) })
+    } catch (e) {
+      setToast({ text: `Couldn't remove: ${(e as Error).message}` })
+    }
+  }
+  const actions: CardActions = {
+    remove: (rows) => { void remove(rows) },
+    selecting,
+    selected,
+    toggle: (id) => setSelected((s) => { const n = new Set(s); if (n.has(id)) n.delete(id); else n.add(id); return n }),
+  }
 
   const all = list.data ?? []
   const board = useMemo(() => {
@@ -72,14 +114,14 @@ function Prospects() {
   const open = all.find((p) => p.contactId === openId) ?? null
 
   return (
-    <div>
+    <div className={selecting || toast ? 'pb-20' : ''}>
       <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-xl font-bold tracking-tight">Prospects</h1>
           <p className="mt-0.5 flex items-center gap-1.5 text-sm text-muted"><Lock size={13} /> Only Jordan and Trent can see this</p>
         </div>
         <button onClick={() => setAdding(true)} className="flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-on-primary">
-          <Plus size={16} /> Add prospect
+          <Plus size={16} /> Add
         </button>
       </div>
 
@@ -98,15 +140,20 @@ function Prospects() {
           <Search size={15} className="text-muted" />
           <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search name, company, notes" className="min-w-0 flex-1 bg-transparent outline-none" />
         </label>
+        <button onClick={() => { setSelecting((s) => !s); setSelected(new Set()) }}
+          className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium ring-1 ${selecting ? 'bg-ink text-canvas ring-ink' : 'bg-surface text-soft ring-line'}`}>
+          <CheckSquare size={15} /> {selecting ? 'Done selecting' : 'Select'}
+        </button>
       </div>
+      {selecting && <p className="-mt-2 mb-3 text-sm text-muted">Tap people to pick them, then remove them from the board together.</p>}
 
       {list.loading && !list.data ? <Empty>Loading prospects…</Empty>
         : list.error ? <Empty>Couldn't load prospects: {list.error.message}</Empty>
         : (
-          <>
+          <CardCtx.Provider value={actions}>
             <Board rows={board} onOpen={setOpenId} />
             <PhoneList rows={board} stage={phoneStage} onStage={setPhoneStage} onOpen={setOpenId} />
-          </>
+          </CardCtx.Provider>
         )}
 
       {offBoard.length > 0 && (
@@ -116,20 +163,41 @@ function Prospects() {
           </button>
           {showOff && (
             <div className="mt-2 divide-y divide-line rounded-2xl border border-line bg-surface">
-              <p className="px-4 py-2 text-xs text-muted">Clients, job applicants, vendors, calls with nothing to read, and anyone marked "Not a prospect". Open one to move it to the board.</p>
+              <p className="px-4 py-2 text-xs text-muted">Clients, job applicants, vendors, calls with nothing to read, and anyone you removed. Tap a name to see the chat, or <b>Add to board</b>.</p>
               {offBoard.map((p) => (
-                <button key={p.contactId} onClick={() => setOpenId(p.contactId)} className="flex w-full items-center justify-between gap-3 px-4 py-2.5 text-left text-sm hover:bg-hover">
-                  <span className="min-w-0 truncate"><span className="font-medium">{p.name}</span>{p.company && <span className="text-muted"> · {p.company}</span>}</span>
-                  <span className="shrink-0 text-xs text-muted">{p.hidden ? 'Not a prospect' : kindLabel(p.aiKind)}</span>
-                </button>
+                <div key={p.contactId} className="flex items-center justify-between gap-3 px-4 py-2 text-sm">
+                  <button onClick={() => setOpenId(p.contactId)} className="min-w-0 flex-1 truncate text-left hover:underline">
+                    <span className="font-medium">{p.name}</span>{p.company && <span className="text-muted"> · {p.company}</span>}
+                    <span className="ml-2 text-xs text-muted">{p.hidden ? 'Removed' : kindLabel(p.aiKind)}</span>
+                  </button>
+                  <button onClick={async () => { await setHidden([p], false); setToast({ text: `${p.name} is on the board` }) }}
+                    className="shrink-0 rounded-full px-3 py-1 text-xs font-semibold text-brand ring-1 ring-line hover:bg-hover">Add to board</button>
+                </div>
               ))}
             </div>
           )}
         </div>
       )}
 
-      {open && <ProspectSheet key={open.contactId} p={open} onClose={() => setOpenId(null)} onSaved={reload} />}
-      <AddProspect open={adding} onClose={() => setAdding(false)} onAdded={reload} />
+      {selecting && (
+        <div className="fixed inset-x-4 bottom-20 z-40 mx-auto flex max-w-md items-center gap-3 rounded-2xl bg-ink px-4 py-3 text-canvas shadow-xl md:bottom-6">
+          <span className="flex-1 text-sm font-medium">{selected.size} selected</span>
+          <button disabled={!selected.size} onClick={() => remove(all.filter((p) => selected.has(p.contactId)))}
+            className="rounded-full bg-canvas px-4 py-1.5 text-sm font-semibold text-ink disabled:opacity-40">Remove from board</button>
+          <button onClick={() => { setSelecting(false); setSelected(new Set()) }} className="text-sm opacity-70">Cancel</button>
+        </div>
+      )}
+      {toast && !selecting && (
+        <div role="status" className="fixed inset-x-4 bottom-20 z-40 mx-auto flex max-w-md items-center gap-3 rounded-2xl bg-ink px-4 py-3 text-sm text-canvas shadow-xl md:bottom-6">
+          <span className="flex-1">{toast.text}</span>
+          {toast.undo && <button onClick={async () => { const u = toast.undo!; setToast(null); await u() }} className="font-semibold underline">Undo</button>}
+          <button onClick={() => setToast(null)} aria-label="Close" className="opacity-60"><X size={16} /></button>
+        </div>
+      )}
+
+      {open && <ProspectSheet key={open.contactId} p={open} onClose={() => setOpenId(null)} onSaved={reload}
+        onRemove={() => { setOpenId(null); void remove([open]) }} />}
+      <AddProspect open={adding} onClose={() => setAdding(false)} onAdded={(name) => { reload(); setToast({ text: `${name} is on the board` }) }} />
     </div>
   )
 }
@@ -248,13 +316,29 @@ function TempChip({ t, suggested }: { t: Temperature | null; suggested?: boolean
 }
 
 function ProspectCard({ p, onOpen, compact, showStage }: { p: ProspectRow; onOpen: (id: string) => void; compact?: boolean; showStage?: boolean }) {
+  const ctx = useContext(CardCtx)
   const t = temperatureOf(p)
   const ind = industryOf(p)
   const overdue = p.nextDate && p.nextDate < today()
+  const picked = ctx.selected.has(p.contactId)
+  const click = () => (ctx.selecting ? ctx.toggle(p.contactId) : onOpen(p.contactId))
   return (
-    <button onClick={() => onOpen(p.contactId)} className="relative overflow-hidden rounded-xl bg-surface p-3 pl-4 text-left shadow-sm ring-1 ring-line transition hover:ring-[var(--color-brand)]">
+    <div role="button" tabIndex={0} aria-label={p.company ? `${p.name}, ${p.company}` : p.name} aria-pressed={ctx.selecting ? picked : undefined} onClick={click}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); click() } }}
+      className={`group relative cursor-pointer overflow-hidden rounded-xl bg-surface p-3 pl-4 text-left shadow-sm ring-1 transition hover:ring-[var(--color-brand)] ${picked ? 'ring-2 ring-[var(--color-brand)]' : 'ring-line'}`}>
       <span className={`absolute inset-y-0 left-0 w-1.5 ${t ? TEMP_STYLE[t].bar : 'bg-line'}`} />
-      <div className="flex items-start justify-between gap-2">
+      {ctx.selecting ? (
+        <span className={`absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-full ring-1 ${picked ? 'bg-brand text-on-primary ring-brand' : 'bg-surface ring-line'}`}>
+          {picked && <Check size={13} />}
+        </span>
+      ) : (
+        <button type="button" title="Not a prospect: remove from the board" aria-label={`Remove ${p.name} from the board`}
+          onClick={(e) => { e.stopPropagation(); ctx.remove([p]) }}
+          className="absolute right-1.5 top-1.5 rounded-full p-1 text-muted opacity-60 hover:bg-subtle hover:text-ink hover:opacity-100 lg:opacity-0 lg:group-hover:opacity-100 lg:focus:opacity-100">
+          <X size={14} />
+        </button>
+      )}
+      <div className="flex items-start justify-between gap-2 pr-5">
         <div className="min-w-0">
           <div className="truncate font-semibold">{p.name}</div>
           {p.company && <div className="truncate text-xs text-muted">{p.company}</div>}
@@ -278,7 +362,7 @@ function ProspectCard({ p, onOpen, compact, showStage }: { p: ProspectRow; onOpe
           )}
         </>
       )}
-    </button>
+    </div>
   )
 }
 
@@ -312,7 +396,7 @@ function Field({ label: text, hint, children }: { label: string; hint?: ReactNod
   )
 }
 
-function ProspectSheet({ p, onClose, onSaved }: { p: ProspectRow; onClose: () => void; onSaved: () => void }) {
+function ProspectSheet({ p, onClose, onSaved, onRemove }: { p: ProspectRow; onClose: () => void; onSaved: () => void; onRemove: () => void }) {
   const ds = useData()
   const chat = useAsync(() => ds.prospects.messages(p.contactId), [ds, p.contactId])
   const [industry, setIndustry] = useState<Industry | null>(p.industry)
@@ -406,7 +490,7 @@ function ProspectSheet({ p, onClose, onSaved }: { p: ProspectRow; onClose: () =>
                 ? <button disabled={busy} onClick={remove} className="text-sm font-medium text-bad">Delete</button>
                 : p.hidden
                   ? <button disabled={busy} onClick={() => run({ hidden: false, stage: p.stage ?? 'new' }, true)} className="text-sm font-medium text-brand">Back on the board</button>
-                  : <button disabled={busy} onClick={() => run({ hidden: true }, true)} className="flex items-center gap-1 text-sm font-medium text-muted"><EyeOff size={14} /> Not a prospect</button>}
+                  : <button disabled={busy} onClick={onRemove} className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium text-soft ring-1 ring-line hover:bg-hover"><EyeOff size={14} /> Not a prospect: remove</button>}
             </div>
             {p.updatedBy && p.updatedAt && <p className="text-xs text-muted">Last changed by {p.updatedBy}, {shortDate(p.updatedAt)}</p>}
             {p.temperature == null && p.aiTemperature && <p className="text-xs text-muted">* Suggested by Jev from the chat. Pick one to set it yourself; Jev won't change your choice.</p>}
@@ -457,7 +541,93 @@ function Chat({ messages }: { messages: (ChatMessage & { id: string })[] }) {
   )
 }
 
-function AddProspect({ open, onClose, onAdded }: { open: boolean; onClose: () => void; onAdded: () => void }) {
+function AddProspect({ open, onClose, onAdded }: { open: boolean; onClose: () => void; onAdded: (name: string) => void }) {
+  const [tab, setTab] = useState<'ghl' | 'manual'>('ghl')
+  return (
+    <Modal open={open} onClose={onClose} title="Add to the board">
+      <div className="mb-4 flex rounded-full bg-subtle p-1 text-sm">
+        {([['ghl', 'From GHL'], ['manual', 'Not in GHL']] as const).map(([k, l]) => (
+          <button key={k} onClick={() => setTab(k)} className={`flex-1 rounded-full px-3 py-1.5 font-medium ${tab === k ? 'bg-surface text-ink shadow-sm' : 'text-muted'}`}>{l}</button>
+        ))}
+      </div>
+      {tab === 'ghl' ? <AddFromGhl onAdded={(n) => { onAdded(n); onClose() }} /> : <AddByHand onAdded={(n) => { onAdded(n); onClose() }} />}
+    </Modal>
+  )
+}
+
+const STATE_LABEL: Record<GhlContactResult['state'], string> = {
+  on_board: 'On the board', removed: 'Removed earlier', client: 'Client in GHL', new: '',
+}
+
+function AddFromGhl({ onAdded }: { onAdded: (name: string) => void }) {
+  const ds = useData()
+  const [query, setQuery] = useState('')
+  const [results, setResults] = useState<GhlContactResult[] | null>(null)
+  const [searching, setSearching] = useState(false)
+  const [adding, setAdding] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const q = query.trim()
+    if (q.length < 2) { setResults(null); return }
+    let live = true
+    setSearching(true)
+    const t = setTimeout(async () => {
+      try {
+        const r = await ds.prospects.searchGhl(q)
+        if (live) { setResults(r); setError(null) }
+      } catch (e) {
+        if (live) setError((e as Error).message)
+      } finally {
+        if (live) setSearching(false)
+      }
+    }, 350)
+    return () => { live = false; clearTimeout(t) }
+  }, [query, ds])
+
+  const add = async (r: GhlContactResult) => {
+    setAdding(r.contactId); setError(null)
+    try {
+      const res = await ds.prospects.addFromGhl(r.contactId)
+      onAdded(res.name || r.name)
+    } catch (e) {
+      setError((e as Error).message)
+    } finally {
+      setAdding(null)
+    }
+  }
+
+  return (
+    <div>
+      <p className="mb-3 text-sm text-muted">Search anyone in MRKD's GHL. Adding them brings in their latest chat, and Jev reads it.</p>
+      <label className="flex items-center gap-2 rounded-xl border border-line bg-surface px-3 py-2 text-sm">
+        <Search size={15} className="text-muted" />
+        <input autoFocus value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Name, email or phone number" className="min-w-0 flex-1 bg-transparent outline-none" />
+      </label>
+      {error && <p className="mt-2 text-sm text-bad">{error}</p>}
+      <div className="mt-2 max-h-80 divide-y divide-line overflow-y-auto">
+        {searching && !results && <p className="py-3 text-sm text-muted">Searching GHL…</p>}
+        {results?.length === 0 && <p className="py-3 text-sm text-muted">Nobody in GHL matches. Use "Not in GHL" to add them by hand.</p>}
+        {results?.map((r) => (
+          <div key={r.contactId} className="flex items-center justify-between gap-3 py-2.5">
+            <div className="min-w-0">
+              <div className="truncate text-sm font-medium">{r.name}</div>
+              <div className="truncate text-xs text-muted">{[r.company, r.email, r.phone].filter(Boolean).join(' · ') || ' '}</div>
+              {STATE_LABEL[r.state] && <div className="text-[11px] font-semibold text-soft">{STATE_LABEL[r.state]}</div>}
+            </div>
+            {r.state === 'on_board'
+              ? <span className="shrink-0 text-xs text-muted">Already added</span>
+              : <button disabled={adding !== null} onClick={() => add(r)} className="shrink-0 rounded-full bg-primary px-3 py-1.5 text-xs font-semibold text-on-primary disabled:opacity-50">
+                  {adding === r.contactId ? 'Adding…' : r.state === 'removed' ? 'Add back' : 'Add'}
+                </button>}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function AddByHand({ onAdded }: { onAdded: (name: string) => void }) {
   const ds = useData()
   const [name, setName] = useState('')
   const [company, setCompany] = useState('')
@@ -475,8 +645,7 @@ function AddProspect({ open, onClose, onAdded }: { open: boolean; onClose: () =>
     setBusy(true); setError(null)
     try {
       await ds.prospects.add({ name, company, channel, industry, temperature, value: v, stage: 'new', notes })
-      onAdded(); onClose()
-      setName(''); setCompany(''); setIndustry(null); setTemperature(null); setValue(''); setNotes('')
+      onAdded(name.trim())
     } catch (e) {
       setError((e as Error).message)
     } finally {
@@ -484,8 +653,8 @@ function AddProspect({ open, onClose, onAdded }: { open: boolean; onClose: () =>
     }
   }
   return (
-    <Modal open={open} onClose={onClose} title="Add a prospect">
-      <p className="mb-3 text-sm text-muted">For someone who isn't in GHL, e.g. a chat on your personal Facebook. People who message MRKD in GHL appear by themselves.</p>
+    <div>
+      <p className="mb-3 text-sm text-muted">For someone who isn't in GHL, e.g. a chat on your personal Facebook.</p>
       <div className="space-y-3">
         <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Name" className="w-full rounded-xl border border-line bg-surface px-3 py-2 text-sm" />
         <input value={company} onChange={(e) => setCompany(e.target.value)} placeholder="Business (optional)" className="w-full rounded-xl border border-line bg-surface px-3 py-2 text-sm" />
@@ -497,6 +666,6 @@ function AddProspect({ open, onClose, onAdded }: { open: boolean; onClose: () =>
         {error && <p className="text-sm text-bad">{error}</p>}
         <button disabled={busy} onClick={submit} className="w-full rounded-full bg-primary px-4 py-2 text-sm font-semibold text-on-primary disabled:opacity-50">{busy ? 'Adding…' : 'Add'}</button>
       </div>
-    </Modal>
+    </div>
   )
 }

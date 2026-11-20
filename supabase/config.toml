@@ -37,5 +37,9 @@ verify_jwt = false
 [functions.prospects-sync]
 verify_jwt = false
 
+[functions.prospects-action]
+# Checked inside: an owner with two-step sign-in (is_owner()) or the cron secret.
+verify_jwt = false
+
 [functions.site-check]
 verify_jwt = false

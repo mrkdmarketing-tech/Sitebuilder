@@ -29,6 +29,17 @@ export interface NewProspect {
   notes?: string | null
 }
 
+/** A GHL contact found by search. */
+export interface GhlContactResult {
+  contactId: string
+  name: string
+  company: string | null
+  email: string | null
+  phone: string | null
+  /** on_board = already on the board; removed = marked not a prospect; client = a client in GHL; new = not in Prospects. */
+  state: 'on_board' | 'removed' | 'client' | 'new'
+}
+
 export interface ProspectsApi {
   list(): Promise<ProspectRow[]>
   /** The chat, oldest first. */
@@ -38,6 +49,20 @@ export interface ProspectsApi {
   add(p: NewProspect): Promise<void>
   /** Only ones added by hand. */
   remove(contactId: string): Promise<void>
+  /** Search every contact in MRKD's GHL sub-account. */
+  searchGhl(query: string): Promise<GhlContactResult[]>
+  /** Put a GHL contact on the board (reads their chat; Jev reads it too). */
+  addFromGhl(contactId: string): Promise<{ name: string }>
+}
+
+async function invoke<T>(db: SupabaseClient, body: Record<string, unknown>): Promise<T> {
+  const { data, error } = await db.functions.invoke('prospects-action', { body })
+  if (error) {
+    let message = error.message
+    try { message = ((await (error as { context?: Response }).context?.json()) as { error?: string })?.error ?? message } catch { /* keep */ }
+    throw new Error(message)
+  }
+  return data as T
 }
 
 const COLUMNS = 'contact_id, source, name, company, channel, industry, ai_industry, temperature, ai_temperature, ai_kind, value, stage, next_step, next_date, notes, hidden, last_message_at, last_from, last_preview, message_count, ghl_pipeline, ghl_stage, ghl_value, updated_at, employees(first_name)'
@@ -115,6 +140,12 @@ export function createSupabaseProspects(db: SupabaseClient): ProspectsApi {
     async remove(contactId) {
       check(await db.from('prospects').delete().eq('contact_id', contactId).eq('source', 'manual'))
     },
+    async searchGhl(query) {
+      return (await invoke<{ results: GhlContactResult[] }>(db, { action: 'search', query })).results
+    },
+    async addFromGhl(contactId) {
+      return invoke<{ name: string }>(db, { action: 'add', contactId })
+    },
   }
 }
 
@@ -165,5 +196,25 @@ export function createMockProspects(): ProspectsApi {
       }, ...rows]
     },
     async remove(contactId) { rows = rows.filter((r) => r.contactId !== contactId || r.source !== 'manual') },
+    async searchGhl(query) {
+      const q = query.trim().toLowerCase()
+      if (q.length < 2) return []
+      const extra: GhlContactResult[] = [{ contactId: 'g1', name: 'Taylor Brooks', company: 'Brooks Barns & Steel', email: null, phone: null, state: 'new' }]
+      return [
+        ...rows.map((r): GhlContactResult => ({ contactId: r.contactId, name: r.name, company: r.company, email: null, phone: null, state: r.hidden ? 'removed' : 'on_board' })),
+        ...extra.filter((e) => !rows.some((r) => r.contactId === e.contactId)),
+      ].filter((r) => [r.name, r.company].some((v) => v?.toLowerCase().includes(q)))
+    },
+    async addFromGhl(contactId) {
+      const r = rows.find((x) => x.contactId === contactId)
+      if (r) { rows = rows.map((x) => (x.contactId === contactId ? { ...x, hidden: false, stage: x.stage ?? 'new' } : x)); return { name: r.name } }
+      rows = [{
+        contactId, source: 'ghl', name: 'Taylor Brooks', company: 'Brooks Barns & Steel', channel: 'SMS', industry: null, aiIndustry: 'steel',
+        temperature: null, aiTemperature: 'warm', aiKind: 'prospect', value: null, stage: 'new', nextStep: null, nextDate: null, notes: null,
+        hidden: false, lastMessageAt: day(8), lastFrom: 'them', lastPreview: 'Send me some examples', messageCount: 5,
+        ghlPipeline: null, ghlStage: null, ghlValue: null, updatedAt: new Date().toISOString(), updatedBy: 'Olive',
+      }, ...rows]
+      return { name: 'Taylor Brooks' }
+    },
   }
 }
